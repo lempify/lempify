@@ -1,4 +1,4 @@
-import ServiceDashboard from "./Components/Services";
+import ServiceDashboard from "./components/Services";
 
 const App = () => {
   return (

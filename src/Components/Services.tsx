@@ -13,30 +13,26 @@ const installService = async (service: ServiceType): Promise<string> => {
     return await invoke("install_service", { service });
 };
 
-const startService = async (service: ServiceType): Promise<string> => {
-    try {
-        const state = await invoke("start_service", { service });
-        console.log(state);
-        return state as string;
-    } catch (error) {
-        console.error(error);
-        return "Failed to start service";
-    }
-};
-
-const stopService = async (service: ServiceType): Promise<string> => {
-    try {
-        const state = await invoke("stop_service", { service });
-        console.log(state);
-        return state as string;
-    } catch (error) {
-        console.error(error);
-        return "Failed to stop service";
-    }
-};
-
 const ServiceDashboard = () => {
     const [services, setServices] = useState<Record<string, ServiceStatus>>({});
+
+    const handleStart = async (service: ServiceType) => {
+        try {
+            const updatedStatus = await invoke<ServiceStatus>("start_service", { service });
+            setServices({ ...services, [service]: updatedStatus });
+        } catch (err) {
+            console.error("Start failed:", err);
+        }
+    };
+
+    const handleStop = async (service: ServiceType) => {
+        try {
+            const updatedStatus = await invoke<ServiceStatus>("stop_service", { service });
+            setServices({ ...services, [service]: updatedStatus });
+        } catch (err) {
+            console.error("Stop failed:", err);
+        }
+    };
 
     useEffect(() => {
         const checkAll = async () => {
@@ -67,8 +63,8 @@ const ServiceDashboard = () => {
                         running: false
                     }}
                     onInstall={() => installService(service)}
-                    onStart={() => startService(service)}
-                    onStop={() => stopService(service)}
+                    onStart={() => handleStart(service)}
+                    onStop={() => handleStop(service)}
                     fetchStatus={() => getServiceStatus(service)}
                 />
             ))}
