@@ -1,0 +1,43 @@
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/OpenSans-Regular.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/OpenSans-Bold.woff2') format('woff2');
+  font-display: swap;
+}
+
+:root {
+  --lempify-accent: #38b6ff;
+  --lempify-secondary: #94d8ff;
+  --lempify-bg-light: #ffffff;
+  --lempify-bg-dark: #0d1117;
+  --lempify-text-light: #1f2937;
+  --lempify-text-dark: #d1d5db;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --lempify-bg: var(--lempify-bg-dark);
+    --lempify-text: var(--lempify-text-dark);
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --lempify-bg: var(--lempify-bg-light);
+    --lempify-text: var(--lempify-text-light);
+  }
+}
+
+body {
+  background-color: var(--lempify-bg);
+  color: var(--lempify-text);
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+}
