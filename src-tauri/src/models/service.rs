@@ -15,3 +15,19 @@ pub struct ServiceStatus {
     pub version: Option<String>,
     pub running: bool,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct SiteCreatePayload {
+    pub name: String,
+    pub tld: Option<String>,
+}
+
+
+#[derive(Debug, Serialize)]
+pub struct SiteInfo {
+    pub name: String,
+    pub domain: String,
+    pub exists: bool,
+    pub in_hosts: bool,
+    pub config_path: String,
+}
