@@ -1,43 +1,37 @@
-@font-face {
-  font-family: 'Open Sans';
-  font-style: normal;
-  font-weight: 400;
-  src: url('../fonts/OpenSans-Regular.woff2') format('woff2');
-  font-display: swap;
-}
+@import "tailwindcss";
 
-@font-face {
-  font-family: 'Open Sans';
-  font-style: normal;
-  font-weight: 700;
-  src: url('../fonts/OpenSans-Bold.woff2') format('woff2');
-  font-display: swap;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --lempify-accent: #38b6ff;
+  --lempify-accent-dark: #208ccb;
   --lempify-secondary: #94d8ff;
   --lempify-bg-light: #ffffff;
   --lempify-bg-dark: #0d1117;
   --lempify-text-light: #1f2937;
   --lempify-text-dark: #d1d5db;
+
+  /* Default light theme */
+  --lempify-bg: var(--lempify-bg-light);
+  --lempify-text: var(--lempify-text-light);
 }
 
+/* Manual dark mode override */
+.dark {
+  --lempify-bg: var(--lempify-bg-dark);
+  --lempify-text: var(--lempify-text-dark);
+}
+
+/* System preference dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --lempify-bg: var(--lempify-bg-dark);
     --lempify-text: var(--lempify-text-dark);
   }
-}
-@media (prefers-color-scheme: light) {
-  :root {
+  
+  /* Override system preference when manual dark mode is active */
+  .light {
     --lempify-bg: var(--lempify-bg-light);
     --lempify-text: var(--lempify-text-light);
   }
-}
-
-body {
-  background-color: var(--lempify-bg);
-  color: var(--lempify-text);
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
 }

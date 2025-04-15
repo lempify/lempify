@@ -7,12 +7,9 @@ const Services = () => {
   const isAllSystemsGo = !Boolean(servicesStatuses.inactive.length);
 
   return (
-    <ul className="inline">
-      {/* {isAllSystemsGo ? (
-        <div className="text-green-500">All systems go!</div>
-      ) : (
-        <div className="text-red-500">Some systems are not running!</div>
-      )} */}
+    <>
+      <span className="text-neutral-500 dark:text-neutral-300 text-sm">Services <span className={`inline-block w-2 h-2 rounded-full ${isAllSystemsGo ? 'bg-green-500' : 'bg-red-500'}`} /></span>
+      <ul className="hidden group-hover/services-status:block absolute top-full right-0 bg-neutral-100 dark:bg-neutral-900 border-t border-b border-l border-neutral-300 dark:border-neutral-700 p-2">
         {servicesValues.map(service => (
           <ServicesService
             key={service.name}
@@ -24,7 +21,8 @@ const Services = () => {
             fetchStatus={() => refresh(service.name)}
           />
         ))}
-    </ul>
+      </ul>
+    </>
   );
 };
 

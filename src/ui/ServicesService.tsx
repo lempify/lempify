@@ -15,11 +15,11 @@ const icons = {
 const ServiceStatusIcon = ({ name, running }: { name: string; running: boolean }) => {
   const Icon = icons[name as keyof typeof icons];
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <p className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-300">
       <span className={`w-2 h-2 rounded-full ${running ? 'bg-green-500' : 'bg-red-500'}`} />
-      {name}
+      <span>{name}</span>
       {/* <Icon /> */}
-    </div>
+    </p>
   );
 };
 
@@ -58,38 +58,26 @@ const ServicesService = ({
       case "pending":
         return "Repairing...";
       case "fixed":
-        return "Fixed ✅";
+        return "Repaired!";
       case "error":
-        return "Failed ❌";
+        return "Failed";
+      case "idle":
+        return "Repair";
       default:
         return "Idle";
     }
   };
 
   return (
-    <li>
+    <li className="inline-block ml-2 p4">
       <ServiceStatusIcon name={service.name} running={service.running} />
-      {/* <p>
-        <strong>Status:</strong>{" "}
-        {service.installed ? "✅ Installed" : "❌ Not Installed"} /{" "}
-        {service.running ? "🟢 Running" : "🔴 Not Running"}
-      </p>
-
-      <p>
-        <strong>Repair:</strong> {renderRepairLabel()}
-      </p>
-
-      <div className="actions">
-        <Button onClick={onInstall}>Install</Button>
-        <Button onClick={fetchStatus}>Refresh</Button>
-        <Button onClick={onStart}>Start</Button>
-        <Button onClick={onStop}>Stop</Button>
-        <Button onClick={handleRepair} disabled={repairStatus === "pending"}>
-          Repair
-        </Button>
-      </div>
-
-      <div className="overflow-auto" style={{ marginTop: "1rem" }}>{JSON.stringify(service, null, 2)}</div> */}
+      {!service.installed && <Button className="text-xs" onClick={onInstall}>Install</Button>}
+      {service.installed && !service.running && <Button className="text-xs" onClick={onStart}>Start</Button>}
+      {service.running && <Button className="text-xs" onClick={onStop}>Stop</Button>}
+      <Button className="text-xs" onClick={handleRepair} disabled={repairStatus === "pending"}>
+        <span className={`w-2 h-2 rounded-full ${repairStatus === "pending" ? 'bg-yellow-500' : repairStatus === "fixed" ? 'bg-green-500' : 'bg-red-500'}`} /> {renderRepairLabel()}
+      </Button>
+      <Button className="text-xs" onClick={fetchStatus}>Restart Service</Button>
     </li>
   );
 };
