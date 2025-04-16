@@ -1,63 +1,71 @@
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useInvoke } from "../hooks/useInvoke";
 
-const CreateSiteForm = ({ onRefresh }: { onRefresh: () => void }) => {
-  const [name, setName] = useState("");
-  const [ssl, setSsl] = useState(false);
-  const [laravel, setLaravel] = useState(false);
-  const [wordpress, setWordpress] = useState(false);
-  const [status, setStatus] = useState<"idle" | "creating" | "success" | "error">("idle");
+const defaultPayload = {
+  name: "",
+  ssl: false,
+  laravel: false,
+  wordpress: false,
+};
+
+const SiteCreate = ({ onRefresh }: { onRefresh: () => void }) => {
+  const [payload, setPayload] = useState({ ...defaultPayload });
+  const { invoke, invokeStatus } = useInvoke();
+
   const [result, setResult] = useState<string | null>(null);
 
   const handleCreate = async () => {
-    setStatus("creating");
     try {
-      const domain = await invoke<string>("create_site", { payload: { name, ssl, wordpress, laravel } });
-      setResult(domain);
-      setStatus("success");
-      onRefresh();
+      const { data, error } = await invoke<string>("create_site", { payload });
+      if (error) {
+        throw error;
+      }
+      if (data) {
+        setResult(data);
+        onRefresh();
+      }
     } catch (err) {
       console.error("Failed to create site:", err);
-      setStatus("error");
+    } finally {
+      setPayload({ ...defaultPayload });
     }
   };
 
   return (
-    <div className="mb-20 p-10 w-full border border-neutral-200 dark:border-neutral-700 rounded-lg">
+    <div className="mb-10 p-10 w-full border border-neutral-200 dark:border-neutral-700 rounded-lg">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)]">Create New Site</h2>
-        <button onClick={onRefresh} className="btn">Refresh</button>
       </div>
       <input
         type="url"
         placeholder="lempify.local"
         className="border border-neutral-200 placeholder:text-neutral-300 placeholder:italic focus:border-neutral-300 outline-none dark:border-neutral-700 w-full mb-4 px-4 py-3"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        value={payload.name}
+        onChange={(e) => setPayload({ ...payload, name: e.target.value })}
       />
       <div className="flex items-center gap-2 mb-4 text-sm">
         <label className="mr-4">
           <input
             type="checkbox"
             className="form-checkbox rounded text-pink-500 mr-2"
-            checked={ssl}
-            onChange={(e) => setSsl(e.target.checked)}
+            checked={payload.ssl}
+            onChange={(e) => setPayload({ ...payload, ssl: e.target.checked })}
           /><span>SSL?</span>
         </label>
         <label className="mr-4">
           <input
             type="checkbox"
             className="form-checkbox rounded text-pink-500 mr-2"
-            checked={laravel}
-            onChange={(e) => setLaravel(e.target.checked)}
+            checked={payload.laravel}
+            onChange={(e) => setPayload({ ...payload, laravel: e.target.checked })}
           /><span>Laravel?</span>
         </label>
         <label>
           <input
             type="checkbox"
             className="form-checkbox rounded text-pink-500 mr-2"
-            checked={wordpress}
-            onChange={(e) => setWordpress(e.target.checked)}
+            checked={payload.wordpress}
+            onChange={(e) => setPayload({ ...payload, wordpress: e.target.checked })}
           />
           <span>WordPress?</span>
         </label>
@@ -65,11 +73,11 @@ const CreateSiteForm = ({ onRefresh }: { onRefresh: () => void }) => {
       <button
         onClick={handleCreate}
         className="bg-[var(--lempify-primary)] hover:bg-[var(--lempify-primary-700)] text-white px-4 py-2 rounded disabled:opacity-50 disabled:bg-neutral-400"
-        disabled={!name || status === "creating"}
+        disabled={!payload.name || invokeStatus === "pending"}
       >
-        {status === "creating" ? "Creating..." : "Create Site"}
+        {invokeStatus === "pending" ? "Creating..." : "Create Site"}
       </button>
-      {status === "success" && result && (
+      {invokeStatus === "success" && result && (
         <p className="mt-2 text-green-600">
           🚀 Created:{" "}
           <a href={`http://${result}`} target="_blank" rel="noopener noreferrer">
@@ -77,11 +85,11 @@ const CreateSiteForm = ({ onRefresh }: { onRefresh: () => void }) => {
           </a>
         </p>
       )}
-      {status === "error" && (
+      {invokeStatus === "error" && (
         <p className="mt-2 text-red-600">❌ Something went wrong</p>
       )}
     </div>
   );
 };
 
-export default CreateSiteForm;
+export default SiteCreate;

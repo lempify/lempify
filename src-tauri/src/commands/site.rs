@@ -28,10 +28,9 @@ pub fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
     println!("Nginx Config Dir: {}", nginx_config_dir.display());
     println!("Sites Dir: {}", sites_dir.display());
 
-        // if filtered.len() != 2 {
-        //     return Err("Invalid site name. Please use the format 'example.test'.".to_string());
-        // }
-    
+    // if filtered.len() != 2 {
+    //     return Err("Invalid site name. Please use the format 'example.test'.".to_string());
+    // }
 
     let site_path = sites_dir.join(site_name);
     if site_path.exists() {

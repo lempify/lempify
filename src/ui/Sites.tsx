@@ -1,6 +1,6 @@
 
 import SiteCard from './SitesSite';
-import CreateSite from "./SitesCreate";
+import SiteCreate from "./SitesCreate";
 import useSiteManager from "../hooks/useSiteManager";
 import RouteHeader from './RouteHeader';
 
@@ -15,11 +15,15 @@ const Sites = () => {
 
       {sites.length === 0 && !loading && <p>No sites found in ~/Lempify/sites</p>}
 
-      <CreateSite onRefresh={refresh} />
+      <SiteCreate onRefresh={refresh} />
 
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)]">Existing Sites:</h2>
+        <button onClick={refresh} className="btn">Refresh</button>
+      </div>
       <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sites.map(site => (
-          <SiteCard onRefresh={refresh} site={site} />
+          <SiteCard key={site.name} onRefresh={refresh} site={site} />
         ))}
       </ul>
     </div>

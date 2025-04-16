@@ -1,6 +1,6 @@
-pub mod php;
 pub mod brew;
-pub mod nginx;
-pub mod hosts;
-pub mod paths;
 pub mod constants;
+pub mod hosts;
+pub mod nginx;
+pub mod paths;
+pub mod php;

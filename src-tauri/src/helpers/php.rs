@@ -73,8 +73,8 @@ pub fn patch_php_fpm_socket_conf() -> Result<(), String> {
     // TODO: Make this dynamic based on the PHP version
     let config_path = "/opt/homebrew/etc/php/8.4/php-fpm.d/www.conf";
 
-    let contents = fs::read_to_string(config_path)
-        .map_err(|e| format!("Failed to read PHP config: {}", e))?;
+    let contents =
+        fs::read_to_string(config_path).map_err(|e| format!("Failed to read PHP config: {}", e))?;
 
     // Avoid double patching
     if contents.contains("/opt/homebrew/var/run/php/php-fpm.sock") {
@@ -95,10 +95,10 @@ pub fn patch_php_fpm_socket_conf() -> Result<(), String> {
         .join("\n");
 
     println!("Patching PHP FPM socket configuration...");
-    
+
     fs::write(config_path, patched)
         .map_err(|e| format!("Failed to write patched PHP config: {}", e))?;
-    
+
     println!("✅ PHP FPM socket configuration patched");
 
     Ok(())

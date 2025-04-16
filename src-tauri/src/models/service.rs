@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -21,7 +21,6 @@ pub struct SiteCreatePayload {
     pub name: String,
     // pub tld: Option<String>,
 }
-
 
 #[derive(Debug, Serialize)]
 pub struct SiteInfo {

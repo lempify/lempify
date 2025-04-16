@@ -1,6 +1,6 @@
+use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
 use crate::models::service::ServiceType;
 use crate::utils::service_helpers::{get_brew_formula, install_via_brew};
-use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
 
 #[tauri::command]
 pub fn install_service(service: ServiceType) -> Result<String, String> {
