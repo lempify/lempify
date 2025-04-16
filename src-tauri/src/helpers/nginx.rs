@@ -1,9 +1,11 @@
 use std::{fs, path::Path};
 
+use crate::helpers::paths::get_nginx_dir;
+
 pub fn ensure_lempify_include_in_nginx_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
-    let home = dirs::home_dir().ok_or("Could not get home directory")?;
-    let include_path = home.join("Lempify/nginx/*.conf");
+    let nginx_dir = get_nginx_dir()?;
+    let include_path = nginx_dir.join("*.conf");
     let include_block = format!("# Lempify\n\tinclude {};", include_path.display());
 
     let contents = fs::read_to_string(nginx_conf_path)

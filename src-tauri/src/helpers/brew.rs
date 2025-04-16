@@ -1,7 +1,8 @@
 use std::path::PathBuf;
 use std::process::Command;
-use dirs;
 use users;
+
+use crate::helpers::paths::get_home_path;
 
 pub fn is_service_running(service: &str) -> bool {
     Command::new("brew")
@@ -17,7 +18,7 @@ pub fn is_service_running(service: &str) -> bool {
 }
 
 pub fn get_launch_agent_path(service: &str) -> Result<PathBuf, String> {
-    let home = dirs::home_dir().ok_or("Could not determine home directory")?;
+    let home = get_home_path()?;
     let plist = format!("homebrew.mxcl.{}.plist", service);
     let path = home.join("Library").join("LaunchAgents").join(plist);
     Ok(path)
