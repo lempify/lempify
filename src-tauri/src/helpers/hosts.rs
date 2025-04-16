@@ -1,8 +1,8 @@
 use std::fs;
 
-const HOSTS_PATH: &str = "/etc/hosts"; // Can later be platform-specific
+use crate::helpers::constants::HOSTS_PATH;
 
-pub fn list_host_entries() -> Result<Vec<String>, String> {
+pub fn _list_host_entries() -> Result<Vec<String>, String> {
     let contents = fs::read_to_string(HOSTS_PATH)
         .map_err(|e| format!("Failed to read hosts file: {}", e))?;
 

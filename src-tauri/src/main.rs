@@ -109,9 +109,9 @@ fn main() {
             commands::install::install_service,
             commands::start_stop::start_service,
             commands::start_stop::stop_service,
+            commands::start_stop::restart_service,
             commands::repair::repair_service,
             commands::sites::list_sites,
-            // commands::nginx::generate_nginx_config,
             commands::site::create_site,
             commands::site::delete_site,
         ])

@@ -23,3 +23,12 @@ pub async fn stop_service(service: ServiceType) -> Result<ServiceStatus, String>
     brew_stop(formula)?;
     Ok(get_service_status(service).await)
 }
+
+#[command]
+pub async fn restart_service(service: ServiceType) -> Result<ServiceStatus, String> {
+    let formula = get_brew_formula(&service);
+    brew_stop(formula)?;
+    brew_start(formula)?;
+    Ok(get_service_status(service).await)
+}
+

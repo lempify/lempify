@@ -1,10 +1,11 @@
 import { ServiceStatus } from "./service";
 
-export type ServiceCardProps<T extends Record<string, React.ComponentType>> = {
+export type ServiceCardProps = {
   service: ServiceStatus;
-  icon: keyof T;
-  onInstall: () => void;
-  onStart: () => void;
-  onStop: () => void;
-  fetchStatus: () => void;
 };
+
+export interface ServiceIconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number;
+  viewBox?: string;
+  className?: string;
+}

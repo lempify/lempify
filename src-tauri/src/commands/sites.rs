@@ -1,12 +1,11 @@
 use tauri::command;
 
-use crate::models::service::SiteInfo;
+use crate::{helpers::paths::{get_nginx_dir, get_sites_dir}, models::service::SiteInfo};
 
 #[command]
 pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
-    let home = dirs::home_dir().ok_or("Unable to get home directory")?;
-    let sites_dir = home.join("Lempify/sites");
-    let nginx_dir = home.join("Lempify/nginx");
+    let sites_dir = get_sites_dir()?;
+    let nginx_dir = get_nginx_dir()?;
     let hosts = std::fs::read_to_string("/etc/hosts").unwrap_or_default();
 
     let mut sites = vec![];
@@ -20,7 +19,7 @@ pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
                     continue;
                 }
 
-                let domain = format!("{}.test", site_name);
+                let domain = format!("{}", site_name);
                 let config_path = nginx_dir.join(format!("{}.conf", site_name));
 
                 let info = SiteInfo {

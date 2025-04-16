@@ -19,7 +19,7 @@ pub struct ServiceStatus {
 #[derive(Debug, Deserialize)]
 pub struct SiteCreatePayload {
     pub name: String,
-    pub tld: Option<String>,
+    // pub tld: Option<String>,
 }
 
 

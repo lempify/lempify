@@ -3,9 +3,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --lempify-accent: #38b6ff;
-  --lempify-accent-dark: #208ccb;
-  --lempify-secondary: #94d8ff;
+  --lempify-primary: #38b6ff;
+  --lempify-primary-50:  #e3f5ff;
+  --lempify-primary-100: #b9e4ff;
+  --lempify-primary-200: #8fd3ff;
+  --lempify-primary-300: #65c2ff;
+  --lempify-primary-400: #3bb1ff;
+  --lempify-primary-500: #38b6ff; /* Base */
+  --lempify-primary-600: #2693d1;
+  --lempify-primary-700: #1970a3;
+  --lempify-primary-800: #0b4d75;
+  --lempify-primary-900: #002a47;
+
   --lempify-bg-light: #ffffff;
   --lempify-bg-dark: #0d1117;
   --lempify-text-light: #1f2937;
@@ -23,7 +32,7 @@
 }
 
 /* System preference dark mode */
-@media (prefers-color-scheme: dark) {
+@media (prefers-lempify-scheme: dark) {
   :root {
     --lempify-bg: var(--lempify-bg-dark);
     --lempify-text: var(--lempify-text-dark);
@@ -33,5 +42,13 @@
   .light {
     --lempify-bg: var(--lempify-bg-light);
     --lempify-text: var(--lempify-text-light);
+  }
+}
+
+button {
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
   }
 }
