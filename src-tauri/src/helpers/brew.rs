@@ -56,10 +56,12 @@ fn stop_service_fallback(service: &str) -> Result<(), String> {
     if status.success() {
         Ok(())
     } else {
-        Err(format!("Failed to stop service with launchctl: {}", service))
+        Err(format!(
+            "Failed to stop service with launchctl: {}",
+            service
+        ))
     }
 }
-
 
 pub fn start_service(service: &str) -> Result<(), String> {
     let status = Command::new("brew")
@@ -93,10 +95,7 @@ pub fn repair_service(service: &str) -> Result<(), String> {
     });
 
     // Cleanup broken launchd state
-    let _ = Command::new("brew")
-        .arg("services")
-        .arg("cleanup")
-        .status();
+    let _ = Command::new("brew").arg("services").arg("cleanup").status();
 
     // Reinstall the service (force)
     let reinstall_status = Command::new("brew")

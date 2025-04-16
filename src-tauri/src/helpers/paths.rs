@@ -23,4 +23,3 @@ pub fn get_nginx_dir() -> Result<PathBuf, String> {
 pub fn get_certs_dir() -> Result<PathBuf, String> {
     get_home_dir("certs")
 }
-

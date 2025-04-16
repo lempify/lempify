@@ -1,6 +1,9 @@
 use tauri::command;
 
-use crate::{helpers::paths::{get_nginx_dir, get_sites_dir}, models::service::SiteInfo};
+use crate::{
+    helpers::paths::{get_nginx_dir, get_sites_dir},
+    models::service::SiteInfo,
+};
 
 #[command]
 pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
@@ -11,7 +14,9 @@ pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
     let mut sites = vec![];
 
     if sites_dir.exists() {
-        for entry in std::fs::read_dir(sites_dir).map_err(|e| format!("Failed to read sites dir: {}", e))? {
+        for entry in
+            std::fs::read_dir(sites_dir).map_err(|e| format!("Failed to read sites dir: {}", e))?
+        {
             if let Ok(site) = entry {
                 let site_name = site.file_name().to_string_lossy().to_string();
 

@@ -3,8 +3,8 @@ use std::fs;
 use crate::helpers::constants::HOSTS_PATH;
 
 pub fn _list_host_entries() -> Result<Vec<String>, String> {
-    let contents = fs::read_to_string(HOSTS_PATH)
-        .map_err(|e| format!("Failed to read hosts file: {}", e))?;
+    let contents =
+        fs::read_to_string(HOSTS_PATH).map_err(|e| format!("Failed to read hosts file: {}", e))?;
 
     Ok(contents
         .lines()
@@ -16,8 +16,8 @@ pub fn _list_host_entries() -> Result<Vec<String>, String> {
 pub fn add_host_entry(domain: &str, ip: &str) -> Result<(), String> {
     let entry = format!("{ip} {domain}");
 
-    let contents = fs::read_to_string(HOSTS_PATH)
-        .map_err(|e| format!("Failed to read hosts file: {}", e))?;
+    let contents =
+        fs::read_to_string(HOSTS_PATH).map_err(|e| format!("Failed to read hosts file: {}", e))?;
 
     if contents.contains(&entry) {
         return Ok(()); // Already exists
@@ -47,8 +47,8 @@ pub fn add_host_entry(domain: &str, ip: &str) -> Result<(), String> {
 }
 
 pub fn remove_host_entry(domain: &str) -> Result<(), String> {
-    let contents = fs::read_to_string(HOSTS_PATH)
-        .map_err(|e| format!("Failed to read hosts file: {}", e))?;
+    let contents =
+        fs::read_to_string(HOSTS_PATH).map_err(|e| format!("Failed to read hosts file: {}", e))?;
 
     let filtered: Vec<_> = contents
         .lines()
