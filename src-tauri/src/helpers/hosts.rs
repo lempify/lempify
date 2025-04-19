@@ -80,3 +80,10 @@ pub fn remove_host_entry(domain: &str) -> Result<(), String> {
 
     Err("Removing host entries is not implemented for this OS yet.".into())
 }
+
+pub fn is_host_entry_exists(domain: &str) -> Result<bool, String> {
+    let contents =
+        fs::read_to_string(HOSTS_PATH).map_err(|e| format!("Failed to read hosts file: {}", e))?;
+
+    Ok(contents.contains(domain))
+}
