@@ -26,14 +26,20 @@ pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
 
                 let domain = format!("{}", site_name);
                 let config_path = nginx_dir.join(format!("{}.conf", site_name));
-
-                let info = SiteInfo {
-                    name: site_name.clone(),
-                    domain: domain.clone(),
-                    exists: site.path().exists(),
-                    in_hosts: hosts.contains(&domain),
-                    config_path: config_path.display().to_string(),
+                let in_hosts = hosts.contains(&domain);
+                let config_path_str = if config_path.exists() {
+                    config_path.display().to_string()
+                } else {
+                    String::new()
                 };
+
+                let info = SiteInfo::build(
+                    site_name,
+                    Some(domain),
+                    Some(site.path().exists()),
+                    Some(in_hosts),
+                    Some(config_path_str),
+                );
 
                 sites.push(info);
             }

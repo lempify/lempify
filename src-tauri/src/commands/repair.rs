@@ -1,6 +1,6 @@
 use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
+use crate::helpers::service::get_brew_formula;
 use crate::models::service::ServiceType;
-use crate::utils::service_helpers::get_brew_formula;
 
 #[tauri::command]
 pub async fn repair_service(service: ServiceType) -> Result<String, String> {

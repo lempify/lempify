@@ -11,17 +11,16 @@ use crate::{
 };
 
 #[command]
-pub fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
+pub async fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
     let sites_dir = get_sites_dir()?;
     let nginx_config_dir = get_nginx_dir()?;
     let certs_dir = get_certs_dir()?;
 
     // Get site name and convert to lowercase
-    let site_name = &payload.name.to_lowercase();
-    // let tld = payload.tld.unwrap_or_else(|| "test".to_string());
-
+    let site_name = &payload.domain.to_lowercase();
     let (domain, tld) = site_name.split_once('.').unwrap();
 
+    println!("Payload: {:?}", payload);
     println!("Domain: {}", domain);
     println!("TLD: {}", tld);
     println!("Certs Dir: {}", certs_dir.display());
@@ -71,15 +70,14 @@ pub fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
 }
 
 #[command]
-pub fn delete_site(name: String, tld: Option<String>) -> Result<String, String> {
-    let tld = tld.unwrap_or_else(|| "test".into());
-    let domain = format!("{}.{}", name, tld);
+pub async fn delete_site(domain: String) -> Result<String, String> {
+    let domain = domain.to_string();
 
     let sites_dir = get_sites_dir()?;
     let nginx_config_dir = get_nginx_dir()?;
 
-    let site_path = sites_dir.join(&name);
-    let config_path = nginx_config_dir.join(format!("{}.conf", name));
+    let site_path = sites_dir.join(&domain);
+    let config_path = nginx_config_dir.join(format!("{}.conf", domain));
 
     // Remove site directory
     if site_path.exists() {
