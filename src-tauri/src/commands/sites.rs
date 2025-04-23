@@ -1,7 +1,7 @@
 use tauri::command;
 
 use crate::{
-    helpers::paths::{get_nginx_dir, get_sites_dir},
+    helpers::{paths::{get_nginx_dir, get_sites_dir}, ssl::has_ssl},
     models::service::SiteInfo,
 };
 
@@ -35,10 +35,11 @@ pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
 
                 let info = SiteInfo::build(
                     site_name,
-                    Some(domain),
+                    Some(domain.to_string()),
                     Some(site.path().exists()),
                     Some(in_hosts),
                     Some(config_path_str),
+                    Some(has_ssl(&domain).unwrap_or(false)),
                 );
 
                 sites.push(info);

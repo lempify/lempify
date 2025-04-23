@@ -8,7 +8,6 @@ mod models;
 mod ui;
 
 use error::Result;
-use tauri::Manager;
 
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
@@ -29,9 +28,9 @@ fn main() -> Result<()> {
         .setup(|app| {
             #[cfg(debug_assertions)]
             {
-                let window = app.get_webview_window("main").unwrap();
-                window.open_devtools();
-                window.close_devtools();
+                // let window = app.get_webview_window("main").unwrap();
+                // window.open_devtools();
+                // window.close_devtools();
 
                 if let Err(e) = ui::tray::setup_tray(app) {
                     eprintln!("⚠️ Failed to setup tray: {}", e);
@@ -50,6 +49,7 @@ fn main() -> Result<()> {
             commands::site::create_site,
             commands::site::delete_site,
             commands::nginx::generate_nginx_config,
+            commands::ssl::add_ssl,
         ])
         .run(tauri::generate_context!())
         .map_err(|e| error::LempifyError::SystemError(e.to_string()))?;

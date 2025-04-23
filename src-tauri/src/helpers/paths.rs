@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 pub fn get_home_path() -> Result<PathBuf, String> {
     let home = dirs::home_dir().ok_or("Could not get home directory")?;
@@ -9,6 +9,11 @@ pub fn get_home_path() -> Result<PathBuf, String> {
 pub fn get_home_dir(dir: &str) -> Result<PathBuf, String> {
     let home_dir = get_home_path()?;
     let dir_path = home_dir.join(dir);
+    
+    if !dir_path.exists() {
+        fs::create_dir_all(&dir_path).map_err(|e| format!("Failed to create {} dir: {e}", dir_path.display()))?;
+    }
+    
     Ok(dir_path)
 }
 

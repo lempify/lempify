@@ -1,7 +1,7 @@
 import React from 'react';
 import { ServiceIconProps } from '../types/ui';
 
-const ServiceSvg: React.FC<ServiceIconProps> = ({
+const ServicesSvg: React.FC<ServiceIconProps> = ({
   size = 24,
   viewBox = '0 0 24 24',
   className = 'fill-neutral-400 dark:fill-neutral-500',
@@ -21,4 +21,4 @@ const ServiceSvg: React.FC<ServiceIconProps> = ({
   );
 };
 
-export default ServiceSvg; 
+export default ServicesSvg; 

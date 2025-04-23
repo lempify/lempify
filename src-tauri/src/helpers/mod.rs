@@ -5,4 +5,6 @@ pub mod nginx;
 pub mod paths;
 pub mod php;
 pub mod service;
+pub mod ssl;
 pub mod system;
+pub mod osascript;

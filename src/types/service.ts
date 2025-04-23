@@ -25,4 +25,5 @@ export type SiteInfo = {
   exists: boolean;
   in_hosts: boolean;
   config_path: string;
+  is_ssl: boolean;
 };

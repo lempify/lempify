@@ -13,17 +13,21 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sites from "./ui/Sites";
 import Header from "./ui/Header";
 import Sidebar from "./ui/Sidebar";
+import Dashboard from "./ui/Dashboard";
+import Settings from "./ui/Settings";
 
 const App = () => (
   <Router>
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex flex-1">
+      <div className="flex">
         <Sidebar />
-        <div className="flex-1">
-          <main className="p-6 bg-[var(--lempify-bg)] text-[var(--lempify-text)] overflow-y-auto">
+        <div className="flex-1 flex flex-col ml-64">
+          <main className="p-10 bg-[var(--lempify-bg)] text-[var(--lempify-text)]">
             <Routes>
+              <Route path="/" element={<Dashboard />} />
               <Route path="/sites" element={<Sites />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
         </div>

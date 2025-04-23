@@ -1,6 +1,8 @@
-use std::{fs, path::Path};
+use std::{fs, path::Path, process::Command};
 
 use crate::helpers::paths::get_nginx_dir;
+
+use super::paths::get_certs_dir;
 
 pub fn ensure_lempify_include_in_nginx_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
@@ -68,6 +70,8 @@ server {{
     listen 80;
     server_name {name}.{tld};
 
+    ## Lempify SSL ## 
+
     root {root};
     index index.php index.html;
 
@@ -87,4 +91,55 @@ server {{
         tld = tld,
         root = root_path.display()
     )
+}
+
+/**
+ * Update the nginx config with SSL by replacing `## Lempify SSL ##` comment with SSL config for domain.
+ */
+pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
+    let nginx_dir = get_nginx_dir()?;
+    let certs_dir = get_certs_dir()?;
+    let nginx_config_path = nginx_dir.join(format!("{}.conf", domain));
+
+    let contents = fs::read_to_string(&nginx_config_path)
+        .map_err(|e| format!("Failed to read nginx config: {}", e))?;
+
+    let mut patched_lines = vec![];
+        
+    for line in contents.lines() {
+        let trimmed = line.trim();
+
+        if trimmed.starts_with("## Lempify SSL ##") {
+            let domain_cert_path = certs_dir.join(format!("{}.pem", domain));
+            let domain_key_path = certs_dir.join(format!("{}-key.pem", domain));
+
+            patched_lines.push(format!("\n\t## Lempify SSL ##\n\tlisten 443 ssl;\n\tssl_certificate {};\n\tssl_certificate_key {};\n\tssl_protocols TLSv1.2 TLSv1.3;\n\tssl_ciphers HIGH:!aNULL:!MD5;", domain_cert_path.display(), domain_key_path.display()));
+        } else {
+            patched_lines.push(line.to_string());
+        }
+    }
+
+    let patched = patched_lines.join("\n");
+    
+    fs::write(nginx_config_path, patched)
+        .map_err(|e| format!("Failed to write patched nginx config: {}", e))?;
+
+    Ok(())  
+}
+
+/**
+ * Restart the nginx service
+ */
+pub fn restart_nginx() -> Result<(), String> {
+    println!("Restarting nginx");
+    let status = Command::new("brew")
+        .args(&["services", "restart", "nginx"])
+        .status()
+        .map_err(|e| format!("Failed to restart nginx: {}", e))?;
+
+    if !status.success() {
+        return Err(format!("Failed to restart nginx: {}", status));
+    }
+
+    Ok(())
 }
