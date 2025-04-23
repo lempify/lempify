@@ -14,7 +14,7 @@ fn main() -> Result<()> {
         eprintln!("⚠️ Failed to patch PATH: {}", e);
     }
 
-    if let Err(e) = helpers::nginx::ensure_lempify_include_in_nginx_conf() {
+    if let Err(e) = helpers::nginx::add_lempify_to_conf() {
         eprintln!("⚠️ Failed to patch nginx.conf: {}", e);
     }
 

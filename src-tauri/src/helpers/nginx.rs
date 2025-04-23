@@ -4,7 +4,7 @@ use crate::helpers::paths::get_nginx_dir;
 
 use super::paths::get_certs_dir;
 
-pub fn ensure_lempify_include_in_nginx_conf() -> Result<(), String> {
+pub fn add_lempify_to_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
     let nginx_dir = get_nginx_dir()?;
     let include_path = nginx_dir.join("*.conf");
