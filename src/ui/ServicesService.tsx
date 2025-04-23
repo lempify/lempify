@@ -2,9 +2,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { RepairStatus, ServiceCardProps } from "../types";
 import Button from "./Button";
-import SvgNginx from "./ServiceSvgNginx";
-import SvgMysql from "./ServiceSvgMysql";
-import SvgPhp from "./ServiceSvgPhp";
+import SvgNginx from "./ServicesSvgNginx";
+import SvgMysql from "./ServicesSvgMysql";
+import SvgPhp from "./ServicesSvgPhp";
 import { useService } from "../context/ServicesProvider";
 
 const icons = {
@@ -13,7 +13,7 @@ const icons = {
   php: SvgPhp,
 };
 
-const ServiceStatusIcon = ({ name, running }: { name: string; running: boolean }) => {
+const ServicesStatusIcon = ({ name, running }: { name: string; running: boolean }) => {
   const Icon = icons[name as keyof typeof icons];
   return (
     <p className="flex items-center mb-2 gap-2 text-sm text-neutral-700 dark:text-neutral-300">
@@ -72,7 +72,7 @@ const ServicesService = ({
 
   return (
     <li className={`inline-block p-2 ${serviceRequestStatus === "pending" ? 'animate-pulse duration-200 pointer-events-none' : ''}`}>
-      <ServiceStatusIcon name={service.name } running={service.running} />
+      <ServicesStatusIcon name={service.name } running={service.running} />
       <div className="flex gap-[1px]">
         {!service.installed ? <Button className={btnCss} onClick={() => install(service.name)}>Install</Button> : <>
           {service.installed && !service.running && <Button className={btnCss} onClick={() => start(service.name)}>Start</Button>}

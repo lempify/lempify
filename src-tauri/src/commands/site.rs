@@ -4,8 +4,8 @@ use tauri::command;
 use crate::{
     helpers::{
         hosts::{add_host_entry, remove_host_entry},
-        nginx::generate_nginx_config_template,
-        paths::{get_certs_dir, get_nginx_dir, get_sites_dir},
+        nginx::{generate_nginx_config_template, restart_nginx},
+        paths::{get_certs_dir, get_nginx_dir, get_sites_dir}, ssl::secure_site,
     },
     models::service::SiteCreatePayload,
 };
@@ -16,9 +16,10 @@ pub async fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
     let nginx_config_dir = get_nginx_dir()?;
     let certs_dir = get_certs_dir()?;
 
-    // Get site name and convert to lowercase
+    // Parse domain to name and tld.
     let site_name = &payload.domain.to_lowercase();
-    let (domain, tld) = site_name.split_once('.').unwrap();
+    let (domain, tld) = site_name.split_once('.')
+        .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
 
     println!("Payload: {:?}", payload);
     println!("Domain: {}", domain);
@@ -26,10 +27,6 @@ pub async fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
     println!("Certs Dir: {}", certs_dir.display());
     println!("Nginx Config Dir: {}", nginx_config_dir.display());
     println!("Sites Dir: {}", sites_dir.display());
-
-    // if filtered.len() != 2 {
-    //     return Err("Invalid site name. Please use the format 'example.test'.".to_string());
-    // }
 
     let site_path = sites_dir.join(site_name);
     if site_path.exists() {
@@ -53,18 +50,16 @@ pub async fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
     }
 
     let config_contents = generate_nginx_config_template(domain, &tld, &site_path);
+
     println!("Writing config: {}", config_path.display());
     fs::write(&config_path, config_contents)
         .map_err(|e| format!("Failed to write config: {}", e))?;
 
     add_host_entry(&format!("{}.{}", domain, tld), "127.0.0.1")?;
 
-    // Restart NGINX
-    println!("Restarting nginx");
-    std::process::Command::new("brew")
-        .args(&["services", "restart", "nginx"])
-        .status()
-        .map_err(|e| format!("Failed to restart nginx: {}", e))?;
+    if payload.ssl {
+        secure_site(&format!("{domain}.{tld}"))?;
+    }
 
     Ok(format!("{domain}.{tld}"))
 }
@@ -95,10 +90,7 @@ pub async fn delete_site(domain: String) -> Result<String, String> {
     remove_host_entry(&domain)?;
 
     // Restart NGINX
-    std::process::Command::new("brew")
-        .args(&["services", "restart", "nginx"])
-        .status()
-        .map_err(|e| format!("Failed to restart nginx: {}", e))?;
+    restart_nginx()?;
 
     Ok(format!("Deleted site: {}", domain))
 }

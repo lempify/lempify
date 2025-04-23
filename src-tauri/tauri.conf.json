@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "lempify",
+  "productName": "Lempify",
   "version": "0.1.0",
   "identifier": "com.lempify.app",
   "build": {
@@ -12,11 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "lempify",
-        "width": 1600,
-        "height": 1200
+        "title": "Lempify",
+        "width": 1200,
+        "height": 800,
+        "center": true
       }
     ],
+    "macOSPrivateApi": true,
     "security": {
       "csp": null
     }

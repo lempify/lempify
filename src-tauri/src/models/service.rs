@@ -19,10 +19,8 @@ pub struct ServiceStatus {
 #[derive(Debug, Deserialize)]
 pub struct SiteCreatePayload {
     pub domain: String,
+    pub site_type: String,
     pub ssl: bool,
-    pub laravel: bool,
-    pub wordpress: bool,
-    // pub tld: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -32,6 +30,7 @@ pub struct SiteInfo {
     pub exists: bool,
     pub in_hosts: bool,
     pub config_path: String,
+    pub is_ssl: bool,
 }
 
 impl SiteInfo {
@@ -41,6 +40,7 @@ impl SiteInfo {
         exists: Option<bool>,
         in_hosts: Option<bool>,
         config_path: Option<String>,
+        is_ssl: Option<bool>,
     ) -> Self {
         let safe_domain = domain.unwrap_or_else(|| name.clone());
         Self {
@@ -49,6 +49,7 @@ impl SiteInfo {
             exists: exists.unwrap_or(false),
             in_hosts: in_hosts.unwrap_or(false),
             config_path: config_path.unwrap_or_else(|| String::new()),
+            is_ssl: is_ssl.unwrap_or(false),
         }
     }
 }

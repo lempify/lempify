@@ -1,6 +1,7 @@
 use std::fs;
 
 use crate::helpers::constants::HOSTS_PATH;
+use crate::helpers::osascript;
 
 pub fn _list_host_entries() -> Result<Vec<String>, String> {
     let contents =
@@ -25,22 +26,10 @@ pub fn add_host_entry(domain: &str, ip: &str) -> Result<(), String> {
 
     // macOS-specific sudo prompt
     if cfg!(target_os = "macos") {
-        let script = format!(
-            r#"do shell script "echo '{}' | sudo tee -a {}" with administrator privileges"#,
-            entry, HOSTS_PATH
-        );
-
-        let status = std::process::Command::new("osascript")
-            .arg("-e")
-            .arg(script)
-            .status()
-            .map_err(|e| format!("osascript failed: {}", e))?;
-
-        if status.success() {
-            return Ok(());
-        } else {
-            return Err("osascript failed or user denied permissions".into());
-        }
+        return Ok(osascript::run(
+            &format!("echo '{}' | sudo tee -a {}", entry, HOSTS_PATH),
+            Some(&format!("Lempify needs permission to add {} to your hosts file.", domain))
+        )?);
     }
 
     Err("Adding host entries is not implemented for this OS yet.".into())
@@ -59,23 +48,10 @@ pub fn remove_host_entry(domain: &str) -> Result<(), String> {
     let new_contents = filtered.join("\n");
 
     if cfg!(target_os = "macos") {
-        let script = format!(
-            r#"do shell script "echo '{}' | sudo tee {}" with administrator privileges"#,
-            new_contents.replace('"', "\\\""),
-            HOSTS_PATH
-        );
-
-        let status = std::process::Command::new("osascript")
-            .arg("-e")
-            .arg(script)
-            .status()
-            .map_err(|e| format!("osascript failed: {}", e))?;
-
-        if status.success() {
-            return Ok(());
-        } else {
-            return Err("osascript failed or user denied permissions".into());
-        }
+        return Ok(osascript::run(
+            &format!("echo '{}' | sudo tee {}", new_contents.replace('"', "\\\""), HOSTS_PATH), 
+            Some(&format!("Lempify needs permission to remove {} from your hosts file.", domain))
+        )?);
     }
 
     Err("Removing host entries is not implemented for this OS yet.".into())

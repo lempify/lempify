@@ -4,6 +4,7 @@ use tauri::command;
 use crate::helpers::hosts::is_host_entry_exists;
 use crate::helpers::nginx::generate_nginx_config_template;
 use crate::helpers::paths::{get_nginx_dir, get_sites_dir};
+use crate::helpers::ssl::has_ssl;
 use crate::models::service::{ServiceType, SiteInfo};
 
 use super::start_stop::restart_service;
@@ -38,5 +39,6 @@ pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
         Some(site_path.exists()),
         Some(is_host_entry_exists(&domain)?),
         Some(config_path.display().to_string()),
+        Some(has_ssl(&domain).unwrap_or(false)),
     ))
 }
