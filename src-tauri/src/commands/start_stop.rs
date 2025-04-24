@@ -3,7 +3,7 @@ use tauri::command;
 use crate::commands::service_status::get_service_status;
 use crate::helpers::brew::{start_service as brew_start, stop_service as brew_stop};
 use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
-use crate::helpers::service::get_brew_formula;
+use crate::helpers::service_utils::get_brew_formula;
 use crate::models::service::{ServiceStatus, ServiceType};
 
 #[command]

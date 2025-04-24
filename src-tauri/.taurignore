@@ -1,0 +1,5 @@
+src/bin/lempifyd/**/*
+!src/bin/lempifyd/target/aarch64-apple-darwin/release/lempifyd
+!src/bin/lempifyd/target/x86_64-apple-darwin/release/lempifyd
+!src/bin/lempifyd/target/aarch64-apple-darwin/release/lempifyd-aarch64-apple-darwin
+!src/bin/lempifyd/target/x86_64-apple-darwin/release/lempifyd-x86_64-apple-darwin

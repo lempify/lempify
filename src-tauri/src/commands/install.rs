@@ -1,5 +1,5 @@
 use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
-use crate::helpers::service::{get_brew_formula, install_via_brew};
+use crate::helpers::service_utils::{get_brew_formula, install_via_brew};
 use crate::models::service::ServiceType;
 
 #[tauri::command]

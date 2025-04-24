@@ -18,12 +18,12 @@
         "center": true
       }
     ],
-    "macOSPrivateApi": true,
     "security": {
       "csp": null
     }
   },
   "bundle": {
+    "externalBin": ["src/bin/lempifyd/target/aarch64-apple-darwin/release/lempifyd"],
     "active": true,
     "targets": "all",
     "icon": [

@@ -9,6 +9,9 @@ mod ui;
 
 use error::Result;
 
+use tauri_plugin_shell::ShellExt;
+use tauri_plugin_shell::process::CommandEvent;
+
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
         eprintln!("⚠️ Failed to patch PATH: {}", e);
@@ -21,6 +24,7 @@ fn main() -> Result<()> {
     if let Ok(brew_path) = helpers::system::get_brew_path() {
         println!("🍺 brew found at: {}", brew_path);
     }
+
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -35,6 +39,24 @@ fn main() -> Result<()> {
                 if let Err(e) = ui::tray::setup_tray(app) {
                     eprintln!("⚠️ Failed to setup tray: {}", e);
                 }
+
+                /* Run lempifyd as a sidecar */
+
+                let sidecar_command = app.shell().sidecar("lempifyd").unwrap();
+                let (mut rx, mut _child) =
+                    sidecar_command.spawn().expect("Failed to spawn sidecar");  
+
+                tauri::async_runtime::spawn(async move {
+                    // read events such as stdout
+                    while let Some(event) = rx.recv().await {
+                        if let CommandEvent::Stdout(line_bytes) = event {
+                            let line = String::from_utf8_lossy(&line_bytes);
+                            println!("[lempifyd]: {}", line);
+                            // write to stdin
+                            _child.write("message from Rust\n".as_bytes()).unwrap();
+                        }
+                    }
+                });
             }
             Ok(())
         })
