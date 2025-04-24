@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "daemon:build": "node scripts/build-daemon.js",
+    "daemon:watch": "cd src-tauri/ && cargo watch -w src/bin/lempifyd -x 'build --release --target aarch64-apple-darwin -p lempifyd --manifest-path src/bin/lempifyd/Cargo.toml' -s 'node ../scripts/rename-daemon.js'",
+    "tauri:dev": "pnpm daemon:build && pnpm tauri dev"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

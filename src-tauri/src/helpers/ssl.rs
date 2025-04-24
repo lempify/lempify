@@ -1,12 +1,12 @@
 use crate::helpers::nginx::{restart_nginx, update_nginx_config_with_ssl};
 use crate::helpers::paths::get_certs_dir;
-use crate::helpers::service::install_via_brew;
+use crate::helpers::service_utils::install_via_brew;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
 
 use crate::helpers::osascript;
-use crate::helpers::service::is_installed;
+use crate::helpers::service_utils::is_installed;
 
 pub fn secure_site(domain: &str) -> Result<(), String> {
     if !is_installed("mkcert").unwrap_or(false) {
