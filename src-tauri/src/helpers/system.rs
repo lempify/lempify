@@ -21,9 +21,6 @@ pub fn patch_path() -> Result<()> {
     let joined = paths.join(":");
     env::set_var("PATH", &joined);
 
-    #[cfg(debug_assertions)]
-    println!("🐛 Final patched PATH: {}", joined);
-
     Ok(())
 }
 
