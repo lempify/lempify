@@ -23,7 +23,7 @@
     }
   },
   "bundle": {
-    "externalBin": ["src/bin/lempifyd/target/aarch64-apple-darwin/release/lempifyd"],
+    "externalBin": ["target/aarch64-apple-darwin/release/lempifyd"],
     "active": true,
     "targets": "all",
     "icon": [
