@@ -9,13 +9,12 @@
  */
 
 import { execSync } from "child_process";
-import { SUPPORTED_OSS, LEMPIFYD_DIR } from "./constants.ts";
+import { RELEASE_DIR, SUPPORTED_OSS } from "./constants.ts";
 
 try {
     SUPPORTED_OSS.forEach(platform => {
-        // Rename the daemon for the given supported OS.
         execSync(
-            `mv ${LEMPIFYD_DIR}/target/${platform}/release/lempifyd ${LEMPIFYD_DIR}/target/${platform}/release/lempifyd-${platform}`
+            `cp ${RELEASE_DIR}/${platform}/release/lempifyd ${RELEASE_DIR}/${platform}/release/lempifyd-${platform}`
         );
         console.log(`[lempifyd]: Renamed for ${platform}`);
     });

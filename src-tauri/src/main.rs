@@ -53,7 +53,12 @@ fn main() -> Result<()> {
                             let line = String::from_utf8_lossy(&line_bytes);
                             println!("[lempifyd]: {}", line);
                             // write to stdin
-                            _child.write("message from Rust\n".as_bytes()).unwrap();
+                            let msg = serde_json::json!({
+                                "action": "start_php",
+                                "version": "8.3"
+                            });
+                            _child.write(msg.to_string().as_bytes()).unwrap();
+                            _child.write(b"\n").unwrap(); // important to ensure daemon reads the line
                         }
                     }
                 });
