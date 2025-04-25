@@ -8,9 +8,11 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "daemon:build": "node scripts/build-daemon.js",
-    "daemon:watch": "cd src-tauri/ && cargo watch -w src/bin/lempifyd -x 'build --release --target aarch64-apple-darwin -p lempifyd --manifest-path src/bin/lempifyd/Cargo.toml' -s 'node ../scripts/rename-daemon.js'",
-    "tauri:dev": "pnpm daemon:build && pnpm tauri dev"
+    "lempifyd": "pnpm lempifyd:build && pnpm lempifyd:rename",
+    "lempifyd:build": "node scripts/lempifyd-build.ts",
+    "lempifyd:rename": "node scripts/lempifyd-rename.ts",
+    "lempifyd:watch": "cd src-tauri/ && cargo watch -w src/bin/lempifyd -x 'build --release --target aarch64-apple-darwin -p lempifyd --manifest-path src/bin/lempifyd/Cargo.toml' -s 'pnpm lempifyd:rename'",
+    "lempify:dev": "pnpm lempifyd:build && pnpm tauri dev"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.5.10",
@@ -24,11 +26,13 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.4",
     "@tauri-apps/cli": "^2.5.0",
+    "@types/node": "^22.15.2",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
     "tailwindcss": "^4.1.3",
     "typescript": "~5.6.2",
     "vite": "^6.3.3"
-  }
+  },
+  "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
 }
