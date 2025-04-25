@@ -20,4 +20,3 @@ dirs = "6.0.0"
 tauri-plugin-shell = "2.2.1"
 whoami = "1.6.0"
 which = "7.0.3"
-
