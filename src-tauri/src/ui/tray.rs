@@ -1,3 +1,4 @@
+
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder},
@@ -6,6 +7,7 @@ use tauri::{
 
 use crate::error::Result;
 
+#[allow(dead_code)]
 pub fn setup_tray(app: &mut App) -> Result<()> {
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)
         .map_err(|e| crate::error::LempifyError::SystemError(e.to_string()))?;
