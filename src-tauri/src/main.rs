@@ -10,7 +10,8 @@ mod ui;
 use error::Result;
 
 use tauri_plugin_shell::ShellExt;
-use tauri_plugin_shell::process::CommandEvent;
+
+use helpers::ipc::send_to_lempifyd;
 
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
@@ -25,44 +26,18 @@ fn main() -> Result<()> {
         println!("🍺 brew found at: {}", brew_path);
     }
 
+    send_to_lempifyd("start_php");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                // let window = app.get_webview_window("main").unwrap();
-                // window.open_devtools();
-                // window.close_devtools();
-
-                if let Err(e) = ui::tray::setup_tray(app) {
-                    eprintln!("⚠️ Failed to setup tray: {}", e);
-                }
-
-                /* Run lempifyd as a sidecar */
-
-                let sidecar_command = app.shell().sidecar("lempifyd").unwrap();
-                let (mut rx, mut _child) =
-                    sidecar_command.spawn().expect("Failed to spawn sidecar");  
-
-                tauri::async_runtime::spawn(async move {
-                    // read events such as stdout
-                    while let Some(event) = rx.recv().await {
-                        if let CommandEvent::Stdout(line_bytes) = event {
-                            let line = String::from_utf8_lossy(&line_bytes);
-                            println!("[lempifyd]: {}", line);
-                            // write to stdin
-                            let msg = serde_json::json!({
-                                "action": "start_php",
-                                "version": "8.3"
-                            });
-                            _child.write(msg.to_string().as_bytes()).unwrap();
-                            _child.write(b"\n").unwrap(); // important to ensure daemon reads the line
-                        }
-                    }
-                });
-            }
+            let _child = app
+                .shell()
+                .sidecar("lempifyd")
+                .expect("❌ Could not prepare lempifyd sidecar")
+                .spawn()
+                .expect("❌ Could not start lempifyd daemon");
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

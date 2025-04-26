@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub trait ServiceController {
     fn name(&self) -> &'static str;
 

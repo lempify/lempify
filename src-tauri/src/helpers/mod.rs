@@ -8,3 +8,4 @@ pub mod service_utils;
 pub mod ssl;
 pub mod system;
 pub mod osascript;
+pub mod ipc;

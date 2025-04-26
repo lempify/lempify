@@ -1,8 +1,16 @@
-mod ipc;
-use ipc::server::start_ipc_server;
+mod helpers;
+mod service;
+
+use helpers::ipc;
 
 fn main() {
-    println!("🚀 lempifyd booting up...");
-    let socket_path = "/tmp/lempifyd.sock";
-    start_ipc_server(socket_path).expect("IPC server failed");
+    println!("🚀 Starting Lempify Daemon");
+
+    // Start IPC server
+    ipc::start_ipc_server();
+
+    // Dummy infinite loop to keep daemon alive
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(10));
+    }
 }
