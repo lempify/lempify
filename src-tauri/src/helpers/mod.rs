@@ -1,11 +1,11 @@
 pub mod brew;
 pub mod constants;
 pub mod hosts;
+pub mod lempifyd;
 pub mod nginx;
+pub mod osascript;
 pub mod paths;
 pub mod php;
 pub mod service_utils;
 pub mod ssl;
 pub mod system;
-pub mod osascript;
-pub mod ipc;

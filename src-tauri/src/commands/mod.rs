@@ -4,5 +4,5 @@ pub mod repair;
 pub mod service_status;
 pub mod site;
 pub mod sites;
-pub mod start_stop;
 pub mod ssl;
+pub mod start_stop;

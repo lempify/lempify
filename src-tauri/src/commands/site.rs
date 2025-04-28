@@ -5,7 +5,8 @@ use crate::{
     helpers::{
         hosts::{add_host_entry, remove_host_entry},
         nginx::{generate_nginx_config_template, restart_nginx},
-        paths::{get_certs_dir, get_nginx_dir, get_sites_dir}, ssl::secure_site,
+        paths::{get_certs_dir, get_nginx_dir, get_sites_dir},
+        ssl::secure_site,
     },
     models::service::SiteCreatePayload,
 };

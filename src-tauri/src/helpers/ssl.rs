@@ -12,13 +12,10 @@ pub fn secure_site(domain: &str) -> Result<(), String> {
     if !is_installed("mkcert").unwrap_or(false) {
         println!("MkCert not installed, installing...");
         install_via_brew("mkcert").map_err(|e| format!("Failed to install mkcert: {}", e))?;
-        
+
         println!("MkCert installed, installing CA...");
-        let output = Command::new("mkcert")
-        .arg("-CAROOT")
-        .output()
-        .ok();
-    
+        let output = Command::new("mkcert").arg("-CAROOT").output().ok();
+
         if let Some(out) = output {
             println!("MkCert installed, installing CA...");
             let ca_path = String::from_utf8_lossy(&out.stdout).trim().to_string();

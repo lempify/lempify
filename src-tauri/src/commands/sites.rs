@@ -1,7 +1,10 @@
 use tauri::command;
 
 use crate::{
-    helpers::{paths::{get_nginx_dir, get_sites_dir}, ssl::has_ssl},
+    helpers::{
+        paths::{get_nginx_dir, get_sites_dir},
+        ssl::has_ssl,
+    },
     models::service::SiteInfo,
 };
 
