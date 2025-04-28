@@ -2,12 +2,16 @@ use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::thread;
 
-/// Socket file path
-pub const SOCKET_PATH: &str = "/tmp/lempifyd.sock";
+use crate::helpers::constants::SOCKET_PATH;
 
-/// Start the IPC server
+/**
+ * Start the IPC server
+ * 
+ * 1. Clean old socket if needed
+ * 2. Start listening thread first
+ * 3. Then send ready signal
+ */
 pub fn start_ipc_server() {
-    // Clean old socket if needed
     let _ = std::fs::remove_file(SOCKET_PATH);
 
     let listener = UnixListener::bind(SOCKET_PATH)
@@ -22,6 +26,11 @@ pub fn start_ipc_server() {
             }
         }
     });
+
+    if let Ok(mut stream) = UnixStream::connect(SOCKET_PATH) {
+        let _ = stream.write_all(b"READY");
+        let _ = stream.flush();
+    }
 }
 
 /// Handle a client connection
@@ -30,13 +39,6 @@ fn handle_client(stream: UnixStream) {
 
     let mut line = String::new();
     if let Ok(_bytes_read) = reader.read_line(&mut line) {
-        println!("📩 Received from GUI: {}", line.trim());
-        // TODO: You can match JSON actions here
+        println!("{}", line.trim());
     }
-}
-
-/// Optional: Helper for daemon to send messages back (not needed if GUI is just a client)
-pub fn _send_response(mut stream: UnixStream, message: &str) {
-    let _ = stream.write_all(message.as_bytes());
-    let _ = stream.flush();
 }

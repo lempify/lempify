@@ -4,13 +4,15 @@ mod service;
 use helpers::ipc;
 
 fn main() {
-    println!("🚀 Starting Lempify Daemon");
+    println!("[lempifyd]: starting");
+    println!("[lempifyd]: process id: {}", std::process::id());
 
     // Start IPC server
     ipc::start_ipc_server();
 
     // Dummy infinite loop to keep daemon alive
     loop {
+        println!("[lempifyd]: heartbeat");
         std::thread::sleep(std::time::Duration::from_secs(10));
     }
 }

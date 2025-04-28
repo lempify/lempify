@@ -26,18 +26,39 @@ fn main() -> Result<()> {
         println!("🍺 brew found at: {}", brew_path);
     }
 
-    send_to_lempifyd("start_php");
-
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            let _child = app
+            // Start the sidecar daemon
+            let sidecar = app
                 .shell()
                 .sidecar("lempifyd")
-                .expect("❌ Could not prepare lempifyd sidecar")
-                .spawn()
-                .expect("❌ Could not start lempifyd daemon");
+                .expect("❌ Could not prepare lempifyd sidecar");
+
+            let (mut rx, _child) = sidecar.spawn().expect("❌ Could not start lempifyd daemon");
+
+            tauri::async_runtime::spawn(async move {
+                while let Some(event) = rx.recv().await {
+                    match event {
+                        tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
+                            if let Ok(s) = String::from_utf8(line) {
+                                println!("[lempifyd]: stdout: {}", s);
+                                if s.trim() == "READY" {
+                                    send_to_lempifyd("start_php");
+                                }
+                            }
+                        }
+                        tauri_plugin_shell::process::CommandEvent::Stderr(line) => {
+                            if let Ok(s) = String::from_utf8(line) {
+                                eprintln!("[lempifyd]: stderr: {}", s);
+                            }
+                        }
+                        _ => println!("[lempifyd]: other event: {:?}", event),
+                    }
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
