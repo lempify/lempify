@@ -1,5 +1,7 @@
 use crate::helpers::brew::is_service_running;
-use crate::helpers::service_utils::{get_brew_formula, get_version, get_version_args, is_installed};
+use crate::helpers::service_utils::{
+    get_brew_formula, get_version, get_version_args, is_installed,
+};
 use crate::models::service::{ServiceStatus, ServiceType};
 
 #[tauri::command]

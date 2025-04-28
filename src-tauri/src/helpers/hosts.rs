@@ -28,7 +28,10 @@ pub fn add_host_entry(domain: &str, ip: &str) -> Result<(), String> {
     if cfg!(target_os = "macos") {
         return Ok(osascript::run(
             &format!("echo '{}' | sudo tee -a {}", entry, HOSTS_PATH),
-            Some(&format!("Lempify needs permission to add {} to your hosts file.", domain))
+            Some(&format!(
+                "Lempify needs permission to add {} to your hosts file.",
+                domain
+            )),
         )?);
     }
 
@@ -49,8 +52,15 @@ pub fn remove_host_entry(domain: &str) -> Result<(), String> {
 
     if cfg!(target_os = "macos") {
         return Ok(osascript::run(
-            &format!("echo '{}' | sudo tee {}", new_contents.replace('"', "\\\""), HOSTS_PATH), 
-            Some(&format!("Lempify needs permission to remove {} from your hosts file.", domain))
+            &format!(
+                "echo '{}' | sudo tee {}",
+                new_contents.replace('"', "\\\""),
+                HOSTS_PATH
+            ),
+            Some(&format!(
+                "Lempify needs permission to remove {} from your hosts file.",
+                domain
+            )),
         )?);
     }
 

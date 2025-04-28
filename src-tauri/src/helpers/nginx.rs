@@ -105,7 +105,7 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
         .map_err(|e| format!("Failed to read nginx config: {}", e))?;
 
     let mut patched_lines = vec![];
-        
+
     for line in contents.lines() {
         let trimmed = line.trim();
 
@@ -120,11 +120,11 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
     }
 
     let patched = patched_lines.join("\n");
-    
+
     fs::write(nginx_config_path, patched)
         .map_err(|e| format!("Failed to write patched nginx config: {}", e))?;
 
-    Ok(())  
+    Ok(())
 }
 
 /**

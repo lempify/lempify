@@ -11,7 +11,7 @@ use error::Result;
 
 use tauri_plugin_shell::ShellExt;
 
-use helpers::ipc::send_to_lempifyd;
+use helpers::lempifyd;
 
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
@@ -44,8 +44,8 @@ fn main() -> Result<()> {
                         tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
                             if let Ok(s) = String::from_utf8(line) {
                                 println!("[lempifyd]: stdout: {}", s);
-                                if s.trim() == "READY" {
-                                    send_to_lempifyd("start_php");
+                                if s.contains("READY") {
+                                    lempifyd::send("start_php");
                                 }
                             }
                         }
