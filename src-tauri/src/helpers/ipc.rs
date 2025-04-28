@@ -1,5 +1,5 @@
-use std::os::unix::net::UnixStream;
 use std::io::Write;
+use std::os::unix::net::UnixStream;
 
 pub fn send_to_lempifyd(action: &str) {
     if let Ok(mut stream) = UnixStream::connect("/tmp/lempifyd.sock") {
