@@ -1,5 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
+)]
 
 mod commands;
 mod error;
@@ -9,9 +12,8 @@ mod ui;
 
 use error::Result;
 
+use tauri::{RunEvent, WindowEvent, menu::MenuBuilder};
 use tauri_plugin_shell::ShellExt;
-
-use helpers::lempifyd;
 
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
@@ -26,11 +28,11 @@ fn main() -> Result<()> {
         println!("🍺 brew found at: {}", brew_path);
     }
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            // Start the sidecar daemon
+            /* Start - lempifyd daemon */
             let sidecar = app
                 .shell()
                 .sidecar("lempifyd")
@@ -45,7 +47,8 @@ fn main() -> Result<()> {
                             if let Ok(s) = String::from_utf8(line) {
                                 println!("[lempifyd]: stdout: {}", s);
                                 if s.contains("READY") {
-                                    lempifyd::send("start_php");
+                                    // lempifyd::send("start_php");
+                                    println!("Daemon READY");
                                 }
                             }
                         }
@@ -58,9 +61,36 @@ fn main() -> Result<()> {
                     }
                 }
             });
+            /* End - lempifyd daemon */
+
+            /* Test */
+            let menu = MenuBuilder::new(app)
+                .text("open", "Open")
+                .text("close", "Close")
+                .build()?;
+
+            app.set_menu(menu)?;
+
+            app.on_menu_event(move |app_handle: &tauri::AppHandle, event| {
+                println!("menu event: {:?}", event.id());
+
+                match event.id().0.as_str() {
+                    "open" => {
+                        println!("open event");
+                    }
+                    "close" => {
+                        println!("close event");
+                    }
+                    _ => {
+                        println!("unexpected menu event");
+                    }
+                }
+            });
 
             Ok(())
-        })
+        });
+
+    let app = builder
         .invoke_handler(tauri::generate_handler![
             commands::service_status::get_service_status,
             commands::install::install_service,
@@ -73,9 +103,30 @@ fn main() -> Result<()> {
             commands::site::delete_site,
             commands::nginx::generate_nginx_config,
             commands::ssl::add_ssl,
+            commands::control_service::control_service,
         ])
-        .run(tauri::generate_context!())
-        .map_err(|e| error::LempifyError::SystemError(e.to_string()))?;
+        //.menu(tauri::Menu::os_default(&tauri::generate_context!().package_info().name))
+        .build(tauri::generate_context!())
+        .expect("❌ Could not build application");
+
+    app.run(move |_app_handle, _event| match &_event {
+        RunEvent::ExitRequested { .. } => {
+            println!("ExitRequested fired!");
+        }
+        RunEvent::Exit => {
+            println!("Exit fired!"); // Fires on; X click and CMD+Q
+        }
+        RunEvent::MenuEvent(menu_event) if menu_event.id() == "quit" => {
+            println!("MenuEvent fired!");
+        }
+        RunEvent::WindowEvent {
+            event: WindowEvent::CloseRequested { .. },
+            ..
+        } => {
+            println!("CloseRequested fired!");
+        }
+        _ => (),
+    });
 
     Ok(())
 }
