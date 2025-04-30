@@ -1,23 +1,23 @@
-use std::io::{BufRead, BufReader, Write};
-use std::os::unix::net::{UnixListener, UnixStream};
+use crate::service::get_all_services;
+
 use std::thread;
+use serde::Deserialize;
+use std::io::{BufRead, BufReader};
+use std::os::unix::net::{UnixListener, UnixStream};
 
-use crate::helpers::constants::SOCKET_PATH;
+#[derive(Debug, Deserialize)]
+pub struct DaemonCommand {
+    pub service: String,
+    pub action: String,
+}
 
-/**
- * Start the IPC server
- * 
- * 1. Clean old socket if needed
- * 2. Start listening thread first
- * 3. Then send ready signal
- */
 pub fn start_server() {
-    let _ = std::fs::remove_file(SOCKET_PATH);
+    let _ = std::fs::remove_file("/tmp/lempifyd.sock");
 
-    let listener = UnixListener::bind(SOCKET_PATH)
+    let listener = UnixListener::bind("/tmp/lempifyd.sock")
         .expect("Failed to bind IPC socket");
 
-    println!("🛜 Listening for IPC on {}", SOCKET_PATH);
+    println!("✅ IPC server started at /tmp/lempifyd.sock");
 
     thread::spawn(move || {
         for stream in listener.incoming() {
@@ -26,20 +26,45 @@ pub fn start_server() {
             }
         }
     });
-
-    if let Ok(mut stream) = UnixStream::connect(SOCKET_PATH) {
-        let _ = stream.write_all(b"READY");
-        let _ = stream.flush();
-    }
 }
 
-/**
- * Handle a client connection
- */
 fn handle_client(stream: UnixStream) {
-    let mut reader = BufReader::new(stream.try_clone().unwrap());
+    let mut reader = BufReader::new(stream);
     let mut line = String::new();
-    if let Ok(_bytes_read) = reader.read_line(&mut line) {
-        println!("{}", line.trim());
+
+    if let Ok(_) = reader.read_line(&mut line) {
+        match serde_json::from_str::<DaemonCommand>(&line) {
+            Ok(cmd) => {
+                println!("🛠 Handling command: {:?}", cmd);
+
+                let service = get_all_services()
+                    .into_iter()
+                    .find(|s| s.name() == cmd.service);
+
+                if let Some(svc) = service {
+                    match cmd.action.as_str() {
+                        "start" => {
+                            if let Err(e) = svc.start() {
+                                eprintln!("❌ Start failed: {}", e);
+                            }
+                        }
+                        "stop" => {
+                            if let Err(e) = svc.stop() {
+                                eprintln!("❌ Stop failed: {}", e);
+                            }
+                        }
+                        "restart" => {
+                            if let Err(e) = svc.restart() {
+                                eprintln!("❌ Restart failed: {}", e);
+                            }
+                        }
+                        _ => eprintln!("❓ Unknown action: {}", cmd.action),
+                    }
+                } else {
+                    eprintln!("🚫 Unknown service: {}", cmd.service);
+                }
+            }
+            Err(e) => eprintln!("❌ Invalid JSON: {:?}", e),
+        }
     }
 }

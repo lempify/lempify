@@ -7,6 +7,7 @@ pub trait ServiceController {
 
     fn start(&self) -> Result<(), String>;
     fn stop(&self) -> Result<(), String>;
+
     fn restart(&self) -> Result<(), String> {
         self.stop()?;
         self.start()

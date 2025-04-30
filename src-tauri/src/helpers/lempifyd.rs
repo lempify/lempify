@@ -1,14 +1,22 @@
-use std::io::Write;
+use serde::{Serialize, Deserialize};
 use std::os::unix::net::UnixStream;
+use std::io::Write;
 
-pub fn send(action: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let mut stream = UnixStream::connect("/tmp/lempifyd.sock")?;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DaemonCommand {
+    pub service: String,
+    pub action: String,
+}
 
-    let json_payload = serde_json::to_string(cmd)?;
-    let payload = format!("{}\n", json_payload);
+pub fn send(cmd: &DaemonCommand) -> Result<(), String> {
+    let mut stream = UnixStream::connect("/tmp/lempifyd.sock")
+        .map_err(|e| format!("❌ Could not connect to daemon: {}", e))?;
 
-    stream.write_all(payload.as_bytes())?;
-    stream.flush()?;
+    let json_payload = serde_json::to_string(cmd).map_err(|e| e.to_string())?;
+    let payload = format!("{}\n", json_payload); // newline-delimited JSON
+
+    stream.write_all(payload.as_bytes()).map_err(|e| e.to_string())?;
+    stream.flush().map_err(|e| e.to_string())?;
 
     Ok(())
 }
