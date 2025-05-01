@@ -6,4 +6,4 @@ pub mod site;
 pub mod sites;
 pub mod ssl;
 pub mod start_stop;
-pub mod control_service;
+pub mod lempifyd;
