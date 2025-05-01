@@ -12,8 +12,7 @@ mod ui;
 
 use error::Result;
 
-use tauri::{RunEvent, WindowEvent, menu::MenuBuilder};
-use tauri_plugin_shell::ShellExt;
+use tauri::{RunEvent, WindowEvent};
 
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
@@ -32,61 +31,10 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            /* Start - lempifyd daemon */
-            let sidecar = app
-                .shell()
-                .sidecar("lempifyd")
-                .expect("❌ Could not prepare lempifyd sidecar");
-
-            let (mut rx, _child) = sidecar.spawn().expect("❌ Could not start lempifyd daemon");
-
-            tauri::async_runtime::spawn(async move {
-                while let Some(event) = rx.recv().await {
-                    match event {
-                        tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
-                            if let Ok(s) = String::from_utf8(line) {
-                                println!("[lempifyd]: stdout: {}", s);
-                                if s.contains("READY") {
-                                    // lempifyd::send("start_php");
-                                    println!("Daemon READY");
-                                }
-                            }
-                        }
-                        tauri_plugin_shell::process::CommandEvent::Stderr(line) => {
-                            if let Ok(s) = String::from_utf8(line) {
-                                eprintln!("[lempifyd]: stderr: {}", s);
-                            }
-                        }
-                        _ => println!("[lempifyd]: other event: {:?}", event),
-                    }
-                }
-            });
-            /* End - lempifyd daemon */
-
-            /* Test */
-            let menu = MenuBuilder::new(app)
-                .text("open", "Open")
-                .text("close", "Close")
-                .build()?;
-
-            app.set_menu(menu)?;
-
-            app.on_menu_event(move |app_handle: &tauri::AppHandle, event| {
-                println!("menu event: {:?}", event.id());
-
-                match event.id().0.as_str() {
-                    "open" => {
-                        println!("open event");
-                    }
-                    "close" => {
-                        println!("close event");
-                    }
-                    _ => {
-                        println!("unexpected menu event");
-                    }
-                }
-            });
-
+            // Start - lempifyd daemon
+            helpers::sidecar::spawn(helpers::sidecar::start(&app))?;
+            // Build - menu
+            ui::menu::build(&app)?;
             Ok(())
         });
 
@@ -103,13 +51,13 @@ fn main() -> Result<()> {
             commands::site::delete_site,
             commands::nginx::generate_nginx_config,
             commands::ssl::add_ssl,
-            commands::control_service::control_service,
+            commands::lempifyd::lempifyd,
         ])
         //.menu(tauri::Menu::os_default(&tauri::generate_context!().package_info().name))
         .build(tauri::generate_context!())
         .expect("❌ Could not build application");
 
-    app.run(move |_app_handle, _event| match &_event {
+    app.run(move |_app_handle, _event| match _event {
         RunEvent::ExitRequested { .. } => {
             println!("ExitRequested fired!");
         }

@@ -7,5 +7,6 @@ pub mod osascript;
 pub mod paths;
 pub mod php;
 pub mod service_utils;
+pub mod sidecar;
 pub mod ssl;
 pub mod system;
