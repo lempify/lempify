@@ -4,6 +4,7 @@ use std::thread;
 use serde::Deserialize;
 use std::io::{BufRead, BufReader};
 use std::os::unix::net::{UnixListener, UnixStream};
+use std::fs;
 
 #[derive(Debug, Deserialize)]
 pub struct DaemonCommand {
@@ -12,12 +13,18 @@ pub struct DaemonCommand {
 }
 
 pub fn start_server() {
-    let _ = std::fs::remove_file("/tmp/lempifyd.sock");
+    // Clean up any existing socket file
+    let socket_path = "/tmp/lempifyd.sock";
+    if let Err(e) = fs::remove_file(socket_path) {
+        if e.kind() != std::io::ErrorKind::NotFound {
+            eprintln!("⚠️ Failed to remove existing socket: {}", e);
+        }
+    }
 
-    let listener = UnixListener::bind("/tmp/lempifyd.sock")
+    let listener = UnixListener::bind(socket_path)
         .expect("Failed to bind IPC socket");
 
-    println!("✅ IPC server started at /tmp/lempifyd.sock");
+    println!("✅ IPC server started at {}", socket_path);
 
     thread::spawn(move || {
         for stream in listener.incoming() {
