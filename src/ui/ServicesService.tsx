@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
-import { RepairStatus, ServiceCardProps } from "../types";
+import { Statuses, ServiceCardProps } from "../types";
 import Button from "./Button";
 import SvgNginx from "./ServicesSvgNginx";
 import SvgMysql from "./ServicesSvgMysql";
@@ -29,7 +29,7 @@ const ServicesStatusIcon = ({ name, running }: { name: string; running: boolean 
 const ServicesService = ({
   service,
 }: ServiceCardProps) => {
-  const [repairStatus, setRepairStatus] = useState<RepairStatus>("idle");
+  const [repairStatus, setStatuses] = useState<Statuses>("idle");
 
   const { install, start, stop, restart, serviceRequestStatus } = useService(service.name);
 
@@ -37,19 +37,19 @@ const ServicesService = ({
   useEffect(() => {
     if (repairStatus === "pending") {
       invoke("repair_service", { service: service.name })
-        .then(() => setRepairStatus("fixed"))
-        .catch(() => setRepairStatus("error"));
+        .then(() => setStatuses("fixed"))
+        .catch(() => setStatuses("error"));
     }
 
     if (repairStatus === "fixed" || repairStatus === "error") {
-      const timeout = setTimeout(() => setRepairStatus("idle"), 3000);
+      const timeout = setTimeout(() => setStatuses("idle"), 3000);
       return () => clearTimeout(timeout);
     }
   }, [repairStatus, service.name]);
 
   const handleRepair = () => {
     if (repairStatus === "idle") {
-      setRepairStatus("pending");
+      setStatuses("pending");
     }
   };
 

@@ -7,9 +7,9 @@ export type ServiceStatus = {
   running: boolean;
 };
 
-export type InvokeStatus = null | "pending" | "success" | "error";
+export type Statuses = "idle" | "pending" | "success" | "error" | "fixed";
 
-export type RepairStatus = "idle" | "pending" | "fixed" | "error";
+export type InvokeStatus = null | "pending" | "success" | "error";
 
 export type SiteCreatePayload = {
   name: string;
