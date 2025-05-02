@@ -5,17 +5,18 @@ use crate::{
     helpers::{
         hosts::{add_host_entry, remove_host_entry},
         nginx::{generate_nginx_config_template, restart_nginx},
-        paths::{get_certs_dir, get_nginx_dir, get_sites_dir},
         ssl::secure_site,
     },
     models::service::SiteCreatePayload,
 };
 
+use shared::utils::paths;
+
 #[command]
 pub async fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
-    let sites_dir = get_sites_dir()?;
-    let nginx_config_dir = get_nginx_dir()?;
-    let certs_dir = get_certs_dir()?;
+    let sites_dir = paths::get_sites()?;
+    let nginx_config_dir = paths::get_nginx()?;
+    let certs_dir = paths::get_certs()?;
 
     // Parse domain to name and tld.
     let site_name = &payload.domain.to_lowercase();
@@ -69,8 +70,8 @@ pub async fn create_site(payload: SiteCreatePayload) -> Result<String, String> {
 pub async fn delete_site(domain: String) -> Result<String, String> {
     let domain = domain.to_string();
 
-    let sites_dir = get_sites_dir()?;
-    let nginx_config_dir = get_nginx_dir()?;
+    let sites_dir = paths::get_sites()?;
+    let nginx_config_dir = paths::get_nginx()?;
 
     let site_path = sites_dir.join(&domain);
     let config_path = nginx_config_dir.join(format!("{}.conf", domain));

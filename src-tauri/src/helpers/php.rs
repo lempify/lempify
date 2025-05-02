@@ -2,6 +2,8 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+use shared::utils::brew;
+
 /**
  * Is PHP running?
  *
@@ -10,11 +12,7 @@ use std::process::Command;
  * @return bool
  */
 pub fn is_php_running() -> bool {
-    let is_running = Command::new("brew")
-        .args(&["services", "list"])
-        .output()
-        .map(|o| String::from_utf8_lossy(&o.stdout).contains("php       started"))
-        .unwrap_or(false);
+    let is_running = brew::is_service_running("php");
 
     is_running
 }
@@ -50,10 +48,7 @@ pub fn ensure_php_socket_path_exists() -> Result<(), String> {
         if is_running {
             // ✅ Restart PHP to apply change
             println!("♻️ Restarting PHP service to apply socket path...");
-            Command::new("brew")
-                .args(&["services", "restart", "php"])
-                .status()
-                .map_err(|e| format!("Failed to restart PHP service: {}", e))?;
+            let _ = brew::restart_service("php");
         }
     } else {
         println!("✅ Verified PHP socket path exists and is owned by current user");

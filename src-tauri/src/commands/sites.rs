@@ -1,17 +1,16 @@
 use tauri::command;
 
 use crate::{
-    helpers::{
-        paths::{get_nginx_dir, get_sites_dir},
-        ssl::has_ssl,
-    },
+    helpers::ssl::has_ssl,
     models::service::SiteInfo,
 };
 
+use shared::utils::paths;
+
 #[command]
 pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
-    let sites_dir = get_sites_dir()?;
-    let nginx_dir = get_nginx_dir()?;
+    let sites_dir = paths::get_sites()?;
+    let nginx_dir = paths::get_nginx()?;
     let hosts = std::fs::read_to_string("/etc/hosts").unwrap_or_default();
 
     let mut sites = vec![];

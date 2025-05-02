@@ -1,5 +1,4 @@
 use crate::helpers::nginx::{restart_nginx, update_nginx_config_with_ssl};
-use crate::helpers::paths::get_certs_dir;
 use crate::helpers::service_utils::install_via_brew;
 use std::fs;
 use std::path::Path;
@@ -7,6 +6,8 @@ use std::process::Command;
 
 use crate::helpers::osascript;
 use crate::helpers::service_utils::is_installed;
+
+use shared::utils::paths;
 
 pub fn secure_site(domain: &str) -> Result<(), String> {
     if !is_installed("mkcert").unwrap_or(false) {
@@ -29,7 +30,7 @@ pub fn secure_site(domain: &str) -> Result<(), String> {
         }
     }
 
-    let certs_dir = get_certs_dir()?;
+    let certs_dir = paths::get_certs()?;
 
     if !certs_dir.exists() {
         fs::create_dir_all(&certs_dir)
@@ -64,7 +65,7 @@ pub fn secure_site(domain: &str) -> Result<(), String> {
 }
 
 pub fn has_ssl(domain: &str) -> Result<bool, String> {
-    let certs_dir = get_certs_dir()?;
+    let certs_dir = paths::get_certs()?;
     let cert_path = certs_dir.join(format!("{domain}.pem"));
     let key_path = certs_dir.join(format!("{domain}-key.pem"));
     Ok(cert_path.exists() && key_path.exists())

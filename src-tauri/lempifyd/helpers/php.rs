@@ -2,8 +2,10 @@ use std::fs;
 use std::path::PathBuf;
 use users::get_current_groupname;
 
-/// Generates a custom php-fpm.conf for the given version.
-/// Returns the path to the generated file.
+/**
+ * Generates a custom php-fpm.conf for the given version.
+ * Returns the path to the generated file.
+ */
 pub fn generate_fpm_config(version: &str) -> Result<PathBuf, String> {
     let home_dir = dirs::home_dir().ok_or("❌ Could not find home directory")?;
     let config_dir = home_dir.join(".lempify").join("php").join(version);
@@ -34,8 +36,6 @@ pm.max_spare_servers = 3
 "#,
         log_path.display(),
         socket_path,
-        // user = whoami::username(),
-        // group = get_current_groupname().unwrap_or_default().to_string_lossy()
     );
 
     if whoami::username() == "root" {
