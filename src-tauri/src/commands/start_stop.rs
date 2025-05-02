@@ -1,10 +1,11 @@
 use tauri::command;
 
-use crate::commands::service_status::get_service_status;
-use crate::helpers::brew::{start_service as brew_start, stop_service as brew_stop};
-use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
 use crate::helpers::service_utils::get_brew_formula;
+use crate::commands::service_status::get_service_status;
 use crate::models::service::{ServiceStatus, ServiceType};
+use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
+
+use shared::utils::brew;
 
 #[command]
 pub async fn start_service(service: ServiceType) -> Result<ServiceStatus, String> {
@@ -13,21 +14,21 @@ pub async fn start_service(service: ServiceType) -> Result<ServiceStatus, String
         ensure_php_socket_path_exists()?;
     }
     let formula = get_brew_formula(&service);
-    brew_start(formula)?;
+    brew::start_service(formula)?;
     Ok(get_service_status(service).await)
 }
 
 #[command]
 pub async fn stop_service(service: ServiceType) -> Result<ServiceStatus, String> {
     let formula = get_brew_formula(&service);
-    brew_stop(formula)?;
+    brew::stop_service(formula)?;
     Ok(get_service_status(service).await)
 }
 
 #[command]
 pub async fn restart_service(service: ServiceType) -> Result<ServiceStatus, String> {
     let formula = get_brew_formula(&service);
-    brew_stop(formula)?;
-    brew_start(formula)?;
+    brew::stop_service(formula)?;
+    brew::start_service(formula)?;
     Ok(get_service_status(service).await)
 }

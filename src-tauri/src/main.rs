@@ -10,9 +10,10 @@ mod helpers;
 mod models;
 mod ui;
 
+use tauri::{RunEvent, WindowEvent};
 use error::Result;
 
-use tauri::{RunEvent, WindowEvent};
+use crate::helpers::lempifyd;
 
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
@@ -32,7 +33,7 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             // Start - lempifyd daemon
-            helpers::sidecar::spawn(helpers::sidecar::start(&app))?;
+            lempifyd::spawn(lempifyd::sidecar(&app))?;
             // Build - menu
             ui::menu::build(&app)?;
             Ok(())

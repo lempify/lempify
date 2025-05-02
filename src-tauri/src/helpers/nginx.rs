@@ -1,12 +1,10 @@
-use std::{fs, path::Path, process::Command};
+use std::{fs, path::Path};
 
-use crate::helpers::paths::get_nginx_dir;
-
-use super::paths::get_certs_dir;
+use shared::utils::{brew, paths};
 
 pub fn add_lempify_to_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
-    let nginx_dir = get_nginx_dir()?;
+    let nginx_dir = paths::get_nginx()?;
     let include_path = nginx_dir.join("*.conf");
     let include_block = format!("# Lempify\n\tinclude {};", include_path.display());
 
@@ -14,7 +12,7 @@ pub fn add_lempify_to_conf() -> Result<(), String> {
         .map_err(|e| format!("Failed to read nginx.conf: {}", e))?;
 
     if contents.contains(&include_block) {
-        println!("🛠 Nginx already patched");
+        // println!("🛠 Nginx already patched");
         return Ok(()); // already patched
     }
 
@@ -97,8 +95,8 @@ server {{
  * Update the nginx config with SSL by replacing `## Lempify SSL ##` comment with SSL config for domain.
  */
 pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
-    let nginx_dir = get_nginx_dir()?;
-    let certs_dir = get_certs_dir()?;
+    let nginx_dir = paths::get_nginx()?;
+    let certs_dir = paths::get_certs()?;
     let nginx_config_path = nginx_dir.join(format!("{}.conf", domain));
 
     let contents = fs::read_to_string(&nginx_config_path)
@@ -132,14 +130,7 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
  */
 pub fn restart_nginx() -> Result<(), String> {
     println!("Restarting nginx");
-    let status = Command::new("brew")
-        .args(&["services", "restart", "nginx"])
-        .status()
-        .map_err(|e| format!("Failed to restart nginx: {}", e))?;
-
-    if !status.success() {
-        return Err(format!("Failed to restart nginx: {}", status));
-    }
+    let _ = brew::restart_service("nginx")?;
 
     Ok(())
 }
