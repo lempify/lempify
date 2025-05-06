@@ -15,7 +15,7 @@ fn main() {
     ipc::start_server();
 
     if !brew::is_installed() {
-        println!("⚠️  Brew is not installed, installing...");
+        println!("⚠️  Brew is not installed.");
         brew::install().unwrap();
     }
 
@@ -25,15 +25,15 @@ fn main() {
             continue;
         }
         println!("✅ {} is installed", service.name());
-        
+
+        // Ensure service is stopped before starting
         if !service.is_running() {
-            println!("⏯️  {} is not running, starting...", service.name());
+            println!("⏯️  Starting {}...", service.name());
             if let Err(e) = service.start() {
                 eprintln!("❌ Failed to start {}: {}", service.name(), e);
+            } else {
+                println!("✅ {} started", service.name());
             }
-            println!("✅ {} started", service.name());
-        } else {
-            println!("✅ {} is already running", service.name());
         }
     }
 
