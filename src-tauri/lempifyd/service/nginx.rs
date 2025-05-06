@@ -11,22 +11,19 @@ impl ServiceController for NginxServiceController {
         "nginx"
     }
 
-    fn install(&self) -> Result<(), String> {
-        // Install Nginx via Homebrew
-        brew::install_service("nginx")?;
-
-        Ok(())
-    }
-
     fn is_installed(&self) -> bool {
         which::which("nginx").is_ok()
     }
 
     fn is_running(&self) -> bool {
+        println!("Brew prefix: {}", brew::get_path_prefix().unwrap());
         // Check if nginx is running by checking if it's listening on port 80
         if let Ok(output) = Command::new("lsof")
-            .arg("-i:80")
-            .arg("-sTCP:LISTEN")
+            // ports 80, 8080, 443 with grep on nginx
+            .arg("-i :80,8080,443")
+            .arg("|")
+            .arg("grep")
+            .arg("nginx")
             .output() {
             !output.stdout.is_empty()
         } else {
@@ -35,55 +32,18 @@ impl ServiceController for NginxServiceController {
     }
 
     fn start(&self) -> Result<(), String> {
-        // First stop any existing processes
-        self.stop()?;
-
-        // Wait a moment for ports to be released
-        std::thread::sleep(std::time::Duration::from_secs(1));
-
-        Command::new("nginx")
-            .arg("-c")
-            .arg("/opt/homebrew/etc/nginx/nginx.conf")
-            .spawn()
-            .map_err(|e| format!("Failed to start nginx: {}", e))?;
+        if self.is_running() {
+            return Ok(());
+        }
+        brew::start_service("nginx")?;
         Ok(())
     }
 
     fn stop(&self) -> Result<(), String> {
-        // First try graceful shutdown
-        if let Ok(_) = Command::new("nginx")
-            .arg("-s")
-            .arg("quit")
-            .output() {
-            // Wait for process to stop
-            std::thread::sleep(std::time::Duration::from_secs(1));
+        if !self.is_running() {
+            return Ok(());
         }
-
-        // If still running, force kill
-        if self.is_running() {
-            if let Ok(output) = Command::new("lsof")
-                .arg("-t")
-                .arg("-i:80")
-                .arg("-sTCP:LISTEN")
-                .output() {
-                if !output.stdout.is_empty() {
-                    let pids: Vec<&str> = std::str::from_utf8(&output.stdout)
-                        .unwrap()
-                        .split('\n')
-                        .filter(|pid| !pid.is_empty())
-                        .collect();
-
-                    for pid in pids {
-                        if let Err(e) = Command::new("kill")
-                            .arg("-9")
-                            .arg(pid)
-                            .output() {
-                            println!("Warning: Failed to kill nginx process {}: {}", pid, e);
-                        }
-                    }
-                }
-            }
-        }
+        brew::stop_service("nginx")?;
 
         Ok(())
     }

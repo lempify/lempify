@@ -3,6 +3,49 @@ use std::path::PathBuf;
 
 use crate::utils::paths;
 
+pub struct BrewCommand<'a> {
+    args: Vec<&'a str>,
+    sudo: bool,
+}
+
+impl<'a> BrewCommand<'a> {
+    pub fn new(args: &[&'a str]) -> Self {
+        Self {
+            args: args.to_vec(),
+            sudo: false,
+        }
+    }
+
+    pub fn sudo(mut self) -> Self {
+        self.sudo = true;
+        self
+    }
+
+    pub fn run(self) -> Result<String, String> {
+        let mut command = Command::new(if self.sudo { "sudo" } else { "brew" });
+        
+        if self.sudo {
+            command.arg("brew");
+        }
+        
+        let output = command
+            .args(&self.args)
+            .output()
+            .map_err(|e| format!("Failed to execute brew command: {}", e))?;
+
+        if output.status.success() {
+            String::from_utf8(output.stdout)
+                .map_err(|e| format!("Failed to parse command output: {}", e))
+        } else {
+            Err(format!("brew command failed: {}", self.args.join(" ")))
+        }
+    }
+}
+
+pub fn get_path_prefix() -> Result<String, String> {
+    BrewCommand::new(&["--prefix"]).run()
+}
+
 /**
  * Check if Brew is installed
  */
@@ -15,22 +58,6 @@ pub fn is_installed() -> bool {
  */
 pub fn install() -> Result<(), String> {
     Err("Install brew not implemented yet!".to_string())
-}
-
-/**
- * Run a brew command
- */
-fn run_command(args: &[&str]) -> Result<(), String> {
-    let status = Command::new("brew")
-        .args(args)
-        .status()
-        .map_err(|e| format!("Failed to execute brew command: {}", e))?;
-
-    if status.success() {
-        Ok(())
-    } else {
-        Err(format!("brew command failed: {}", args.join(" ")))
-    }
 }
 
 /**
@@ -56,24 +83,27 @@ pub fn install_service(service: &str) -> Result<(), String> {
     let formula = service;
     
     // Install the formula
-    run_command(&["install", formula])?;
+    BrewCommand::new(&["install", formula]).run()?;
     
     // Link the formula
-    run_command(&["link", formula, "--overwrite", "--force"])
+    BrewCommand::new(&["link", formula, "--overwrite", "--force"]).run()?;
+
+    Ok(())
 }
 
 /**
  * Check if a service is installed
  */
 pub fn is_service_installed(bin: &str) -> bool {
-    Command::new("which")
-        .arg(bin)
+    Command::new("brew")
+        .arg("services")
+        .arg("list")
         .output()
         .map_or(false, |output| {
             let output_str = String::from_utf8_lossy(&output.stdout);
             output_str
                 .lines()
-                .any(|line| line.contains(bin) && line.contains("started"))
+                .any(|line| line.contains(bin))
         })
 }
 
@@ -88,14 +118,15 @@ pub fn is_service_running(bin: &str) -> bool {
  * Start a service
  */
 pub fn start_service(service: &str) -> Result<(), String> {
-    run_command(&["services", "start", service])
+    BrewCommand::new(&["services", "start", service]).run()?;
+    Ok(())
 }
 
 /**
  * Stop a service
  */
 pub fn stop_service(service: &str) -> Result<(), String> {
-    match run_command(&["services", "stop", service]) {
+    match BrewCommand::new(&["services", "stop", service]).run() {
         Ok(_) => Ok(()),
         Err(_) => {
             eprintln!("brew failed to stop {}; trying launchctl fallback", service);
@@ -128,7 +159,8 @@ fn stop_service_fallback(service: &str) -> Result<(), String> {
 }
 
 pub fn restart_service(service: &str) -> Result<(), String> {
-    run_command(&["services", "restart", service])
+    BrewCommand::new(&["services", "restart", service]).run()?;
+    Ok(())
 }
 
 /**
