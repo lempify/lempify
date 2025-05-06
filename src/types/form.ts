@@ -18,19 +18,3 @@ export type Field = {
     wrapperClassName?: string,
     inputAttributes?: Record<string, any>;
 };
-
-/* type InputProps = {
-    label: string,
-    name: string,
-    type: 'text' | 'checkbox' | 'radio',
-    description: string,
-    value?: any,
-    default?: any,
-    onChange?: (value: any, fieldName?: string) => void,
-    options?: Array<Omit<InputProps, 'onChange'> & {
-        onChange?: (value: any) => void,
-        fields?: InputProps[]
-    }>,
-    fields?: InputProps[],
-    labelPosition?: 'top' | 'bottom',
-} */
