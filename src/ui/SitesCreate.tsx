@@ -35,7 +35,7 @@ const SiteCreate = ({ onRefresh }: { onRefresh: () => void }) => {
       const { data, error } = await invoke<string>("create_site", {
         payload: {
           domain: formValues.domain,
-          site_type: formValues.type,
+          _site_type: formValues.type,
           ssl: formValues.ssl
         }
       });
