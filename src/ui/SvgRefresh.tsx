@@ -1,4 +1,4 @@
-export default function SvgRefresh({ size = 30 }: { size?: number }) {
+export default function SvgRefresh({ size = 24 }: { size?: number }) {
     return (
         <svg height={`${size}px`} width={`${size}px`} version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 496.166 496.166" xmlSpace="preserve" fill="#000000">
             <g strokeWidth="0"></g>

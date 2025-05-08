@@ -14,6 +14,7 @@ import { useInvoke } from "../hooks/useInvoke";
 // Constants
 import siteCreateFields from "../utils/site-create-fields";
 import Loader from "./Loader";
+import { corderTopRight } from "./css";
 
 /**
  * Constants
@@ -53,7 +54,12 @@ const SiteCreate = ({ onRefresh }: { onRefresh: () => void }) => {
   }
 
   return (
-    <div className="mb-10 p-10 w-full border border-neutral-200 dark:border-neutral-700 rounded-lg relative overflow-hidden">
+    <div id="create-site" className={`
+      p-10 w-full 
+      border border-neutral-200 dark:border-neutral-700 
+      relative
+      ${corderTopRight}
+      `}>
       <h2 className="text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)] mb-8">Create New Site</h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-10 mb-10">

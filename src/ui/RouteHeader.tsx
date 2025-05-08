@@ -1,11 +1,12 @@
 export default function RouteHeader({ title, description }: { title: string, description: string }) {
     return (
-        <div className="mb-20">
+        <div className="mb-10">
             <h1 className="
                 text-8xl line-height-[200px] text-transparent font-extrabold  
                 mb-2 inline-flex 
-                bg-clip-text bg-gradient-to-r 
+                bg-clip-text bg-gradient-to-l 
                 from-[var(--lempify-primary-300)] to-[var(--lempify-primary)]
+                dark:from-[var(--lempify-primary-700)] dark:to-[var(--lempify-primary)]
             "
             >{title}</h1>
             <p className="text-neutral-600 dark:text-neutral-400">{description}</p>
