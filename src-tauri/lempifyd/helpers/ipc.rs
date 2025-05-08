@@ -44,32 +44,32 @@ fn handle_client(stream: UnixStream) {
             Ok(cmd) => {
                 println!("🛠 Handling command: {:?}", cmd);
 
-                let service = get_all_services()
-                    .into_iter()
-                    .find(|s| s.name() == cmd.service);
+                // let service = get_all_services()
+                //     .into_iter()
+                //     .find(|s| s.name() == cmd.service);
 
-                if let Some(svc) = service {
-                    match cmd.action.as_str() {
-                        "start" => {
-                            if let Err(e) = svc.start() {
-                                eprintln!("❌ Start failed: {}", e);
-                            }
-                        }
-                        "stop" => {
-                            if let Err(e) = svc.stop() {
-                                eprintln!("❌ Stop failed: {}", e);
-                            }
-                        }
-                        "restart" => {
-                            if let Err(e) = svc.restart() {
-                                eprintln!("❌ Restart failed: {}", e);
-                            }
-                        }
-                        _ => eprintln!("❓ Unknown action: {}", cmd.action),
-                    }
-                } else {
-                    eprintln!("🚫 Unknown service: {}", cmd.service);
-                }
+                // if let Some(svc) = service {
+                //     match cmd.action.as_str() {
+                //         "start" => {
+                //             if let Err(e) = svc.start() {
+                //                 eprintln!("❌ Start failed: {}", e);
+                //             }
+                //         }
+                //         "stop" => {
+                //             if let Err(e) = svc.stop() {
+                //                 eprintln!("❌ Stop failed: {}", e);
+                //             }
+                //         }
+                //         "restart" => {
+                //             if let Err(e) = svc.restart() {
+                //                 eprintln!("❌ Restart failed: {}", e);
+                //             }
+                //         }
+                //         _ => eprintln!("❓ Unknown action: {}", cmd.action),
+                //     }
+                // } else {
+                //     eprintln!("🚫 Unknown service: {}", cmd.service);
+                // }
             }
             Err(e) => eprintln!("❌ Invalid JSON: {:?}", e),
         }
