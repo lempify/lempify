@@ -7,19 +7,21 @@ import RouteHeader from './RouteHeader';
 import SvgRefresh from './SvgRefresh';
 
 import useSiteManager from "../hooks/useSiteManager";
+import { corderBottomLeft } from "./css";
 
 const Sites = () => {
   const { sites, loading, error, refresh } = useSiteManager();
 
   return (
     <Fragment>
+      
       <RouteHeader title="Sites" description="Manage your sites" />
       {error && <p className="text-red-500">Error: {error}</p>}
       <SiteCreate onRefresh={refresh} />
 
-      <div className="mb-8 relative">
+      <div className={`p-10 w-full border border-neutral-200 border-t-0 dark:border-neutral-700 relative ${corderBottomLeft}`}>
         <header className="flex items-center gap-2 mb-8">
-          <h2 className="text-2xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)]">Existing Sites:</h2>
+          <h2 className="text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)]">Create New Site</h2>
           <button onClick={refresh} className="hover:rotate-270 transition-transform duration-300 ml-auto">
             <SvgRefresh />
           </button>
@@ -28,7 +30,7 @@ const Sites = () => {
           {sites.map(site => (
             <SiteCard key={site.name} refresh={refresh} site={site} />
           ))}
-        </ul> : <p>No sites found in ~/Lempify/sites</p>}
+        </ul> : <p>No sites found! <a href="#create-site">Add a new site</a> to get started.</p>}
         <Loader isVisible={loading} />
       </div>
     </Fragment>

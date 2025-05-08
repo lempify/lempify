@@ -31,7 +31,7 @@ const App = () => {
           <div className="flex">
             <Sidebar />
             <div className="flex-1 flex flex-col ml-64">
-              <main className="p-10 bg-[var(--lempify-bg)] text-[var(--lempify-text)]">
+              <main className="p-10 bg-[var(--lempify-bg)] text-[var(--lempify-text)] relative">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/sites" element={<Sites />} />
