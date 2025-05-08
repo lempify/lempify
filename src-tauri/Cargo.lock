@@ -1899,6 +1899,8 @@ name = "lempify"
 version = "0.1.0"
 dependencies = [
  "dirs",
+ "once_cell",
+ "regex",
  "serde",
  "serde_json",
  "shared",
