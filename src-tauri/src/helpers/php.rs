@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-use shared::utils::brew;
+use shared::brew;
 
 /**
  * Is PHP running?
@@ -32,11 +32,11 @@ pub fn ensure_php_socket_path_exists() -> Result<(), String> {
     if !path.exists() {
         fs::create_dir_all(path)
             .map_err(|e| format!("Failed to create socket directory: {}", e))?;
-        println!("✅ Created PHP socket path");
+        //println!("✅ Created PHP socket path");
 
         // Set ownership to current user (non-root install only)
         let username = whoami::username();
-        println!("Setting ownership of socket directory to {}", username);
+        //println!("Setting ownership of socket directory to {}", username);
         Command::new("chown")
             .arg(username)
             .arg(socket_dir)
@@ -47,11 +47,11 @@ pub fn ensure_php_socket_path_exists() -> Result<(), String> {
 
         if is_running {
             // ✅ Restart PHP to apply change
-            println!("♻️ Restarting PHP service to apply socket path...");
+            //println!("♻️ Restarting PHP service to apply socket path...");
             let _ = brew::restart_service("php");
         }
     } else {
-        println!("✅ Verified PHP socket path exists and is owned by current user");
+        //println!("✅ Verified PHP socket path exists and is owned by current user");
     }
 
     Ok(())
@@ -73,7 +73,7 @@ pub fn patch_php_fpm_socket_conf() -> Result<(), String> {
 
     // Avoid double patching
     if contents.contains("/opt/homebrew/var/run/php/php-fpm.sock") {
-        println!("✅ PHP FPM socket configuration already patched");
+        //println!("✅ PHP FPM socket configuration already patched");
         return Ok(()); // Already patched
     }
 
@@ -89,12 +89,12 @@ pub fn patch_php_fpm_socket_conf() -> Result<(), String> {
         .collect::<Vec<_>>()
         .join("\n");
 
-    println!("Patching PHP FPM socket configuration...");
+    //println!("Patching PHP FPM socket configuration...");
 
     fs::write(config_path, patched)
         .map_err(|e| format!("Failed to write patched PHP config: {}", e))?;
 
-    println!("✅ PHP FPM socket configuration patched");
+    //println!("✅ PHP FPM socket configuration patched");
 
     Ok(())
 }

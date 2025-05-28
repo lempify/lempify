@@ -1,10 +1,10 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
+use shared::brew;
 
-use crate::helpers::service_utils::{get_brew_formula, get_version, get_version_args};
+use crate::error::LempifyError;
+use crate::helpers::service_utils::{get_brew_formula, get_version_args};
 use crate::models::service::{ServiceStatus, ServiceType};
-
-use shared::utils::brew;
 
 /**
  * This regex is used to extract the version from the service output.
@@ -30,7 +30,7 @@ pub async fn get_service_status(service: ServiceType) -> ServiceStatus {
     let installed = brew::is_service_installed(bin);
     let version = if installed {
         let (args, use_stderr) = get_version_args(&service);
-        get_version(bin, args, use_stderr).ok()
+        brew::get_binary_version(bin, args, use_stderr).ok()
     } else {
         None
     };
@@ -42,7 +42,7 @@ pub async fn get_service_status(service: ServiceType) -> ServiceStatus {
         installed,
     };
 
-    println!("Service status: {:?}", &service_status);
+    //println!("Service status: {:?}", &service_status);
 
     service_status
 }

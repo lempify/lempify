@@ -1,1 +1,0 @@
-pub const SOCKET_PATH: &str = "/tmp/lempifyd.sock";

@@ -18,11 +18,12 @@ import Settings from "./ui/Settings";
 import { ServiceProvider } from "./context/ServiceContext";
 
 import useLempifyd from "./hooks/useLempifyd";
+import CanvasBackground from "./ui/CanvasBackground";
 
 const App = () => {
   // Start Nginx, MySQL, PHP services
   useLempifyd();
-  
+
   return (
     <ServiceProvider>
       <Router>
@@ -32,6 +33,7 @@ const App = () => {
             <Sidebar />
             <div className="flex-1 flex flex-col ml-64">
               <main className="p-10 bg-[var(--lempify-bg)] text-[var(--lempify-text)] relative">
+                <CanvasBackground />
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/sites" element={<Sites />} />

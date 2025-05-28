@@ -1,6 +1,6 @@
 export default function RouteHeader({ title, description }: { title: string, description: string }) {
     return (
-        <div className="mb-10">
+        <header className="mb-10 relative">
             <h1 className="
                 text-8xl line-height-[200px] text-transparent font-extrabold  
                 mb-2 inline-flex 
@@ -10,6 +10,6 @@ export default function RouteHeader({ title, description }: { title: string, des
             "
             >{title}</h1>
             <p className="text-neutral-600 dark:text-neutral-400">{description}</p>
-        </div>
+        </header>
     )
 }

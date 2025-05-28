@@ -24,18 +24,27 @@ fn main() -> Result<()> {
         eprintln!("⚠️ Failed to patch nginx.conf: {}", e);
     }
 
-    if let Ok(brew_path) = helpers::system::get_brew_path() {
-        println!("🍺 brew found at: {}", brew_path);
-    }
+    // if let Ok(brew_path) = helpers::system::get_brew_path() {
+    //     println!("🍺 brew found at: {}", brew_path);
+    // }
 
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
+            // Load config.json from /.config/lempify/config.json
+            let config = helpers::file_system::load_json()?;
+            // println!("Config: {}", config);
+            // Run setup
+            helpers::setup::run()?;
             // Start - lempifyd daemon
             lempifyd::spawn(lempifyd::sidecar(&app))?;
             // Build - menu
             ui::menu::build(&app)?;
+            // Open devtools
+            ui::browser::open_devtools(&app);
+            // Call me maybe
+            let _ = helpers::file_system::call_me_maybe();
             Ok(())
         });
 
@@ -53,6 +62,7 @@ fn main() -> Result<()> {
             commands::nginx::generate_nginx_config,
             commands::ssl::add_ssl,
             commands::lempifyd::lempifyd,
+            commands::sudoers::trust_lempify,
         ])
         //.menu(tauri::Menu::os_default(&tauri::generate_context!().package_info().name))
         .build(tauri::generate_context!())

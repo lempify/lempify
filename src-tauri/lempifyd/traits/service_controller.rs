@@ -1,4 +1,4 @@
-use shared::utils::brew;
+use shared::brew;
 
 #[allow(dead_code)]
 pub trait ServiceController {

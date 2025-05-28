@@ -2,7 +2,7 @@ use std::process::Command;
 
 use crate::traits::service_controller::ServiceController;
 
-use shared::utils::brew;
+use shared::brew;
 
 pub struct NginxServiceController;
 
@@ -16,7 +16,7 @@ impl ServiceController for NginxServiceController {
     }
 
     fn is_running(&self) -> bool {
-        println!("Brew prefix: {}", brew::get_path_prefix().unwrap());
+        //println!("Brew prefix: {}", brew::get_path_prefix().unwrap());
         // Check if nginx is running by checking if it's listening on port 80
         if let Ok(output) = Command::new("lsof")
             // ports 80, 8080, 443 with grep on nginx

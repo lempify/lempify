@@ -14,12 +14,12 @@ pub struct DaemonCommand {
 }
 
 pub fn send(cmd: &DaemonCommand) -> Result<(), String> {
-    println!("[lempify:helpers:send] daemon command: {:?}", cmd);
+    //println!("[lempify:helpers:send] daemon command: {:?}", cmd);
     let mut stream = UnixStream::connect(LEMPIFYD_SOCKET_PATH)
         .map_err(|e| format!("❌ Could not connect to daemon: {}", e))?;
 
     let json_payload = serde_json::to_string(cmd).map_err(|e| e.to_string())?;
-    let payload = format!("{}\n", json_payload); // newline-delimited JSON
+    let payload = format!("{}\n", json_payload);
 
     stream
         .write_all(payload.as_bytes())
@@ -43,10 +43,10 @@ pub fn spawn(sidecar: Command) -> Result<(), Box<dyn std::error::Error>> {
             match event {
                 tauri_plugin_shell::process::CommandEvent::Stdout(line) => {
                     if let Ok(s) = String::from_utf8(line) {
-                        println!("[lempifyd]: stdout: {}", s);
+                        //println!("[lempifyd]: stdout: {}", s);
                         if s.contains("READY") {
                             // lempifyd::send("start_php");
-                            println!("Daemon READY");
+                            //println!("Daemon READY");
                         }
                     }
                 }
@@ -55,7 +55,9 @@ pub fn spawn(sidecar: Command) -> Result<(), Box<dyn std::error::Error>> {
                         eprintln!("[lempifyd]: stderr: {}", s);
                     }
                 }
-                _ => println!("[lempifyd]: other event: {:?}", event),
+                _ => {
+                    //println!("[lempifyd]: other event: {:?}", event);
+                }
             }
         }
     });
