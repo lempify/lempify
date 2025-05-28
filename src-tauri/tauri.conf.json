@@ -15,7 +15,8 @@
         "title": "Lempify",
         "width": 1200,
         "height": 800,
-        "center": true
+        "center": true,
+        "visible": false
       }
     ],
     "security": {

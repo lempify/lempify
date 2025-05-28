@@ -4,7 +4,7 @@ use std::io::{BufRead, BufReader};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::fs;
 
-use crate::helpers::constants::SOCKET_PATH;
+use shared::constants::HOSTS_PATH;
 use crate::service::get_all_services;
 
 #[derive(Debug, Deserialize)]
@@ -13,18 +13,19 @@ pub struct DaemonCommand {
     pub action: String,
 }
 
-pub fn start_server() {
+pub fn start_server() -> Result<(), String> {
+    
     // Clean up any existing socket file
-    if let Err(e) = fs::remove_file(SOCKET_PATH) {
+    if let Err(e) = fs::remove_file(HOSTS_PATH) {
         if e.kind() != std::io::ErrorKind::NotFound {
-            eprintln!("⚠️ Failed to remove existing socket: {}", e);
+            return Err(format!("Failed to remove existing socket: {}", e));
         }
     }
 
-    let listener = UnixListener::bind(SOCKET_PATH)
-        .expect("Failed to bind IPC socket");
+    let listener = UnixListener::bind(HOSTS_PATH)
+        .map_err(|e| format!("Failed to bind IPC socket: {}", e))?;
 
-    println!("✅ IPC server started at {}", SOCKET_PATH);
+    //println!("✅ IPC server started at {}", socket_path);
 
     thread::spawn(move || {
         for stream in listener.incoming() {
@@ -33,6 +34,8 @@ pub fn start_server() {
             }
         }
     });
+
+    Ok(())
 }
 
 fn handle_client(stream: UnixStream) {
@@ -42,34 +45,34 @@ fn handle_client(stream: UnixStream) {
     if let Ok(_) = reader.read_line(&mut line) {
         match serde_json::from_str::<DaemonCommand>(&line) {
             Ok(cmd) => {
-                println!("🛠 Handling command: {:?}", cmd);
+                //println!("🛠 Handling command: {:?}", cmd);
 
-                // let service = get_all_services()
-                //     .into_iter()
-                //     .find(|s| s.name() == cmd.service);
+                let services = get_all_services()
+                    .into_iter()
+                    .find(|s| s.name() == cmd.service);
 
-                // if let Some(svc) = service {
-                //     match cmd.action.as_str() {
-                //         "start" => {
-                //             if let Err(e) = svc.start() {
-                //                 eprintln!("❌ Start failed: {}", e);
-                //             }
-                //         }
-                //         "stop" => {
-                //             if let Err(e) = svc.stop() {
-                //                 eprintln!("❌ Stop failed: {}", e);
-                //             }
-                //         }
-                //         "restart" => {
-                //             if let Err(e) = svc.restart() {
-                //                 eprintln!("❌ Restart failed: {}", e);
-                //             }
-                //         }
-                //         _ => eprintln!("❓ Unknown action: {}", cmd.action),
-                //     }
-                // } else {
-                //     eprintln!("🚫 Unknown service: {}", cmd.service);
-                // }
+                if let Some(service) = services {
+                    match cmd.action.as_str() {
+                        "start" => {
+                            if let Err(e) = service.start() {
+                                eprintln!("❌ Start failed: {}", e);
+                            }
+                        }
+                        "stop" => {
+                            if let Err(e) = service.stop() {
+                                eprintln!("❌ Stop failed: {}", e);
+                            }
+                        }
+                        "restart" => {
+                            if let Err(e) = service.restart() {
+                                eprintln!("❌ Restart failed: {}", e);
+                            }
+                        }
+                        _ => eprintln!("❓ Unknown action: {}", cmd.action),
+                    }
+                } else {
+                    eprintln!("🚫 Unknown service: {}", cmd.service);
+                }
             }
             Err(e) => eprintln!("❌ Invalid JSON: {:?}", e),
         }

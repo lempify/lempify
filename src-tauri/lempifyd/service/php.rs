@@ -4,7 +4,7 @@ use std::process::Command;
 use crate::helpers::php::generate_fpm_config;
 use crate::traits::service_controller::ServiceController;
 
-use shared::utils::brew;
+use shared::brew;
 
 pub struct PhpServiceController {
     pub version: String,
@@ -75,7 +75,7 @@ impl ServiceController for PhpServiceController {
                         .arg("-9")
                         .arg(pid)
                         .output() {
-                        println!("Warning: Failed to kill process {}: {}", pid, e);
+                        //println!("Warning: Failed to kill process {}: {}", pid, e);
                     }
                 }
             }

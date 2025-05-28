@@ -12,7 +12,7 @@ pub fn build(app: &App) -> Result<(), Box<dyn std::error::Error>> {
     let menu = MenuBuilder::new(app).item(&submenu).build()?;
     app.set_menu(menu)?;
     app.on_menu_event(move |_app, event| {
-        println!("Event ID {}", event.id.0.as_str());
+        //println!("Event ID {}", event.id.0.as_str());
     });
     Ok(())
 }

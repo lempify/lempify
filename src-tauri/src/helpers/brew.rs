@@ -1,9 +1,9 @@
 use std::process::Command;
 
-use shared::utils::brew;
+use shared::brew;
 
 pub fn repair_service(service: &str) -> Result<(), String> {
-    println!("Repairing service: {}", service);
+    //println!("Repairing service: {}", service);
 
     // Try to stop it gracefully
     let _ = brew::stop_service(service); // Ignore errors, we're gonna nuke it anyway

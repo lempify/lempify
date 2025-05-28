@@ -21,12 +21,12 @@ pub fn setup_tray(app: &mut App) -> Result<()> {
         .on_menu_event(|app, event| match event.id.as_ref() {
             "quit" => {
                 #[cfg(debug_assertions)]
-                println!("quit menu item was clicked");
+                //println!("quit menu item was clicked");
                 app.exit(0);
             }
             _ => {
-                #[cfg(debug_assertions)]
-                println!("menu item {:?} not handled", event.id);
+                //#[cfg(debug_assertions)]
+                //println!("menu item {:?} not handled", event.id);
             }
         })
         .on_tray_icon_event(|tray, event| match event {
@@ -36,7 +36,7 @@ pub fn setup_tray(app: &mut App) -> Result<()> {
                 ..
             } => {
                 #[cfg(debug_assertions)]
-                println!("left click pressed and released");
+                //println!("left click pressed and released");
 
                 let app = tray.app_handle();
                 if let Some(window) = app.get_webview_window("main") {
@@ -45,8 +45,8 @@ pub fn setup_tray(app: &mut App) -> Result<()> {
                 }
             }
             _ => {
-                #[cfg(debug_assertions)]
-                println!("unhandled event {event:?}");
+                //#[cfg(debug_assertions)]
+                //println!("unhandled event {event:?}");
             }
         })
         .build(app)

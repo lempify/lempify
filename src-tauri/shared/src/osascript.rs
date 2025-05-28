@@ -6,7 +6,7 @@ pub fn run(script: &str, prompt: Option<&str>) -> Result<(), String> {
     }
 
     let shell_prompt = prompt.unwrap_or(
-        "Lempify needs permission to run this script. Please enter your macOS password.",
+        "Lempify needs permission to run this script. Please enter your macOS password. \n\nTo avoid this prompt in the future, you can Trust Lempify by clicking the lock icon in the top left corner of the app.",
     );
 
     let shell_script = format!(

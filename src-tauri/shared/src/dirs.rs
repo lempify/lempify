@@ -1,5 +1,19 @@
 use std::{fs, path::PathBuf};
 
+use dirs;
+
+pub fn get_config() -> Result<PathBuf, String> {
+    let config_dir = dirs::config_dir().ok_or("Could not get config directory")?;
+    Ok(config_dir)
+}
+
+pub fn get_home() -> Result<PathBuf, String> {
+    let home = dirs::home_dir().ok_or("Could not get home directory")?;
+    Ok(home)
+}
+
+/////// REMOVE BELOW
+
 /**
  * Get the output directory
  * 
@@ -24,6 +38,12 @@ pub fn get_home_dir(dir: &str) -> Result<PathBuf, String> {
     }
 
     Ok(dir_path)
+}
+
+pub fn get_lempify_home_dir() -> Result<PathBuf, String> {
+    let home = dirs::home_dir().ok_or("Could not get home directory")?;
+    let home_dir = home.join("Lempify");
+    Ok(home_dir)
 }
 
 /**

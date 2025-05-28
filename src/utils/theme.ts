@@ -31,35 +31,3 @@ export function toggleTheme() {
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
 }
-
-function setTheme(theme: Theme) {
-  localStorage.setItem(THEME_KEY, theme);
-  applyTheme(theme);
-}
-
-class ThemeManager {
-  private static readonly THEME_KEY = 'lempify-theme';
-  theme: Theme;
-
-  constructor() {
-    this.theme = getSavedTheme();
-    this.eventListener();
-    this.applyTheme();
-  }
-
-  eventListener() {
-    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-    mql.onchange = (e) => {
-      this.theme = e.matches ? 'dark' : 'light';
-      setTheme(this.theme);
-    };
-  }
-
-  applyTheme() {
-    // applyTheme(this.theme);
-  }
-
-  static getSystemTheme(): 'light' | 'dark' {
-    return window?.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-}

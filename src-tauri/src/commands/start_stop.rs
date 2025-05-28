@@ -5,7 +5,7 @@ use crate::commands::service_status::get_service_status;
 use crate::models::service::{ServiceStatus, ServiceType};
 use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
 
-use shared::utils::brew;
+use shared::brew;
 
 #[command]
 pub async fn start_service(service: ServiceType) -> Result<ServiceStatus, String> {

@@ -7,3 +7,4 @@ pub mod sites;
 pub mod ssl;
 pub mod start_stop;
 pub mod lempifyd;
+pub mod sudoers;

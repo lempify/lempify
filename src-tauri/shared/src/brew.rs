@@ -1,7 +1,8 @@
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::path::PathBuf;
 
-use crate::utils::paths;
+use crate::dirs;
+use crate::utils::is_bin_installed;
 
 pub struct BrewCommand<'a> {
     args: Vec<&'a str>,
@@ -50,7 +51,32 @@ pub fn get_path_prefix() -> Result<String, String> {
  * Check if Brew is installed
  */
 pub fn is_installed() -> bool {
-    Command::new("brew").output().is_ok()
+    // Command::new("brew").output().is_ok()
+    is_bin_installed("brew").unwrap_or(false)
+}
+
+/**
+ * Get version of installed binary
+ */
+pub fn get_binary_version(bin: &str, args: &[&str], use_stderr: bool) -> Result<String, String> {
+    let output = Command::new(bin)
+        .args(args)
+        .stderr(Stdio::piped())
+        .stdout(Stdio::piped())
+        .output()
+        .map_err(|e| format!("Failed to get version for {}: {}", bin, e))?;
+
+    if !output.status.success() {
+        return Err(format!("Failed to get version for {}", bin));
+    }
+
+    let output_str = if use_stderr {
+        String::from_utf8_lossy(&output.stderr)
+    } else {
+        String::from_utf8_lossy(&output.stdout)
+    };
+
+    Ok(output_str.trim().to_string())
 }
 
 /**
@@ -167,7 +193,7 @@ pub fn restart_service(service: &str) -> Result<(), String> {
  * Get the launch agent path
  */
 pub fn get_launch_agent_path(service: &str) -> Result<PathBuf, String> {
-    let home = paths::get_output()?;
+    let home = dirs::get_output()?;
     let plist = format!("homebrew.mxcl.{}.plist", service);
     Ok(home.join("Library").join("LaunchAgents").join(plist))
 }

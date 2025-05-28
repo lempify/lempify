@@ -11,16 +11,23 @@
 import Services from "./Services";
 import DarkModeToggle from "./DarkModeToggle";
 import { ServicesProvider } from "../context/ServicesProvider";
+import { useInvoke } from "../hooks/useInvoke";
 
 export default function Header() {
+    const { invoke } = useInvoke();
     return (
         <header className="flex items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 sticky top-0 z-10">
             <div className="p-4 text-xl font-bold">
                 <span className="text-[var(--lempify-primary)]">LEMP</span>
                 <span className="text-[var(--lempify-primary-200)] after:content-['.'] after:text-neutral-500">ify</span>
             </div>
+            <div>
+                <button onClick={() => {
+                    invoke("trust_lempify");
+                }}>Trust</button>
+            </div>
             <div className="text-xl ml-auto">
-                <DarkModeToggle /> 
+                <DarkModeToggle />
             </div>
             <div className="p-5 ml-auto">
                 <ServicesProvider>
