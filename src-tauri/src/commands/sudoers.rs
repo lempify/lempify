@@ -1,15 +1,15 @@
-use tauri_plugin_shell::ShellExt;
-
 use std::fs;
+use std::path::Path;
 use std::process::Command;
-use tauri::Runtime;
 
-use shared::constants::{LEMPIFY_SUDOERS_PATH, SUDOERS_DIR};
+use crate::models::config::{Config, ConfigManager};
+use shared::constants::LEMPIFY_SUDOERS_PATH;
+use tauri::State;
 
 #[tauri::command]
-pub async fn trust_lempify(_app_handle: tauri::AppHandle) -> Result<String, String> {
-    let app_path = std::env::current_exe()
-        .map_err(|e| format!("Failed to get executable path: {}", e))?;
+pub async fn trust_lempify(config_manager: State<'_, ConfigManager>) -> Result<Config, String> {
+    let app_path =
+        std::env::current_exe().map_err(|e| format!("Failed to get executable path: {}", e))?;
     let app_path_str = app_path.to_str().ok_or("Invalid app path")?;
 
     let username = Command::new("whoami")
@@ -71,33 +71,54 @@ pub async fn trust_lempify(_app_handle: tauri::AppHandle) -> Result<String, Stri
         .output()
         .map_err(|e| format!("Failed to verify sudo access: {}", e))?;
 
+    config_manager.set_trusted(true).await?;
+
     if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
+        let config = config_manager.get_config().await;
+        Ok(config)
     } else {
         Err(String::from_utf8_lossy(&output.stderr).to_string())
     }
 }
 
-pub async fn verify_sudo_access<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<String, String> {
-    // Try to run a simple sudo command
-    let output = Command::new("sudo")
-        .arg("echo")
-        .arg("Sudo access verified!")
-        .output()
-        .map_err(|e| format!("Failed to verify sudo access: {}", e))?;
+#[tauri::command]
+pub async fn untrust_lempify(config_manager: State<'_, ConfigManager>) -> Result<Config, String> {
+    let sudoers_path = Path::new(LEMPIFY_SUDOERS_PATH);
+    
+    #[cfg(target_os = "macos")]
+    let output = {
+        let script = format!(
+            "do shell script \"rm {sudoers_path}\" with administrator privileges",
+            sudoers_path = LEMPIFY_SUDOERS_PATH
+        );
+        Command::new("osascript")
+            .args(["-e", &script])
+            .output()
+            .map_err(|e| format!("Failed to execute osascript: {}", e))?
+    };
 
-    let ls_dir = Command::new("sudo")
-        .arg("ls")
-        .arg("-lha")
-        .arg(SUDOERS_DIR)
-        .output()
-        .map_err(|e| format!("Failed to verify sudoers file: {}", e))?;
+    #[cfg(target_os = "linux")]
+    let output = {
+        Command::new("pkexec")
+            .args([
+                "sh",
+                "-c",
+                &format!("rm {sudoers_path}", sudoers_path = LEMPIFY_SUDOERS_PATH),
+            ])
+            .output()
+            .map_err(|e| format!("Failed to execute pkexec: {}", e))?
+    };
 
-    //println!("ls_dir: {}", String::from_utf8_lossy(&ls_dir.stdout));
-
-    if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    } else {
-        Err(String::from_utf8_lossy(&output.stderr).to_string())
+    if !output.status.success() {
+        return Err(format!(
+            "Failed to remove sudoers file: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ));
     }
+
+    config_manager.set_trusted(false).await?;
+
+    let config = config_manager.get_config().await;
+
+    Ok(config)
 }

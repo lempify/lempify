@@ -2,17 +2,13 @@ use shared::dirs::get_config;
 use users::get_user_by_name;
 
 use std::fs;
-use std::os::unix::fs::chown;
-use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 /**
  * File system helpers
  */
 use std::path::PathBuf;
-use std::os::unix::fs::MetadataExt;
 use std::process::Stdio;
 use std::process::Command;
-use std::io::Write;
 
 use users::User;
 
@@ -70,8 +66,8 @@ pub fn load_json() -> Result<String, String> {
     let config_path = get_config_dir("config.json")?;
 
     let config = if !config_path.exists() {
-        fs::write(config_path, "{\"test\": \"test\"}").map_err(|e| e.to_string())?;
-        "{\"test\": \"test\"}".to_string()
+        fs::write(config_path, "{}").map_err(|e| e.to_string())?;
+        "{}".to_string()
     } else {
         fs::read_to_string(config_path).map_err(|e| e.to_string())?
     };
@@ -91,14 +87,14 @@ pub fn dir_exists(dir: &str) -> Result<bool, String> {
 
 /// File System struct
 
-pub struct FileSystem {
+pub struct AppFileSystem {
     pub config_dir: PathBuf,
     pub sites_dir: PathBuf,
     pub nginx_dir: PathBuf,
     pub certs_dir: PathBuf,
 }
 
-impl FileSystem {
+impl AppFileSystem {
     pub fn new() -> Result<Self, String> {
         let config_dir = get_lempify_dir()?;
         let sites_dir = config_dir.join("sites");
@@ -112,7 +108,6 @@ impl FileSystem {
         })
     }
 
-    #[allow(dead_code)]
     pub fn is_dir(&self, path: &Path) -> bool {
         path.is_dir()
     }
@@ -175,7 +170,7 @@ impl FileSystem {
 }
 
 pub fn call_me_maybe() -> Result<(), String> {
-    let file_system = FileSystem::new().unwrap();
+    // let file_system = AppFileSystem::new().unwrap();
     // //println!("Config Dir:{:?}", file_system.config_dir);
     // //println!("Sites Dir:{:?}", file_system.sites_dir);
     // //println!("Nginx Dir:{:?}", file_system.nginx_dir);
@@ -190,11 +185,11 @@ pub fn call_me_maybe() -> Result<(), String> {
     // );
     let root_user = get_user_by_name("root").unwrap();
     //println!("Root User: {:#?}", root_user);
-    let new_dir = file_system.mkdir(
-        Path::new("/tmp/lempify_test"),
-        &root_user,
-        0o755,
-    );
+    // let new_dir = file_system.mkdir(
+    //     Path::new("/tmp/lempify_test"),
+    //     &root_user,
+    //     0o755,
+    // );
     //println!("New Dir: {:?}", new_dir);
 
     // Check permissions

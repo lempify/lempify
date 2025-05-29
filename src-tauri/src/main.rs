@@ -10,10 +10,11 @@ mod helpers;
 mod models;
 mod ui;
 
-use tauri::{RunEvent, WindowEvent};
+use tauri::{RunEvent, WindowEvent, Manager};
 use error::Result;
 
 use crate::helpers::lempifyd;
+use crate::models::config::ConfigManagerBuilder;
 
 fn main() -> Result<()> {
     if let Err(e) = helpers::system::patch_path() {
@@ -32,7 +33,16 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            // Load config.json from /.config/lempify/config.json
+            // Initialize ConfigManager
+            let config_manager = ConfigManagerBuilder::new()
+                .config_file("config.json")
+                .build()
+                .map_err(|e| format!("Failed to initialize ConfigManager: {}", e))?;
+            
+            // Store ConfigManager in app state
+            app.manage(config_manager);
+
+            // Load config.json from /.config/lempify/config.json (legacy)
             let config = helpers::file_system::load_json()?;
             // println!("Config: {}", config);
             // Run setup
@@ -63,6 +73,16 @@ fn main() -> Result<()> {
             commands::ssl::add_ssl,
             commands::lempifyd::lempifyd,
             commands::sudoers::trust_lempify,
+            commands::sudoers::untrust_lempify,
+            // New config CRUD commands
+            models::config::create_site_config,
+            models::config::get_site_config,
+            models::config::get_all_sites_config,
+            models::config::update_site_config,
+            models::config::delete_site_config,
+            models::config::get_config,
+            models::config::refresh_trusted_status_config,
+            models::config::is_trusted_config
         ])
         //.menu(tauri::Menu::os_default(&tauri::generate_context!().package_info().name))
         .build(tauri::generate_context!())

@@ -2,7 +2,6 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use shared::brew;
 
-use crate::error::LempifyError;
 use crate::helpers::service_utils::{get_brew_formula, get_version_args};
 use crate::models::service::{ServiceStatus, ServiceType};
 

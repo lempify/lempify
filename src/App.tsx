@@ -19,32 +19,35 @@ import { ServiceProvider } from "./context/ServiceContext";
 
 import useLempifyd from "./hooks/useLempifyd";
 import CanvasBackground from "./ui/CanvasBackground";
+import { AppConfigProvider } from "./context/AppConfigContext";
 
 const App = () => {
   // Start Nginx, MySQL, PHP services
   useLempifyd();
 
   return (
-    <ServiceProvider>
-      <Router>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <div className="flex">
-            <Sidebar />
-            <div className="flex-1 flex flex-col ml-64">
-              <main className="p-10 bg-[var(--lempify-bg)] text-[var(--lempify-text)] relative">
-                <CanvasBackground />
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/sites" element={<Sites />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Routes>
-              </main>
+    <AppConfigProvider>
+      <ServiceProvider>
+        <Router>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <div className="flex">
+              <Sidebar />
+              <div className="flex-1 flex flex-col ml-64">
+                <main className="p-10 bg-[var(--lempify-bg)] text-[var(--lempify-text)] relative">
+                  <CanvasBackground />
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/sites" element={<Sites />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Routes>
+                </main>
+              </div>
             </div>
           </div>
-        </div>
-      </Router>
-    </ServiceProvider>
+        </Router>
+      </ServiceProvider>
+    </AppConfigProvider>
   );
 };
 
