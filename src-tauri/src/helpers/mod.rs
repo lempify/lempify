@@ -7,6 +7,5 @@ pub mod nginx;
 pub mod setup;
 pub mod system;
 pub mod lempifyd;
-pub mod constants;
 pub mod file_system;
 pub mod service_utils;

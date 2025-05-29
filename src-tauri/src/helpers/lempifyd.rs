@@ -5,7 +5,7 @@ use std::os::unix::net::UnixStream;
 use tauri::App;
 use tauri_plugin_shell::{process::Command, ShellExt};
 
-use crate::helpers::constants::LEMPIFYD_SOCKET_PATH;
+use shared::constants::LEMPIFYD_SOCKET_PATH;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DaemonCommand {
@@ -14,7 +14,6 @@ pub struct DaemonCommand {
 }
 
 pub fn send(cmd: &DaemonCommand) -> Result<(), String> {
-    //println!("[lempify:helpers:send] daemon command: {:?}", cmd);
     let mut stream = UnixStream::connect(LEMPIFYD_SOCKET_PATH)
         .map_err(|e| format!("❌ Could not connect to daemon: {}", e))?;
 

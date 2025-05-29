@@ -1,0 +1,1 @@
+// Struct / Trait for generating a site.

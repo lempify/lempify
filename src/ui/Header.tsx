@@ -12,9 +12,18 @@ import Services from "./Services";
 import DarkModeToggle from "./DarkModeToggle";
 import { ServicesProvider } from "../context/ServicesProvider";
 import { useInvoke } from "../hooks/useInvoke";
+import { useAppConfig } from "../context/AppConfigContext";
 
 export default function Header() {
     const { invoke } = useInvoke();
+    const { config, dispatch } = useAppConfig();
+    const { trusted } = config;
+
+    const handleTrust = () => {
+        invoke("trust_lempify");
+        dispatch({ type: "set_trusted", trusted: true });
+    };
+
     return (
         <header className="flex items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 sticky top-0 z-10">
             <div className="p-4 text-xl font-bold">
@@ -22,9 +31,14 @@ export default function Header() {
                 <span className="text-[var(--lempify-primary-200)] after:content-['.'] after:text-neutral-500">ify</span>
             </div>
             <div>
-                <button onClick={() => {
+                {/* {trusted ? 'IS TRUSTED' : 'IS NOT TRUSTED'} */}
+                {trusted ? <button onClick={() => {
+                    invoke("untrust_lempify");
+                    dispatch({ type: "set_trusted", trusted: false });
+                }}>UNTRUST</button> : <button onClick={() => {
                     invoke("trust_lempify");
-                }}>Trust</button>
+                    dispatch({ type: "set_trusted", trusted: true });
+                }}>TRUST</button>}
             </div>
             <div className="text-xl ml-auto">
                 <DarkModeToggle />

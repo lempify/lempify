@@ -4,7 +4,7 @@ use std::io::{BufRead, BufReader};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::fs;
 
-use shared::constants::HOSTS_PATH;
+use shared::constants::LEMPIFYD_SOCKET_PATH;
 use crate::service::get_all_services;
 
 #[derive(Debug, Deserialize)]
@@ -16,16 +16,14 @@ pub struct DaemonCommand {
 pub fn start_server() -> Result<(), String> {
     
     // Clean up any existing socket file
-    if let Err(e) = fs::remove_file(HOSTS_PATH) {
+    if let Err(e) = fs::remove_file(LEMPIFYD_SOCKET_PATH) {
         if e.kind() != std::io::ErrorKind::NotFound {
             return Err(format!("Failed to remove existing socket: {}", e));
         }
     }
 
-    let listener = UnixListener::bind(HOSTS_PATH)
+    let listener = UnixListener::bind(LEMPIFYD_SOCKET_PATH)
         .map_err(|e| format!("Failed to bind IPC socket: {}", e))?;
-
-    //println!("✅ IPC server started at {}", socket_path);
 
     thread::spawn(move || {
         for stream in listener.incoming() {
