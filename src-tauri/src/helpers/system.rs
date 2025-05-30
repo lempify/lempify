@@ -2,7 +2,10 @@ use crate::error::{LempifyError, Result};
 use std::env;
 
 pub fn patch_path() -> Result<()> {
-    let path = env::var("PATH").map_err(|e| LempifyError::SystemError(e.to_string()))?;
+    let path = 
+        env::var("PATH")
+            .map_err(|e| LempifyError::SystemError(e.to_string()))?;
+
     let mut paths: Vec<String> = path.split(':').map(|s| s.to_string()).collect();
 
     let brew_locations = [

@@ -10,8 +10,8 @@ mod helpers;
 mod models;
 mod ui;
 
-use tauri::{RunEvent, WindowEvent, Manager};
 use error::Result;
+use tauri::{Manager, RunEvent, WindowEvent};
 
 use crate::helpers::lempifyd;
 use crate::models::config::ConfigManagerBuilder;
@@ -25,9 +25,10 @@ fn main() -> Result<()> {
         eprintln!("⚠️ Failed to patch nginx.conf: {}", e);
     }
 
-    // if let Ok(brew_path) = helpers::system::get_brew_path() {
-    //     println!("🍺 brew found at: {}", brew_path);
-    // }
+    // @TODO: Unused
+    if let Ok(_brew_path) = helpers::system::get_brew_path() {
+        // println!("🍺 brew found at: {}", brew_path);
+    }
 
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -38,23 +39,14 @@ fn main() -> Result<()> {
                 .config_file("config.json")
                 .build()
                 .map_err(|e| format!("Failed to initialize ConfigManager: {}", e))?;
-            
-            // Store ConfigManager in app state
             app.manage(config_manager);
-
-            // Load config.json from /.config/lempify/config.json (legacy)
-            let config = helpers::file_system::load_json()?;
-            // println!("Config: {}", config);
-            // Run setup
+            // @TODO: Unused
+            let _config = helpers::file_system::load_json()?;
             helpers::setup::run()?;
-            // Start - lempifyd daemon
             lempifyd::spawn(lempifyd::sidecar(&app))?;
-            // Build - menu
             ui::menu::build(&app)?;
-            // Open devtools
             ui::browser::open_devtools(&app);
-            // Call me maybe
-            let _ = helpers::file_system::call_me_maybe();
+            let _ = helpers::file_system::init();
             Ok(())
         });
 

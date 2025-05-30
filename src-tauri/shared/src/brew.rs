@@ -193,7 +193,7 @@ pub fn restart_service(service: &str) -> Result<(), String> {
  * Get the launch agent path
  */
 pub fn get_launch_agent_path(service: &str) -> Result<PathBuf, String> {
-    let home = dirs::get_output()?;
+    let home = dirs::get_home()?;
     let plist = format!("homebrew.mxcl.{}.plist", service);
     Ok(home.join("Library").join("LaunchAgents").join(plist))
 }

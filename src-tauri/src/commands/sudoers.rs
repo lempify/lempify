@@ -1,5 +1,4 @@
 use std::fs;
-use std::path::Path;
 use std::process::Command;
 
 use crate::models::config::{Config, ConfigManager};
@@ -83,13 +82,12 @@ pub async fn trust_lempify(config_manager: State<'_, ConfigManager>) -> Result<C
 
 #[tauri::command]
 pub async fn untrust_lempify(config_manager: State<'_, ConfigManager>) -> Result<Config, String> {
-    let sudoers_path = Path::new(LEMPIFY_SUDOERS_PATH);
+    let sudoers_path = LEMPIFY_SUDOERS_PATH;
     
     #[cfg(target_os = "macos")]
     let output = {
         let script = format!(
-            "do shell script \"rm {sudoers_path}\" with administrator privileges",
-            sudoers_path = LEMPIFY_SUDOERS_PATH
+            "do shell script \"rm {sudoers_path}\" with administrator privileges"
         );
         Command::new("osascript")
             .args(["-e", &script])
@@ -103,7 +101,7 @@ pub async fn untrust_lempify(config_manager: State<'_, ConfigManager>) -> Result
             .args([
                 "sh",
                 "-c",
-                &format!("rm {sudoers_path}", sudoers_path = LEMPIFY_SUDOERS_PATH),
+                &format!("rm {sudoers_path}"),
             ])
             .output()
             .map_err(|e| format!("Failed to execute pkexec: {}", e))?

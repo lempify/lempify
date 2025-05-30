@@ -13,7 +13,21 @@ use crate::{
     },
 };
 
-use shared::{dirs, ssl::delete_certs};
+use shared::{
+    dirs, 
+    ssl::delete_certs, 
+    utils::FileSudoCommand
+};
+
+/// Write a file to a system location that requires elevated permissions
+fn write_file_with_sudo(content: &str, target_path: &std::path::Path) -> Result<(), String> {
+    FileSudoCommand::write(content.to_string(), target_path.to_path_buf()).run()
+}
+
+/// Remove a file from a system location that requires elevated permissions
+fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
+    FileSudoCommand::remove(target_path.to_path_buf()).run()
+}
 
 #[command]
 pub async fn create_site(
@@ -23,7 +37,7 @@ pub async fn create_site(
     println!("Creating site: {:?}", payload);
 
     let sites_dir = dirs::get_sites()?;
-    let nginx_config_dir = dirs::get_nginx()?;
+    let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
 
     let site_name = &payload.domain.to_lowercase();
     let (domain, tld) = site_name.split_once('.')
@@ -47,11 +61,10 @@ pub async fn create_site(
     fs::create_dir_all(&site_path)
         .map_err(|e| format!("Failed to create site directory: {}", e))?;
 
-    let config_path = nginx_config_dir.join(format!("{site_name}.conf"));
+    let config_path = nginx_sites_enabled_dir.join(format!("{site_name}.conf"));
     let config_contents = generate_nginx_config_template(domain, &tld, &site_path);
     println!("Creating NGINX file");
-    fs::write(&config_path, config_contents)
-        .map_err(|e| format!("Failed to write config: {}", e))?;
+    write_file_with_sudo(&config_contents, &config_path)?;
 
     println!("Adding to Host");
     // Add to hosts file
@@ -122,20 +135,17 @@ pub async fn delete_site(
     domain: String,
 ) -> Result<String, String> {
     let sites_dir = dirs::get_sites()?;
-    let nginx_config_dir = dirs::get_nginx()?;
+    let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
 
     let site_path = sites_dir.join(&domain);
-    let config_path = nginx_config_dir.join(format!("{}.conf", domain));
+    let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain));
 
     if site_path.exists() {
         fs::remove_dir_all(&site_path)
             .map_err(|e| format!("Failed to delete site folder: {}", e))?;
     }
 
-    if config_path.exists() {
-        fs::remove_file(&config_path)
-            .map_err(|e| format!("Failed to remove nginx config: {}", e))?;
-    }
+    remove_file_with_sudo(&config_path)?;
 
     delete_certs(&domain)?;
 
