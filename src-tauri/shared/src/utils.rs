@@ -72,3 +72,172 @@ impl<'a> SudoCommand<'a> {
         }
     }
 }
+
+/// Specialized command for file operations that require elevated permissions
+pub struct FileSudoCommand {
+    operation: FileOperation,
+    target_path: std::path::PathBuf,
+    content: Option<String>,
+    temp_file: Option<std::path::PathBuf>,
+}
+
+enum FileOperation {
+    Write,
+    Remove,
+}
+
+impl FileSudoCommand {
+    pub fn write(content: String, target_path: std::path::PathBuf) -> Self {
+        Self {
+            operation: FileOperation::Write,
+            target_path,
+            content: Some(content),
+            temp_file: None,
+        }
+    }
+    
+    pub fn remove(target_path: std::path::PathBuf) -> Self {
+        Self {
+            operation: FileOperation::Remove,
+            target_path,
+            content: None,
+            temp_file: None,
+        }
+    }
+    
+    pub fn run(self) -> Result<(), String> {
+        match self.operation {
+            FileOperation::Write => self.run_write(),
+            FileOperation::Remove => self.run_remove(),
+        }
+    }
+    
+    fn run_write(mut self) -> Result<(), String> {
+        let content = self.content.take().ok_or("No content provided for write operation")?;
+        
+        // Create temp file
+        let temp_file = std::env::temp_dir().join(format!("lempify-{}", 
+            self.target_path.file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("temp")
+        ));
+        
+        std::fs::write(&temp_file, content)
+            .map_err(|e| format!("Failed to write temporary file: {}", e))?;
+            
+        self.temp_file = Some(temp_file.clone());
+        
+        let temp_path = temp_file.to_str().unwrap();
+        let target_path_str = self.target_path.to_str().unwrap();
+        
+        if sudoers_exists() {
+            // Use sudo directly
+            let output = std::process::Command::new("sudo")
+                .args(["mv", temp_path, target_path_str])
+                .output()
+                .map_err(|e| format!("Failed to run sudo: {}", e))?;
+
+            if !output.status.success() {
+                return Err(format!(
+                    "Failed to write file: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                ));
+            }
+        } else {
+            // Fall back to osascript for admin privileges
+            #[cfg(target_os = "macos")]
+            {
+                let script = format!(
+                    "do shell script \"mv {temp_file} {target_path}\" with administrator privileges",
+                    temp_file = temp_path,
+                    target_path = target_path_str
+                );
+                crate::osascript::run(
+                    &script,
+                    Some("Lempify needs permission to write configuration file. Please enter your macOS password."),
+                )?;
+            }
+
+            #[cfg(target_os = "linux")]
+            {
+                let output = std::process::Command::new("pkexec")
+                    .args(["sh", "-c", &format!("mv {temp_file} {target_path}", temp_file = temp_path, target_path = target_path_str)])
+                    .output()
+                    .map_err(|e| format!("Failed to execute pkexec: {}", e))?;
+
+                if !output.status.success() {
+                    return Err(format!(
+                        "Failed to write file: {}",
+                        String::from_utf8_lossy(&output.stderr)
+                    ));
+                }
+            }
+        }
+        
+        Ok(())
+    }
+    
+    fn run_remove(self) -> Result<(), String> {
+        if !self.target_path.exists() {
+            return Ok(());
+        }
+        
+        let target_path_str = self.target_path.to_str().unwrap();
+        
+        if sudoers_exists() {
+            // Use sudo directly
+            let output = std::process::Command::new("sudo")
+                .args(["rm", target_path_str])
+                .output()
+                .map_err(|e| format!("Failed to run sudo: {}", e))?;
+
+            if !output.status.success() {
+                return Err(format!(
+                    "Failed to remove file: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                ));
+            }
+        } else {
+            // Fall back to osascript for admin privileges
+            #[cfg(target_os = "macos")]
+            {
+                let script = format!(
+                    "do shell script \"rm {target_path}\" with administrator privileges",
+                    target_path = target_path_str
+                );
+                crate::osascript::run(
+                    &script,
+                    Some("Lempify needs permission to remove configuration file. Please enter your macOS password."),
+                )?;
+            }
+
+            #[cfg(target_os = "linux")]
+            {
+                let output = std::process::Command::new("pkexec")
+                    .args(["sh", "-c", &format!("rm {target_path}", target_path = target_path_str)])
+                    .output()
+                    .map_err(|e| format!("Failed to execute pkexec: {}", e))?;
+
+                if !output.status.success() {
+                    return Err(format!(
+                        "Failed to remove file: {}",
+                        String::from_utf8_lossy(&output.stderr)
+                    ));
+                }
+            }
+        }
+        
+        Ok(())
+    }
+}
+
+impl Drop for FileSudoCommand {
+    fn drop(&mut self) {
+        // Clean up temp file if it still exists
+        if let Some(temp_file) = &self.temp_file {
+            if temp_file.exists() {
+                let _ = std::fs::remove_file(temp_file);
+            }
+        }
+    }
+}

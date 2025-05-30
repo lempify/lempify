@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use crate::{brew, dirs};
+use crate::{brew, dirs, utils::FileSudoCommand};
 
 /// Generate a standard Nginx config template for a site
 pub fn generate_nginx_config_template(name: &str, tld: &str, root_path: &Path) -> String {
@@ -36,8 +36,8 @@ server {{
 /// Add Lempify include to the main Nginx config
 pub fn add_lempify_to_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
-    let nginx_dir = dirs::get_nginx()?;
-    let include_path = nginx_dir.join("*.conf");
+    let sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
+    let include_path = sites_enabled_dir.join("*.conf");
     let include_block = format!("# Lempify\n\tinclude {};", include_path.display());
 
     let contents = fs::read_to_string(nginx_conf_path)
@@ -84,19 +84,21 @@ pub fn add_lempify_to_conf() -> Result<(), String> {
 
     let patched = patched_lines.join("\n");
 
-    fs::write(nginx_conf_path, patched)
-        .map_err(|e| format!("Failed to write patched nginx.conf: {}", e))?;
+    write_file_with_sudo(&patched, Path::new(nginx_conf_path))?;
 
-    //println!("🛠 Patched nginx.conf to include Lempify config path.");
+    // Remove the backup file
+    if let Err(e) = fs::remove_file(format!("{}.bak", nginx_conf_path)) {
+        println!("Failed to remove nginx.conf backup: {}", e);
+    }
 
     Ok(())
 }
 
 /// Update a site's Nginx config with SSL configuration
 pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
-    let nginx_dir = dirs::get_nginx()?;
+    let sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
     let certs_dir = dirs::get_certs()?;
-    let nginx_config_path = nginx_dir.join(format!("{}.conf", domain));
+    let nginx_config_path = sites_enabled_dir.join(format!("{}.conf", domain));
 
     let contents = fs::read_to_string(&nginx_config_path)
         .map_err(|e| format!("Failed to read nginx config: {}", e))?;
@@ -118,8 +120,7 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
 
     let patched = patched_lines.join("\n");
 
-    fs::write(nginx_config_path, patched)
-        .map_err(|e| format!("Failed to write patched nginx config: {}", e))?;
+    write_file_with_sudo(&patched, &nginx_config_path)?;
 
     Ok(())
 }
@@ -128,4 +129,9 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
 pub fn restart_nginx() -> Result<(), String> {
     //println!("Restarting nginx");
     brew::restart_service("nginx")
-} 
+}
+
+/// Write a file to a system location that requires elevated permissions
+fn write_file_with_sudo(content: &str, target_path: &Path) -> Result<(), String> {
+    FileSudoCommand::write(content.to_string(), target_path.to_path_buf()).run()
+}

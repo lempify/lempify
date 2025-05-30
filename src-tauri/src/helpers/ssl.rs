@@ -2,6 +2,7 @@ use shared::{ssl, utils, osascript};
 
 pub fn secure_site(domain: &str) -> Result<(), String> {
     println!("secure_site: {}", domain);
+    // @TODO move to function
     if !utils::is_bin_installed("mkcert").unwrap_or(false) {
         crate::helpers::service_utils::install_via_brew("mkcert")
             .map_err(|e| format!("Failed to install mkcert: {}", e))?;

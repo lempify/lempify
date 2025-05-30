@@ -19,7 +19,8 @@ pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
             if let Ok(site) = entry {
                 let site_name = site.file_name().to_string_lossy().to_string();
 
-                if site_name.starts_with('.') {
+                // Excude /opt/homebrew/var/www/index.html & /opt/homebrew/var/www/50x.html in brew installs
+                if site_name.starts_with('.') || site_name.ends_with(".html") {
                     continue;
                 }
 

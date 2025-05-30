@@ -1,6 +1,7 @@
 use users::{get_effective_username, User, get_user_by_name};
 
-pub fn get_current() -> Result<User, String> {
+// @TODO: Unused
+pub fn _get_current() -> Result<User, String> {
     // Try to get sudo user first
     if let Ok(sudo_user) = std::env::var("SUDO_USER") {
         return get_user_by_name(&sudo_user)
