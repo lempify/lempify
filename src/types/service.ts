@@ -18,12 +18,3 @@ export type SiteCreatePayload = {
   withWordPress?: boolean; // future
   withSSL?: boolean; // future
 };
-
-export type SiteInfo = {
-  name: string;
-  domain: string;
-  exists: boolean;
-  in_hosts: boolean;
-  config_path: string;
-  is_ssl: boolean;
-};

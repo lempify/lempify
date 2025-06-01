@@ -10,6 +10,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 /**
  * Internal dependencies
  */
+import Site from "./ui/Site";
 import Sites from "./ui/Sites";
 import Header from "./ui/Header";
 import Sidebar from "./ui/Sidebar";
@@ -39,6 +40,7 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/sites" element={<Sites />} />
+                    <Route path="/site/:domain" element={<Site />} />
                     <Route path="/settings" element={<Settings />} />
                   </Routes>
                 </main>
