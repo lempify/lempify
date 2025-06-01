@@ -2,6 +2,7 @@
  * External imports
  */
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Internal imports
@@ -61,11 +62,17 @@ const handleEvents = (domain: SiteInfo["domain"], refresh: () => void, invoke: (
  * @param site - The site info
  * @param refresh - The refresh function
  */
-function SitesSite({ site, refresh }: { site: SiteInfo, refresh: () => void }) {
+function SiteCard({ site, refresh }: { site: SiteInfo, refresh: () => void }) {
 
   const { domain, is_ssl } = site;
   const { invoke, invokeStatus } = useInvoke();
   const handleEvent = useCallback(() => handleEvents(domain, refresh, invoke), [domain, refresh, invoke]);
+
+  const navigate = useNavigate();
+
+  const editSite = () => {
+    navigate(`/site/${site.domain}`);
+  }
 
   return (
     <div className={`relative`}>
@@ -84,6 +91,7 @@ function SitesSite({ site, refresh }: { site: SiteInfo, refresh: () => void }) {
           </div>
         </div>
         <div className="mt-3 flex gap-2">
+          <button onClick={editSite} className="text-sm text-[var(--lempify-primary)] hover:underline">Edit</button>
           <button onClick={() => openInBrowser(domain, is_ssl)} className="text-sm text-[var(--lempify-primary)] hover:underline">Open</button>
           <button onClick={handleEvent().deleteSite} className="text-sm text-red-500 hover:underline">Delete</button>
         </div>
@@ -93,4 +101,4 @@ function SitesSite({ site, refresh }: { site: SiteInfo, refresh: () => void }) {
   );
 };
 
-export default SitesSite;
+export default SiteCard;
