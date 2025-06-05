@@ -1,12 +1,11 @@
 use helpers::ipc;
-use service::get_all_services;
+use services::get_all_services;
 
 use shared::brew;
 
-mod helpers;
 mod models;
-mod service;
-mod traits;
+mod services;
+mod helpers;
 
 fn main() {
     println!("[lempifyd:pid]: {}", std::process::id());

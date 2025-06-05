@@ -5,7 +5,7 @@ use std::os::unix::net::{UnixListener, UnixStream};
 use std::fs;
 
 use shared::constants::LEMPIFYD_SOCKET_PATH;
-use crate::service::get_all_services;
+use crate::services::get_all_services;
 
 #[derive(Debug, Deserialize)]
 pub struct DaemonCommand {

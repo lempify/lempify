@@ -15,6 +15,7 @@ interface DarkModeContextValue {
     isDark: boolean;
     setTheme: (theme: Theme) => void;
     toggleTheme: () => void;
+    valueByTheme: (light: string, dark: string) => string;
 }
 
 const DarkModeContext = createContext<DarkModeContextValue | undefined>(undefined);
@@ -55,11 +56,7 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
         setIsDark(resolved === 'dark');
         applyHtmlClass(theme);
         localStorage.setItem(THEME_KEY, theme);
-    }, [theme]);
-
-    useEffect(() => {
         if (theme !== 'system') return;
-
         const media = window.matchMedia('(prefers-color-scheme: dark)');
         const handler = (event: MediaQueryListEvent) => {
             setIsDark(event.matches);
@@ -78,8 +75,12 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
                     getSystemTheme() === 'dark' ? 'light' : 'dark'
         );
 
+    const valueByTheme = (light: string, dark: string) => {
+        return isDark ? dark : light;
+    };
+
     return (
-        <DarkModeContext.Provider value={{ theme, isDark, setTheme, toggleTheme }}>
+        <DarkModeContext.Provider value={{ theme, valueByTheme, isDark, setTheme, toggleTheme }}>
             {children}
         </DarkModeContext.Provider>
     );
