@@ -11,10 +11,10 @@ use super::start_stop::restart_service;
 
 #[command]
 pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
-    let nginx_config_dir = dirs::get_nginx()?;
+    let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
 
-    if !nginx_config_dir.exists() {
-        fs::create_dir_all(&nginx_config_dir)
+    if !nginx_sites_enabled_dir.exists() {
+        fs::create_dir_all(&nginx_sites_enabled_dir)
             .map_err(|e| format!("Failed to create nginx config directory: {}", e))?;
     }
 
@@ -24,7 +24,7 @@ pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
         return Err(format!("Site directory not found: {}", site_path.display()));
     }
 
-    let config_path = nginx_config_dir.join(format!("{}.conf", domain));
+    let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain));
     let config_contents = generate_nginx_config_template(&domain, "test", &site_path);
 
     fs::write(&config_path, config_contents)

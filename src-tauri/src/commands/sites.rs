@@ -7,7 +7,7 @@ use shared::{constants::HOSTS_PATH, dirs, ssl};
 #[command]
 pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
     let sites_dir = dirs::get_sites()?;
-    let nginx_dir = dirs::get_nginx()?;
+    let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
     let hosts = std::fs::read_to_string(HOSTS_PATH).unwrap_or_default();
 
     let mut sites = vec![];
@@ -25,7 +25,7 @@ pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
                 }
 
                 let domain = format!("{}", site_name);
-                let config_path = nginx_dir.join(format!("{}.conf", site_name));
+                let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", site_name));
                 let in_hosts = hosts.contains(&domain);
                 let config_path_str = if config_path.exists() {
                     config_path.display().to_string()

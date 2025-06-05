@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --lempify-primary: #38b6ff;
+  --lempify-primary: rgb(56, 182, 255);
   --lempify-primary-50:  #e3f5ff;
   --lempify-primary-100: #b9e4ff;
   --lempify-primary-200: #8fd3ff;

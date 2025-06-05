@@ -1,6 +1,6 @@
 use std::process::Command;
 
-use crate::traits::service_controller::ServiceController;
+use crate::models::service_controller::ServiceController;
 
 use shared::brew;
 

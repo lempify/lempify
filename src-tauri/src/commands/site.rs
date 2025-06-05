@@ -8,16 +8,12 @@ use crate::{
         ssl::secure_site,
     },
     models::{
-        config::{ConfigManager, SiteBuilder, SiteConfig, SiteServices},
+        config::{ConfigManager, Site, SiteBuilder, SiteConfig, SiteServices},
         service::SiteCreatePayload,
     },
 };
 
-use shared::{
-    dirs, 
-    ssl::delete_certs, 
-    utils::FileSudoCommand
-};
+use shared::{dirs, ssl::delete_certs, utils::FileSudoCommand};
 
 /// Write a file to a system location that requires elevated permissions
 fn write_file_with_sudo(content: &str, target_path: &std::path::Path) -> Result<(), String> {
@@ -33,27 +29,25 @@ fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
 pub async fn create_site(
     config_manager: State<'_, ConfigManager>,
     payload: SiteCreatePayload,
-) -> Result<String, String> {
+) -> Result<Site, String> {
     println!("Creating site: {:?}", payload);
 
     let sites_dir = dirs::get_sites()?;
     let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
 
-    let site_name = &payload.domain.to_lowercase();
-    let (domain, tld) = site_name.split_once('.')
-    .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
-
-    let full_domain = format!("{}.{}", domain, tld);
-    let site_path = sites_dir.join(site_name);
-
-    println!("- Name: {} \n- Domain:{}", site_name, full_domain);
+    let domain = &payload.domain.to_lowercase();
+    let (domain_name, domain_tld) = 
+        domain.split_once('.')
+            .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
+        
+    let site_path = sites_dir.join(&domain);
 
     if site_path.exists() {
         return Err("Site already exists.".to_string());
     }
 
     // Check if site already exists in config
-    if config_manager.get_site(&full_domain).await.is_some() {
+    if config_manager.get_site(&domain).await.is_some() {
         return Err("Site already exists in configuration.".to_string());
     }
 
@@ -61,19 +55,19 @@ pub async fn create_site(
     fs::create_dir_all(&site_path)
         .map_err(|e| format!("Failed to create site directory: {}", e))?;
 
-    let config_path = nginx_sites_enabled_dir.join(format!("{site_name}.conf"));
-    let config_contents = generate_nginx_config_template(domain, &tld, &site_path);
-    println!("Creating NGINX file");
+    let config_path = nginx_sites_enabled_dir.join(format!("{domain}.conf"));
+    let config_contents = generate_nginx_config_template(domain_name, &domain_tld, &site_path);
+    
     write_file_with_sudo(&config_contents, &config_path)?;
 
     println!("Adding to Host");
     // Add to hosts file
-    hosts::add_entry(&full_domain)?;
+    hosts::add_entry(&domain)?;
 
     println!("Adding SSL");
     // Setup SSL if requested
     if payload.ssl {
-        secure_site(&full_domain)?;
+        secure_site(&domain)?;
     }
 
     println!("Building site config");
@@ -87,14 +81,14 @@ pub async fn create_site(
     let ssl_key = if payload.ssl {
         Some(format!(
             "/opt/homebrew/etc/nginx/ssl/{}-key.pem",
-            full_domain
+            domain
         ))
     } else {
         None
     };
 
     let ssl_cert = if payload.ssl {
-        Some(format!("/opt/homebrew/etc/nginx/ssl/{}.pem", full_domain))
+        Some(format!("/opt/homebrew/etc/nginx/ssl/{}.pem", domain))
     } else {
         None
     };
@@ -108,8 +102,8 @@ pub async fn create_site(
     };
 
     let site = SiteBuilder::new()
-        .name(&full_domain)
-        .domain(&full_domain)
+        .name(domain)
+        .domain(format!("{}.{}", domain_name, domain_tld))
         .ssl(payload.ssl)
         .services(site_services)
         .site_type(&payload._site_type)
@@ -122,11 +116,11 @@ pub async fn create_site(
     println!("Writing To Config: {:#?}", site);
 
     // Store in config.json
-    config_manager.create_site(site).await?;
+    config_manager.create_site(&site).await?;
 
     println!("Done!");
 
-    Ok(full_domain)
+    Ok(site)
 }
 
 #[command]

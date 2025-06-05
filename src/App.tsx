@@ -30,19 +30,21 @@ const App = () => {
     <AppConfigProvider>
       <ServiceProvider>
         <Router>
-          <div className="flex flex-col min-h-screen">
+          <div className="flex flex-col h-full">
             <Header />
-            <div className="flex">
+            <div className="flex h-full">
               <Sidebar />
-              <div className="flex-1 flex flex-col ml-64">
-                <main className="p-10 bg-[var(--lempify-bg)] text-[var(--lempify-text)] relative">
+              <div className="flex-1 flex flex-col ml-64 h-full">
+                <main className="p-10 bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)] relative">
                   <CanvasBackground />
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/sites" element={<Sites />} />
-                    <Route path="/site/:domain" element={<Site />} />
-                    <Route path="/settings" element={<Settings />} />
-                  </Routes>
+                  <div className="relative">
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/sites" element={<Sites />} />
+                      <Route path="/site/:domain" element={<Site />} />
+                      <Route path="/settings" element={<Settings />} />
+                    </Routes>
+                  </div>
                 </main>
               </div>
             </div>

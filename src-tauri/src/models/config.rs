@@ -253,7 +253,7 @@ impl ConfigManager {
     }
 
     // CRUD Operations for Sites
-    pub async fn create_site(&self, site: Site) -> Result<(), String> {
+    pub async fn create_site(&self, site: &Site) -> Result<(), String> {
         let mut config = self.config.write().await;
         
         // Check if site already exists
@@ -261,7 +261,7 @@ impl ConfigManager {
             return Err(format!("Site with domain '{}' already exists", site.domain));
         }
         
-        config.sites.push(site);
+        config.sites.push(site.clone());
         drop(config);
         self.save_config().await
     }
@@ -335,7 +335,7 @@ pub async fn create_site_config(
     config_manager: State<'_, ConfigManager>,
     site: Site,
 ) -> Result<String, String> {
-    config_manager.create_site(site.clone()).await?;
+    config_manager.create_site(&site).await?;
     Ok(format!("Site '{}' created successfully", site.domain))
 }
 

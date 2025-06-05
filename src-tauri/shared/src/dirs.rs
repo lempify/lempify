@@ -20,12 +20,12 @@ pub fn get_home() -> Result<PathBuf, String> {
 pub fn get_lempify_app_dir() -> Result<PathBuf, String> {
     let config_dir = get_config()?;
     let app_dir = config_dir.join("Lempify");
-    
+
     if !app_dir.exists() {
         fs::create_dir_all(&app_dir)
             .map_err(|e| format!("Failed to create app directory: {}", e))?;
     }
-    
+
     Ok(app_dir)
 }
 
@@ -55,12 +55,12 @@ pub fn get_sites() -> Result<PathBuf, String> {
     } else {
         PathBuf::from("/var/www")
     };
-    
+
     if !sites_dir.exists() {
         fs::create_dir_all(&sites_dir)
             .map_err(|e| format!("Failed to create sites directory: {}", e))?;
     }
-    
+
     Ok(sites_dir)
 }
 
@@ -71,16 +71,16 @@ pub fn get_sites() -> Result<PathBuf, String> {
  */
 pub fn get_nginx() -> Result<PathBuf, String> {
     let nginx_dir = if cfg!(target_os = "macos") {
-        PathBuf::from("/opt/homebrew/etc/nginx/sites-enabled")
+        PathBuf::from("/opt/homebrew/etc/nginx")
     } else {
-        PathBuf::from("/etc/nginx/sites-enabled")
+        PathBuf::from("/etc/nginx")
     };
-    
+
     Ok(nginx_dir)
 }
 
 /**
- * Get the certs directory (standard system location) 
+ * Get the certs directory (standard system location)
  * /opt/homebrew/etc/nginx/ssl (macOS with Homebrew)
  * /etc/ssl/certs (Linux)
  */
@@ -90,12 +90,12 @@ pub fn get_certs() -> Result<PathBuf, String> {
     } else {
         PathBuf::from("/etc/ssl/certs")
     };
-    
+
     if !certs_dir.exists() {
         fs::create_dir_all(&certs_dir)
             .map_err(|e| format!("Failed to create certs directory: {}", e))?;
     }
-    
+
     Ok(certs_dir)
 }
 
@@ -105,16 +105,13 @@ pub fn get_certs() -> Result<PathBuf, String> {
  * /etc/nginx/sites-enabled (Linux)
  */
 pub fn get_nginx_sites_enabled() -> Result<PathBuf, String> {
-    let sites_enabled_dir = if cfg!(target_os = "macos") {
-        PathBuf::from("/opt/homebrew/etc/nginx/sites-enabled")
-    } else {
-        PathBuf::from("/etc/nginx/sites-enabled")
-    };
-    
-    if !sites_enabled_dir.exists() {
-        fs::create_dir_all(&sites_enabled_dir)
+    let nginx_config_dir = get_nginx()?;
+    let nginx_sites_enabled_dir = nginx_config_dir.join("sites-enabled");
+
+    if !nginx_config_dir.exists() {
+        fs::create_dir_all(&nginx_config_dir)
             .map_err(|e| format!("Failed to create sites-enabled directory: {}", e))?;
     }
-    
-    Ok(sites_enabled_dir)
+
+    Ok(nginx_sites_enabled_dir)
 }
