@@ -25,7 +25,7 @@ export default function Header() {
     };
 
     return (
-        <header className="flex items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 sticky top-0 z-10">
+        <header className="flex items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 col-span-2 sticky top-0 z-1">
             <div className="p-4 text-xl font-bold">
                 <span className="text-[var(--lempify-primary)]">LEMP</span>
                 <span className="text-[var(--lempify-primary-200)] after:content-['.'] after:text-neutral-500">ify</span>

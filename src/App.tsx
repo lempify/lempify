@@ -19,8 +19,10 @@ import Settings from "./ui/Settings";
 import { ServiceProvider } from "./context/ServiceContext";
 
 import useLempifyd from "./hooks/useLempifyd";
-import CanvasBackground from "./ui/CanvasBackground";
+// import CanvasBackground from "./ui/CanvasBackground";
+// import Background from "./ui/Background";
 import { AppConfigProvider } from "./context/AppConfigContext";
+import Background from "./ui/Background";
 
 const App = () => {
   // Start Nginx, MySQL, PHP services
@@ -30,24 +32,26 @@ const App = () => {
     <AppConfigProvider>
       <ServiceProvider>
         <Router>
-          <div className="flex flex-col h-full">
+          <div className="h-screen grid grid-cols-[256px_1fr] grid-rows-[65px_1fr]">
+
+            {/* Header spans both columns */}
             <Header />
-            <div className="flex h-full">
-              <Sidebar />
-              <div className="flex-1 flex flex-col ml-64 h-full">
-                <main className="p-10 bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)] relative">
-                  <CanvasBackground />
-                  <div className="relative">
-                    <Routes>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/sites" element={<Sites />} />
-                      <Route path="/site/:domain" element={<Site />} />
-                      <Route path="/settings" element={<Settings />} />
-                    </Routes>
-                  </div>
-                </main>
+
+            {/* Sidebar - fixed in left column */}
+            <Sidebar />
+
+            {/* Main content - scrollable in right column */}
+            <main className="overflow-y-auto bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)]">
+              <Background />
+              <div className="p-10 relative">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/sites" element={<Sites />} />
+                  <Route path="/site/:domain" element={<Site />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Routes>
               </div>
-            </div>
+            </main>
           </div>
         </Router>
       </ServiceProvider>

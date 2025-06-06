@@ -4,8 +4,13 @@ import App from "./App";
 
 import "./css/global.css";
 import { DarkModeProvider } from "./context/DarkModeProvider";
+import trackMousePosition from "./utils/mouse-position";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+const rootElement = document.getElementById("root") as HTMLElement;
+
+trackMousePosition(rootElement);
+
+ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <DarkModeProvider>
       <App />
