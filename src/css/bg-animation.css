@@ -17,7 +17,6 @@
 }
 
 .dark .grid-background {
-  /* --noise-svg: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><defs><filter id="noise"><feTurbulence baseFrequency="0.9" numOctaves="1" result="noise"/><feColorMatrix in="noise" type="saturate" values="0"/><feComponentTransfer><feFuncA type="discrete" tableValues="0 0.01 0 0.03 0 0.01 0.02 0 0.01 0"/></feComponentTransfer></filter></defs><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.1"/></svg>'); */
   background:
     var(--noise-svg),
     /* Grid lines */
@@ -29,7 +28,7 @@
     var(--grid-size) var(--grid-size);
 }
 
-/* Falling lines container */
+/* Falling lines */
 .falling-lines-container {
   position: absolute;
   top: 0;
@@ -38,47 +37,110 @@
   height: 100%;
   pointer-events: none;
 }
-
-/* Falling lines animation */
 .falling-line {
+  --gradient-blue: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(56, 182, 255, 0.25) 20%,
+      rgba(56, 182, 255, 0.5) 50%,
+      rgba(56, 182, 255, 0.75) 80%,
+      rgba(56, 182, 255, 1) 100%);
+
+  --gradient-darkblue: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(25, 112, 163, 0.25) 20%,
+      rgba(25, 112, 163, 0.5) 50%,
+      rgba(25, 112, 163, 0.75) 80%,
+      rgba(25, 112, 163, 1) 100%);
+
+  --gradient-lightblue: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(143, 211, 255, 0.25) 20%,
+      rgba(143, 211, 255, 0.5) 50%,
+      rgba(143, 211, 255, 0.75) 80%,
+      rgba(143, 211, 255, 1) 100%);
+
+  --gradient-orange: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(240, 92, 7, 0.25) 20%,
+      rgba(240, 92, 7, 0.5) 50%,
+      rgba(240, 92, 7, 0.75) 80%,
+      rgba(240, 92, 7, 1) 100%);
+
+  --gradient-yellow: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(255, 221, 0, 0.25) 20%,
+      rgba(255, 221, 0, 0.5) 50%,
+      rgba(255, 221, 0, 0.75) 80%,
+      rgba(255, 221, 0, 1) 100%);
+
   will-change: transform;
   width: 1px;
   height: 100px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(59, 130, 246, 0.8) 50%,
-    rgba(59, 130, 246, 1) 100%
-  );
   animation-timing-function: linear;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   position: absolute;
   top: -100px;
-  filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    inset: 0;
+    filter: blur(2px);
+  }
 }
 
-/* .dark .falling-line {
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(147, 197, 253, 0.8) 50%,
-    rgba(147, 197, 253, 1) 100%
-  );
-  filter: drop-shadow(0 0 10px rgba(147, 197, 253, 0.5));
-} */
+/* Alternative: Stronger glow variant */
+.falling-line.color-blue{
+  background: var(--gradient-blue);
+  &::after {
+    background: var(--gradient-blue);
+  }
+}
+
+.falling-line.color-lightblue{
+  background: var(--gradient-lightblue);
+  &::after {
+    background: var(--gradient-lightblue);
+  }
+}
+
+.falling-line.color-darkblue{
+  background: var(--gradient-darkblue);
+  &::after {
+    background: var(--gradient-darkblue);
+  }
+}
+
+.falling-line.color-orange{
+  background: var(--gradient-orange);
+  &::after {
+    background: var(--gradient-orange);
+  }
+}
+
+.falling-line.color-yellow{
+  background: var(--gradient-yellow);
+  &::after {
+    background: var(--gradient-yellow);
+  }
+}
 
 @keyframes fall {
   from {
     transform: translateY(0);
-    opacity: 0;
+    opacity: 1;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   to {
     transform: translateY(calc(100vh + 100px));
     opacity: 0;
@@ -87,14 +149,11 @@
 
 /* Spotlight follow effect */
 .spotlight-follow {
-  background: radial-gradient(
-    50vh 
-    circle at var(--mouse-x, 0) var(--mouse-y, 0),
+  background: radial-gradient(50vh circle at var(--mouse-x, 0) var(--mouse-y, 0),
       rgba(255, 255, 255, 0) 50%,
       rgba(255, 255, 255, 0.25) 60%,
       rgba(255, 255, 255, 0.5) 70%,
-      rgba(255, 255, 255, 0.7) 100%
-  );
+      rgba(255, 255, 255, 0.7) 100%);
   position: absolute;
   top: 0;
   left: 0;
@@ -103,12 +162,9 @@
 }
 
 .dark .spotlight-follow {
-  background: radial-gradient(
-    50vh 
-    circle at var(--mouse-x, 0) var(--mouse-y, 0),
+  background: radial-gradient(50vh circle at var(--mouse-x, 0) var(--mouse-y, 0),
       rgba(0, 0, 0, 0) 50%,
       rgba(0, 0, 0, 0.25) 60%,
       rgba(0, 0, 0, 0.5) 70%,
-      rgba(0, 0, 0, 0.6) 100%
-  );
+      rgba(0, 0, 0, 0.6) 100%);
 }
