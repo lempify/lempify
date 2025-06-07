@@ -54,20 +54,18 @@ export default function Background() {
     const spawnFallingLine = useCallback(() => {
         if (!containerRef.current) return;
 
-        const rand = Math.random();
-
         const containerWidth = containerRef.current.offsetWidth;
         const gridColumns = Math.floor(containerWidth / gridSize);
-        const randomColumn = Math.floor(rand * gridColumns);
+        const randomColumn = Math.floor(Math.random() * gridColumns);
         const left = randomColumn * gridSize;
 
         const newLine: FallingLine = {
             id: nextLineIdRef.current++,
             left,
-            duration: 2 + rand * 4,
-            delay: rand * 0.5,
-            height: Math.floor(rand * (MIN_MAX_HEIGHT[1] - MIN_MAX_HEIGHT[0] + 1)) + MIN_MAX_HEIGHT[0],
-            className: COLORS[Math.floor(rand * COLORS.length)],
+            duration: 2 + Math.random() * 4,
+            delay: Math.random() * 0.5,
+            height: Math.floor(Math.random() * (MIN_MAX_HEIGHT[1] - MIN_MAX_HEIGHT[0] + 1)) + MIN_MAX_HEIGHT[0],
+            className: COLORS[Math.floor(Math.random() * COLORS.length)],
         };
 
         setFallingLines(prev => [...prev, newLine]);
