@@ -106,7 +106,7 @@ pub async fn create_site(
         .domain(format!("{}.{}", domain_name, domain_tld))
         .ssl(payload.ssl)
         .services(site_services)
-        .site_type(&payload._site_type)
+        .site_type(&payload.site_type)
         .language("php")
         .database("mysql")
         .site_config(site_config)
