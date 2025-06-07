@@ -17,7 +17,7 @@ const Sites = () => {
       <SiteCreate onRefresh={refresh} />
       <div className={`${pageSection} ${cornerBottomLeft}`}>
         <header className="flex items-center gap-2 mb-8">
-          <h2 className="text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)]">Create New Site</h2>
+          <h2 className="text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)]">Existing Sites</h2>
           <button onClick={refresh} className="hover:rotate-270 transition-transform duration-300 ml-auto">
             <SvgRefresh />
           </button>
