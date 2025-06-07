@@ -39,7 +39,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       const { data, error } = await invoke<Site>("create_site", {
         payload: {
           domain: formValues.domain,
-          _site_type: formValues.type,
+          site_type: formValues.type,
           ssl: formValues.ssl
         }
       });
