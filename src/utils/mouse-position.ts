@@ -56,6 +56,11 @@ export default function trackMousePosition(rootElement: HTMLElement) {
     }, { passive: true });
 
     rootElement.addEventListener("mouseleave", () => {
+        // if is animating, complete animation transition and then set isAnimating to false
+        if (isAnimating) {
+            animate(0.3);
+            isAnimating = false;
+        }
         isMouseInWindow = false;
         if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
