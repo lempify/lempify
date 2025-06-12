@@ -12,5 +12,6 @@ export const cornerBottomLeft =
 
 export const pageSection = "p-10 w-full " +
       "border border-neutral-300 dark:border-neutral-600 " +
-      "bg-neutral-50/80 dark:bg-neutral-900/80 " +
+      "bg-neutral-50/80 dark:bg-neutral-900/60 " +
+      "backdrop-blur-[1px] " +
       "relative";
