@@ -15,7 +15,7 @@ interface DarkModeContextValue {
     isDark: boolean;
     setTheme: (theme: Theme) => void;
     toggleTheme: () => void;
-    valueByTheme: (light: string, dark: string) => string;
+    valueByTheme: (light: string | string[], dark: string | string[]) => string | string[];
 }
 
 const DarkModeContext = createContext<DarkModeContextValue | undefined>(undefined);
@@ -75,9 +75,7 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
                     getSystemTheme() === 'dark' ? 'light' : 'dark'
         );
 
-    const valueByTheme = (light: string, dark: string) => {
-        return isDark ? dark : light;
-    };
+    const valueByTheme = (light: string | string[], dark: string | string[]) => isDark ? dark : light;
 
     return (
         <DarkModeContext.Provider value={{ theme, valueByTheme, isDark, setTheme, toggleTheme }}>

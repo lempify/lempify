@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import useWindowEvents from "../hooks/useWindowActive";
+import { useDarkMode } from "../context/DarkModeProvider";
 
 import "../css/bg-animation.css";
 
@@ -12,7 +13,14 @@ interface FallingLine {
     className: string;
 }
 
-const COLORS = [
+const COLORS_LIGHT = [
+    "color-blue",
+    "color-lightblue",
+    "color-darkblue",
+    "color-orange",
+]
+
+const COLORS_DARK = [
     "color-blue",
     "color-lightblue",
     "color-darkblue",
@@ -30,6 +38,8 @@ export default function Background() {
     const nextLineIdRef = useRef(0);
     const spawnIntervalRef = useRef<number>(0);
     const windowEvent = useWindowEvents();
+    const { valueByTheme } = useDarkMode();
+    const fallingLineColors = valueByTheme(COLORS_LIGHT, COLORS_DARK);
 
     // @TODO: make this dynamic based on `--grid-size` css property
     const gridSize = 80;
@@ -65,7 +75,7 @@ export default function Background() {
             duration: 2 + Math.random() * 4,
             delay: Math.random() * 0.5,
             height: Math.floor(Math.random() * (MIN_MAX_HEIGHT[1] - MIN_MAX_HEIGHT[0] + 1)) + MIN_MAX_HEIGHT[0],
-            className: COLORS[Math.floor(Math.random() * COLORS.length)],
+            className: fallingLineColors[Math.floor(Math.random() * fallingLineColors.length)],
         };
 
         setFallingLines(prev => [...prev, newLine]);
@@ -73,7 +83,7 @@ export default function Background() {
         setTimeout(() => {
             setFallingLines(prev => prev.filter(line => line.id !== newLine.id));
         }, (newLine.duration + newLine.delay) * 1000);
-    }, []);
+    }, [fallingLineColors]);
 
     useEffect(() => {
         // Spawn lines at random intervals
