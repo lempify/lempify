@@ -41,12 +41,15 @@ pub struct Config {
     pub sites: Vec<Site>,
     #[serde(default = "Config::check_trusted")]
     pub trusted: bool,
+    #[serde(default = "Config::get_version")]
+    pub version: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
             sites: Vec::new(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
             trusted: Self::check_trusted(),
         }
     }
@@ -59,6 +62,10 @@ impl Config {
 
     pub fn refresh_trusted_status(&mut self) {
         self.trusted = Self::check_trusted();
+    }
+
+    pub fn get_version() -> String {
+        env!("CARGO_PKG_VERSION").to_string()
     }
 }
 
@@ -210,7 +217,7 @@ impl ConfigManagerBuilder {
 }
 
 pub struct ConfigManager {
-    config_path: std::path::PathBuf,
+    pub config_path: std::path::PathBuf,
     config: RwLock<Config>,
 }
 

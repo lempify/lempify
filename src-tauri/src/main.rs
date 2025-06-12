@@ -4,11 +4,13 @@
     windows_subsystem = "windows"
 )]
 
-mod commands;
-mod error;
-mod helpers;
-mod models;
 mod ui;
+mod error;
+mod models;
+mod helpers;
+mod commands;
+mod site_types;
+mod constants;
 
 use error::Result;
 use tauri::{Manager, RunEvent, WindowEvent};
@@ -42,9 +44,13 @@ fn main() -> Result<()> {
             app.manage(config_manager);
             // @TODO: Unused
             let _config = helpers::file_system::load_json()?;
+            // Run app setup
             helpers::setup::run()?;
+            // Spawn lempifyd sidecar
             lempifyd::spawn(lempifyd::sidecar(&app))?;
+            // Build menu
             ui::menu::build(&app)?;
+            // Open devtools
             ui::browser::open_devtools(&app);
             let _ = helpers::file_system::init();
             Ok(())

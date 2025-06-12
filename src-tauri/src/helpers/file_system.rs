@@ -1,4 +1,4 @@
-use shared::dirs::get_config;
+use shared::dirs::{get_config, get_lempify_app_dir};
 // use users::get_user_by_name;
 
 use std::fs;
@@ -12,12 +12,18 @@ use std::process::Command;
 
 use users::User;
 
+pub fn get_app_dir() -> Result<PathBuf, String> {
+    let config_dir = get_config()?;
+    let app_dir = config_dir.join("Lempify");
+    Ok(app_dir)
+}
+
 /**
  * Get a directory in the app support dir
  */
 pub fn get_config_dir(dir: &str) -> Result<PathBuf, String> {
-    let config_dir = get_config()?;
-    let config_dir = config_dir.join("lempify").join(dir);
+    let config_dir = get_lempify_app_dir()?;
+    let config_dir = config_dir.join(dir);
     Ok(config_dir)
 }
 
@@ -41,14 +47,21 @@ pub fn load_json() -> Result<String, String> {
 
 #[allow(dead_code)]
 pub struct AppFileSystem {
+    pub dir: PathBuf,
     pub sites_dir: PathBuf,
     pub nginx_dir: PathBuf,
     pub certs_dir: PathBuf,
+    pub stubs_dir: PathBuf,
 }
 
 #[allow(dead_code)]
 impl AppFileSystem {
     pub fn new() -> Result<Self, String> {
+
+        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR").to_string());
+
+        // Get src-tauri/stubs directory
+        let stubs_dir = dir.join("stubs");
         
         // Sites directory - standard web server location
         let sites_dir = if cfg!(target_os = "macos") {
@@ -72,9 +85,11 @@ impl AppFileSystem {
         };
         
         Ok(Self {
+            dir,
             sites_dir,
             nginx_dir,
             certs_dir,
+            stubs_dir,
         })
     }
 

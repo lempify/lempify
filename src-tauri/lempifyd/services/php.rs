@@ -24,6 +24,7 @@ impl ServiceController for PhpServiceController {
 
     fn is_installed(&self) -> bool {
         // Check for PHP binary in standard Homebrew locations
+        // TODO: Update to use AppFileSystem
         let possible_paths = [
             format!("/opt/homebrew/opt/php@{}/bin/php", self.version),
             format!("/usr/local/opt/php@{}/bin/php", self.version),

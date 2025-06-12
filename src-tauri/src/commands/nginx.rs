@@ -3,11 +3,12 @@ use tauri::command;
 
 use shared::{hosts::entry_exists, nginx::generate_nginx_config_template, ssl};
 
-use crate::models::service::{ServiceType, SiteInfo};
+use crate::{
+    commands::start_stop::restart_service,
+    models::service::{ServiceType, SiteInfo},
+};
 
 use shared::dirs;
-
-use super::start_stop::restart_service;
 
 #[command]
 pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
