@@ -1,11 +1,9 @@
 use std::fs;
 
-use shared::dirs::get_config;
+use shared::dirs::get_lempify_app_dir;
 
 fn create_site_dirs() -> Result<(), String> {
-    let lempify_dir = get_config()
-        .unwrap()
-        .join("Lempify");
+    let lempify_dir = get_lempify_app_dir()?;
 
     // If `~/.config/lempify` exists, setup has already been run.
     if lempify_dir.exists() {

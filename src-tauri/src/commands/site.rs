@@ -5,12 +5,13 @@ use crate::{
     helpers::{
         hosts,
         nginx::{generate_nginx_config_template, restart_nginx},
-        ssl::secure_site,
+        ssl::secure_site, stubs::create_site_type_stub,
     },
     models::{
         config::{ConfigManager, Site, SiteBuilder, SiteConfig, SiteServices},
         service::SiteCreatePayload,
     },
+    site_types::{install, wordpress},
 };
 
 use shared::{dirs, ssl::delete_certs, utils::FileSudoCommand};
@@ -64,12 +65,7 @@ pub async fn create_site(
     // Add to hosts file
     hosts::add_entry(&domain)?;
 
-    println!("Adding SSL");
-    // Setup SSL if requested
-    if payload.ssl {
-        secure_site(&domain)?;
-    }
-
+    
     println!("Building site config");
     // Create site object and store in config.json
     let site_services = SiteServices {
@@ -77,7 +73,12 @@ pub async fn create_site(
         mysql: "8.0".to_string(),
         nginx: "1.25".to_string(),
     };
-
+    
+    println!("Adding SSL");
+    // Setup SSL if requested
+    if payload.ssl {
+        secure_site(&domain)?;
+    }
     let ssl_key = if payload.ssl {
         Some(format!(
             "/opt/homebrew/etc/nginx/ssl/{}-key.pem",
@@ -92,6 +93,26 @@ pub async fn create_site(
     } else {
         None
     };
+
+    // Add site type stub.
+    create_site_type_stub(&payload.site_type, &domain)?;
+
+    // Install WordPress if it doesn't exist
+    if payload.site_type == "wordpress" {
+        // Install WordPress if it doesn't exist
+        let latest_version = match wordpress::versions().await {
+            Ok(versions) => {
+                let version = &versions.offers[0].version;
+                println!("WordPress latest version: {:#?}", version);
+                version.to_string()
+            }
+            Err(e) => {
+                println!("Warning: Failed to fetch WordPress versions, installing latest: {}", e); 
+                "latest".to_string()
+            }
+        };
+        install::wordpress(&latest_version).await?;
+    }
 
     let site_config = SiteConfig {
         ssl: payload.ssl,

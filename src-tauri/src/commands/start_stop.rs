@@ -1,6 +1,6 @@
 use tauri::command;
 
-use crate::helpers::service_utils::get_brew_formula;
+use crate::helpers::{service_utils::get_brew_formula, utils};
 use crate::commands::service_status::get_service_status;
 use crate::models::service::{ServiceStatus, ServiceType};
 use crate::helpers::php::{ensure_php_socket_path_exists, patch_php_fpm_socket_conf};
@@ -27,8 +27,5 @@ pub async fn stop_service(service: ServiceType) -> Result<ServiceStatus, String>
 
 #[command]
 pub async fn restart_service(service: ServiceType) -> Result<ServiceStatus, String> {
-    let formula = get_brew_formula(&service);
-    brew::stop_service(formula)?;
-    brew::start_service(formula)?;
-    Ok(get_service_status(service).await)
+    return utils::restart_service(service).await;
 }
