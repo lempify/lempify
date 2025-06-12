@@ -24,7 +24,7 @@ import { Site } from "../types";
 const defaultPayload = {
   domain: "",
   ssl: true,
-  type: "php",
+  type: "vanilla",
 };
 
 export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
