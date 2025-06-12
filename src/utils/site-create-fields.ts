@@ -19,7 +19,7 @@ export const fieldRelationships: Field[] = [
     {
       label: "Site type?",
       name: "type",
-      default: "php",
+      default: "vanilla",
       required: false,
       type: "radio",
       labelPosition: "top",
@@ -28,12 +28,12 @@ export const fieldRelationships: Field[] = [
       options: [
         {
           label: "Vanilla",
-          name: "php",
+          name: "vanilla",
           default: false,
           required: false,
           wrapperClassName: "flex items-center gap-2 h-[42px]",
           type: "checkbox",
-          description: "Whether the site should have PHP installed"
+          description: "Whether the site should have a basic site installed"
         },
         {
           label: "WordPress",
