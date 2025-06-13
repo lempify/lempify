@@ -2,7 +2,7 @@
 /**
  * External imports
  */
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 /**
  * Internal imports
@@ -17,6 +17,7 @@ const FormFields = (props: Field) => {
         description,
         type,
         value,
+        defaultValue,
         onChange = () => { },
         className = '',
         options,
@@ -25,6 +26,20 @@ const FormFields = (props: Field) => {
         descriptionPosition = 'bottom',
         inputAttributes = {},
     } = props;
+
+    const [fieldValue, setFieldValue] = useState(defaultValue);
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>, fieldName: string = name) {
+        const newValue = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        onChange(newValue, fieldName);
+        setFieldValue(newValue);
+    }
+
+    // useEffect(() => {
+    //     if (value === undefined) return;
+    //     setFieldValue(value);
+    //     setTouched(true);
+    // }, [value]);
 
     return (
         <Fragment>
@@ -36,8 +51,8 @@ const FormFields = (props: Field) => {
                     id={name}
                     name={name}
                     className={`${className}`}
-                    checked={value}
-                    onChange={(e) => onChange(e.target.checked)}
+                    checked={fieldValue}
+                    onChange={(e) => onChange(e.target.checked, name)}
                     {...inputAttributes}
                 />
             ) : type === 'radio' && options ? (
@@ -49,11 +64,11 @@ const FormFields = (props: Field) => {
                             name={name}
                             className={`${option.className ?? ''}`}
                             value={option.name}
-                            checked={option.name === value}
-                            onChange={(e) => onChange(e.target.value)}
+                            checked={option.name === fieldValue}
+                            onChange={handleChange}
                         />
                         <label htmlFor={option.name}>{option.label}</label>
-                        {value === option?.dependency?.[1] && option?.fields?.map((childField) => {
+                        {fieldValue === option?.dependency?.[1] && option?.fields?.map((childField) => {
                             const _name = `${name}|${option.name}|${childField.name}`;
                             return (
                                 <div className={`${childField.wrapperClassName ?? ''}`} key={childField.name}>
@@ -62,7 +77,7 @@ const FormFields = (props: Field) => {
                                         {...childField}
                                         name={_name}
                                         className={`${childField.className ?? ''}`}
-                                        onChange={(change) => onChange(change, _name)}
+                                        onChange={(change) => handleChange(change, _name)}
                                         {...childField.inputAttributes ?? {}}
                                     />
                                 </div>
@@ -75,10 +90,10 @@ const FormFields = (props: Field) => {
                     type="text"
                     id={name}
                     name={name}
-                    value={value}
+                    value={fieldValue}
                     placeholder={placeholder ?? ''}
                     className={`${className} placeholder:text-neutral-500 placeholder:italic`}
-                    onChange={(e) => onChange(e.target.value)}
+                    onChange={handleChange}
                     {...inputAttributes}
                 />
             ) : null}

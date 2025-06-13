@@ -1,10 +1,11 @@
+import { DEFAULT_SITE_TYPE } from "../constants";
 import { Field } from "../types/form";
 
 export const fieldRelationships: Field[] = [
     {
       label: "Domain:",
       name: "domain",
-      default: "",
+      defaultValue: "",
       className: "border border-neutral-200 focus:border-neutral-300 outline-none dark:border-neutral-700 mb-4 px-6 py-4 w-full",
       labelPosition: "top",
       required: true,
@@ -19,7 +20,7 @@ export const fieldRelationships: Field[] = [
     {
       label: "Site type?",
       name: "type",
-      default: "vanilla",
+      defaultValue: DEFAULT_SITE_TYPE,
       required: false,
       type: "radio",
       labelPosition: "top",
@@ -29,7 +30,7 @@ export const fieldRelationships: Field[] = [
         {
           label: "Vanilla",
           name: "vanilla",
-          default: false,
+          defaultValue: false,
           required: false,
           wrapperClassName: "flex items-center gap-2 h-[42px]",
           type: "checkbox",
@@ -38,7 +39,7 @@ export const fieldRelationships: Field[] = [
         {
           label: "WordPress",
           name: "wordpress",
-          default: false,
+          defaultValue: true,
           required: false,
           type: "checkbox",
           dependency: ["type", "wordpress"],
@@ -62,7 +63,7 @@ export const fieldRelationships: Field[] = [
             {
               label: "Multi-Site",
               name: "multisite",
-              default: false,
+              defaultValue: false,
               required: false,
               wrapperClassName: "flex items-center gap-2",
               type: "checkbox",
@@ -72,7 +73,7 @@ export const fieldRelationships: Field[] = [
         {
           label: "Laravel",
           name: "laravel",
-          default: false,
+          defaultValue: false,
           required: false,
           type: "checkbox",
           wrapperClassName: "flex items-center gap-2 h-[42px]",
@@ -85,7 +86,7 @@ export const fieldRelationships: Field[] = [
               required: false,
               className: "border border-neutral-200 focus:border-neutral-300 outline-none dark:border-neutral-700 px-2 py-2",
               type: "text",
-              default: "10",
+              defaultValue: "10",
               placeholder: "Laravel version...",
             },
           ],
@@ -95,7 +96,7 @@ export const fieldRelationships: Field[] = [
     {
       label: "SSL",
       name: "ssl",
-      default: true,
+      defaultValue: true,
       required: false,
       type: "checkbox",
       wrapperClassName: "flex items-center gap-2",

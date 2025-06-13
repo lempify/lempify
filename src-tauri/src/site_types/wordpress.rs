@@ -1,6 +1,6 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use shared::dirs::get_lempify_app_dir;
+use shared::dirs::get_lempify_app;
 use std::fs::{self, File};
 
 use crate::constants;
@@ -46,12 +46,10 @@ pub struct WordPressPackages {
  */
 pub async fn versions() -> Result<WordPressVersionResponse, String> {
     // Check if the cache is valid.
-    let cache_path = get_lempify_app_dir()
+    let cache_path = get_lempify_app()
         .map_err(|e| e.to_string())?
         .join("cache")
         .join("wordpress-versions.json");
-
-    println!("Cache path: {:?}", cache_path);
 
     if cache_path.exists() {
         let cache_file = File::open(&cache_path).map_err(|e| e.to_string())?;
@@ -62,20 +60,18 @@ pub async fn versions() -> Result<WordPressVersionResponse, String> {
         }
     } else {
         // Create cache directory
-        let cache_dir = get_lempify_app_dir()
+        let cache_dir = get_lempify_app()
             .map_err(|e| e.to_string())?
             .join("cache");
         fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     }
 
-    println!("Updating WP versions cache");
+    println!("Updating WP VERSIONS cache");
 
     // Get the response
     let response = reqwest::get(constants::WP_VERSION_ENDPOINT)
         .await
         .map_err(|e| e.to_string())?;
-
-    println!("Response: {:?}", response);
 
     // Parse the response using serde
     let versions = response
@@ -83,24 +79,15 @@ pub async fn versions() -> Result<WordPressVersionResponse, String> {
         .await
         .map_err(|e| e.to_string())?;
 
-    println!("Versions: {:?}", versions);
-
     // Cache the data
     let cache_data = CachedWordPressVersions {
         data: versions,
         expires: Utc::now().timestamp() as u64 + 3600,
     };
 
-    println!("Cache data: {:?}", cache_data);
-
     // Write the cache
     let cache_file = File::create(&cache_path).map_err(|e| e.to_string())?;
-
-    println!("Cache file: {:?}", cache_file);
-
     serde_json::to_writer_pretty(cache_file, &cache_data).map_err(|e| e.to_string())?;
-
-    println!("Cache written");
 
     Ok(cache_data.data)
 }

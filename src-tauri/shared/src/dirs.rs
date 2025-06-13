@@ -14,10 +14,8 @@ pub fn get_home() -> Result<PathBuf, String> {
 
 /**
  * Get the Lempify application support directory
- * ~/Library/Application Support/Lempify (macOS)
- * ~/.config/lempify (Linux)
  */
-pub fn get_lempify_app_dir() -> Result<PathBuf, String> {
+pub fn get_lempify_app() -> Result<PathBuf, String> {
     let config_dir = get_config()?;
     let app_dir = config_dir.join("Lempify");
 
@@ -33,7 +31,7 @@ pub fn get_lempify_app_dir() -> Result<PathBuf, String> {
  * Get a directory in the Lempify application support directory
  */
 pub fn get_app_dir(dir: &str) -> Result<PathBuf, String> {
-    let app_dir = get_lempify_app_dir()?;
+    let app_dir = get_lempify_app()?;
     let dir_path = app_dir.join(dir);
 
     if !dir_path.exists() {

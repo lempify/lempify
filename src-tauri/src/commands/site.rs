@@ -11,7 +11,7 @@ use crate::{
         config::{ConfigManager, Site, SiteBuilder, SiteConfig, SiteServices},
         service::SiteCreatePayload,
     },
-    site_types::{install, wordpress},
+    site_types::{install, uninstall, wordpress},
 };
 
 use shared::{dirs, ssl::delete_certs, utils::FileSudoCommand};
@@ -31,8 +31,7 @@ pub async fn create_site(
     config_manager: State<'_, ConfigManager>,
     payload: SiteCreatePayload,
 ) -> Result<Site, String> {
-    println!("Creating site: {:?}", payload);
-
+    
     let sites_dir = dirs::get_sites()?;
     let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
 
@@ -42,6 +41,8 @@ pub async fn create_site(
             .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
         
     let site_path = sites_dir.join(&domain);
+
+    let site_type = &payload.site_type;
 
     if site_path.exists() {
         return Err("Site already exists.".to_string());
@@ -61,12 +62,9 @@ pub async fn create_site(
     
     write_file_with_sudo(&config_contents, &config_path)?;
 
-    println!("Adding to Host");
     // Add to hosts file
     hosts::add_entry(&domain)?;
 
-    
-    println!("Building site config");
     // Create site object and store in config.json
     let site_services = SiteServices {
         php: "8.4".to_string(),
@@ -74,7 +72,6 @@ pub async fn create_site(
         nginx: "1.25".to_string(),
     };
     
-    println!("Adding SSL");
     // Setup SSL if requested
     if payload.ssl {
         secure_site(&domain)?;
@@ -94,16 +91,13 @@ pub async fn create_site(
         None
     };
 
-    // Add site type stub.
-    create_site_type_stub(&payload.site_type, &domain)?;
-
+    
     // Install WordPress if it doesn't exist
-    if payload.site_type == "wordpress" {
+    if site_type == "wordpress" {
         // Install WordPress if it doesn't exist
         let latest_version = match wordpress::versions().await {
             Ok(versions) => {
                 let version = &versions.offers[0].version;
-                println!("WordPress latest version: {:#?}", version);
                 version.to_string()
             }
             Err(e) => {
@@ -112,7 +106,12 @@ pub async fn create_site(
             }
         };
         install::wordpress(&latest_version).await?;
+        // Add site type stub.
+        create_site_type_stub(&site_type, &domain, &latest_version)?;
+        // Install WordPress dependencies.
     }
+    install::site(&site_type, &domain_name, &domain_tld)?;
+    
 
     let site_config = SiteConfig {
         ssl: payload.ssl,
@@ -134,12 +133,8 @@ pub async fn create_site(
         .path(site_path.to_string_lossy().to_string())
         .build()?;
 
-    println!("Writing To Config: {:#?}", site);
-
     // Store in config.json
     config_manager.create_site(&site).await?;
-
-    println!("Done!");
 
     Ok(site)
 }
@@ -152,8 +147,18 @@ pub async fn delete_site(
     let sites_dir = dirs::get_sites()?;
     let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
 
+    let domain_name = domain.split('.').next().unwrap();
+    let domain_tld = domain.split('.').nth(1).unwrap();
+
+    let site_config = config_manager.get_site(&domain).await.unwrap();
+    let site_type = &site_config.site_type;
+
     let site_path = sites_dir.join(&domain);
     let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain));
+
+    println!("Site type: {}", site_type);
+    println!("Site config: {:#?}", site_config);
+    println!("Domain name: {}", domain_name);
 
     if site_path.exists() {
         fs::remove_dir_all(&site_path)
@@ -165,6 +170,10 @@ pub async fn delete_site(
     delete_certs(&domain)?;
 
     hosts::remove_entry(&domain)?;
+
+    if site_type == "wordpress" {
+        uninstall::wordpress(&domain_name, &domain_tld)?;
+    }
 
     let _ = config_manager.delete_site(&domain).await; // Don't fail if not in config
 

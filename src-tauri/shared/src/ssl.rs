@@ -18,7 +18,7 @@ use crate::{dirs, nginx};
  * ```
  */
 pub fn generate_certs(domain: &str) -> Result<(), String> {
-    println!("\tgenerate_certs: {}", domain);
+    // println!("\tgenerate_certs: {}", domain);
     let certs_dir = dirs::get_certs()?;
 
     let cert_path = certs_dir.join(format!("{domain}.pem"));
@@ -37,7 +37,7 @@ pub fn generate_certs(domain: &str) -> Result<(), String> {
             return Err(format!("Failed to generate certs for {}: {}", domain, status));
         }
     }
-    println!("\tgenerate_certs: Done!");
+    // println!("\tgenerate_certs: Done!");
 
     Ok(())
 }
@@ -52,13 +52,13 @@ pub fn generate_certs(domain: &str) -> Result<(), String> {
  * ```
  */
 pub fn secure_site(domain: &str) -> Result<(), String> {
-    println!("\tsecure_site: {}", domain);
+    // println!("\tsecure_site: {}", domain);
     generate_certs(domain)?;
-    println!("\t\tgenerate_certs: Done!");
+    // println!("\t\tgenerate_certs: Done!");
     nginx::update_nginx_config_with_ssl(domain)?;
-    println!("\t\tupdate_nginx_config_with_ssl: Done!");
+    // println!("\t\tupdate_nginx_config_with_ssl: Done!");
     nginx::restart_nginx()?;
-    println!("\t\trestart_nginx: Done!");
+    // println!("\t\trestart_nginx: Done!");
     Ok(())
 }
 
