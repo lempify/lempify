@@ -17,6 +17,7 @@ import Loader from "./Loader";
 import { cornerTopRight, pageSection } from "./css";
 import { useAppConfig } from "../context/AppConfigContext";
 import { Site } from "../types";
+import { DEFAULT_SITE_TYPE } from "../constants";
 
 /**
  * Constants
@@ -24,7 +25,7 @@ import { Site } from "../types";
 const defaultPayload = {
   domain: "",
   ssl: true,
-  type: "vanilla",
+  type: DEFAULT_SITE_TYPE,
 };
 
 export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
@@ -62,6 +63,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       <h2 className="text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)] mb-8">Create New Site</h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-10 mb-10">
+          <pre>{JSON.stringify(formValues, null, 2)}</pre>
           {siteCreateFields.map((field) => (
             <div className={field.wrapperClassName ?? ''} key={field.name}>
               <FormFields

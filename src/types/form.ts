@@ -8,7 +8,7 @@ export type Field = {
     labelPosition: "top" | "bottom";
     placeholder: string;
     value: any;
-    default: any;
+    defaultValue: any;
     required: boolean;
     options: Field[];
     dependency: string[];

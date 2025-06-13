@@ -1,4 +1,4 @@
-use shared::dirs::{get_config, get_lempify_app_dir};
+use shared::dirs::{get_config, get_lempify_app};
 // use users::get_user_by_name;
 
 use std::fs;
@@ -22,7 +22,7 @@ pub fn get_app_dir() -> Result<PathBuf, String> {
  * Get a directory in the app support dir
  */
 pub fn get_config_dir(dir: &str) -> Result<PathBuf, String> {
-    let config_dir = get_lempify_app_dir()?;
+    let config_dir = get_lempify_app()?;
     let config_dir = config_dir.join(dir);
     Ok(config_dir)
 }
@@ -47,21 +47,35 @@ pub fn load_json() -> Result<String, String> {
 
 #[allow(dead_code)]
 pub struct AppFileSystem {
-    pub dir: PathBuf,
+    /** `/lempify/src-tauri/` */
+    pub app_dir: PathBuf,
+    /** `/opt/homebrew/var/www/` or `/var/www` */
     pub sites_dir: PathBuf,
+    /** `/opt/homebrew/etc/nginx` or `/etc/nginx` */
     pub nginx_dir: PathBuf,
+    /** `/opt/homebrew/etc/nginx/ssl` or `/etc/nginx/ssl` */
     pub certs_dir: PathBuf,
-    pub stubs_dir: PathBuf,
+    /** `/lempify/src-tauri/stubs` */
+    pub app_stubs_dir: PathBuf,
+    /** `~/Library/Application Support/Lempify/` */
+    pub config_dir: PathBuf,
+    /** `~/Library/Application Support/Lempify/site-types` */
+    pub site_types_dir: PathBuf,
 }
 
 #[allow(dead_code)]
 impl AppFileSystem {
     pub fn new() -> Result<Self, String> {
 
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR").to_string());
+        let app_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR").to_string());
+
+        let config_dir = get_lempify_app()?;
 
         // Get src-tauri/stubs directory
-        let stubs_dir = dir.join("stubs");
+        let app_stubs_dir = app_dir.join("stubs");
+
+        // Get site-types directory
+        let site_types_dir = config_dir.join("site-types");
         
         // Sites directory - standard web server location
         let sites_dir = if cfg!(target_os = "macos") {
@@ -81,15 +95,17 @@ impl AppFileSystem {
         let certs_dir = if cfg!(target_os = "macos") {
             PathBuf::from("/opt/homebrew/etc/nginx/ssl")
         } else {
-            PathBuf::from("/etc/ssl/certs")
+            PathBuf::from("/etc/nginx/ssl")
         };
         
         Ok(Self {
-            dir,
+            app_dir,
             sites_dir,
             nginx_dir,
             certs_dir,
-            stubs_dir,
+            app_stubs_dir,
+            config_dir, 
+            site_types_dir,
         })
     }
 

@@ -29,6 +29,7 @@ tauri-plugin-process = "2.0.0-alpha"
 reqwest = { version = "0.12.20", features = ["json"] }
 chrono = "0.4"
 zip = "4.0.0"
+mysql = "*"
 
 [workspace]
 members = [
