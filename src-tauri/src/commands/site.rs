@@ -49,7 +49,8 @@ pub async fn create_site(
     }
 
     // Check if site already exists in config
-    if config_manager.get_site(&domain).await.is_some() {
+    let site_config = config_manager.get_site(&domain).await;
+    if let Some(site_config) = site_config {
         return Err("Site already exists in configuration.".to_string());
     }
 
@@ -110,7 +111,7 @@ pub async fn create_site(
         create_site_type_stub(&site_type, &domain, &latest_version)?;
         // Install WordPress dependencies.
     }
-    install::site(&site_type, &domain_name, &domain_tld)?;
+    install::site(&site_type, &domain_name, &domain_tld).await?;
     
 
     let site_config = SiteConfig {
@@ -150,21 +151,18 @@ pub async fn delete_site(
     let domain_name = domain.split('.').next().unwrap();
     let domain_tld = domain.split('.').nth(1).unwrap();
 
-    let site_config = config_manager.get_site(&domain).await.unwrap();
-    let site_type = &site_config.site_type;
+    let site_config = config_manager.get_site(&domain).await.ok_or("Site not found")?;
 
+    let site_type: &str = &site_config.site_type;
+    
     let site_path = sites_dir.join(&domain);
-    let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain));
-
-    println!("Site type: {}", site_type);
-    println!("Site config: {:#?}", site_config);
-    println!("Domain name: {}", domain_name);
-
+    
     if site_path.exists() {
         fs::remove_dir_all(&site_path)
-            .map_err(|e| format!("Failed to delete site folder: {}", e))?;
+        .map_err(|e| format!("Failed to delete site folder: {}", e))?;
     }
-
+    let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain)); 
+    
     remove_file_with_sudo(&config_path)?;
 
     delete_certs(&domain)?;
@@ -172,7 +170,7 @@ pub async fn delete_site(
     hosts::remove_entry(&domain)?;
 
     if site_type == "wordpress" {
-        uninstall::wordpress(&domain_name, &domain_tld)?;
+        uninstall::wordpress(&domain_name, &domain_tld).await?;
     }
 
     let _ = config_manager.delete_site(&domain).await; // Don't fail if not in config

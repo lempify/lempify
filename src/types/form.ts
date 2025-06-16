@@ -1,6 +1,6 @@
 export type Field = {
     name: string;
-    type: "text" | "checkbox" | "radio";
+    type: "text" | "checkbox" | "radio" | "password" | "number";
 } & Partial<{
     label: string;
     description: string;

@@ -80,7 +80,8 @@ fn main() -> Result<()> {
             models::config::delete_site_config,
             models::config::get_config,
             models::config::refresh_trusted_status_config,
-            models::config::is_trusted_config
+            models::config::is_trusted_config,
+            models::config::update_settings
         ])
         //.menu(tauri::Menu::os_default(&tauri::generate_context!().package_info().name))
         .build(tauri::generate_context!())

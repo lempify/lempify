@@ -1,9 +1,16 @@
+use mysql::{prelude::*, Pool, PooledConn};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::{fs, io, path::PathBuf};
 
+use crate::{
+    helpers::service_utils::{get_brew_formula, get_version_args},
+    models::{
+        config::Settings,
+        service::{ServiceStatus, ServiceType},
+    },
+};
 use shared::brew;
-use crate::{helpers::service_utils::{get_brew_formula, get_version_args}, models::service::{ServiceStatus, ServiceType}};
 
 /**
  * This regex is used to extract the version from the service output.
@@ -64,7 +71,14 @@ pub fn copy_dir_recursive(src: &PathBuf, dest: &PathBuf) -> Result<(), String> {
             copy_dir_recursive(&path, &dest.join(file_name))?;
         }
     } else {
-        fs::copy(src, dest).map_err(|e| format!("Failed to copy file: {} - {} - {}", e, src.display(), dest.display()))?;
+        fs::copy(src, dest).map_err(|e| {
+            format!(
+                "Failed to copy file: {} - {} - {}",
+                e,
+                src.display(),
+                dest.display()
+            )
+        })?;
     }
     Ok(())
 }
@@ -81,8 +95,29 @@ pub fn copy_zip_entry_to_path<R: io::Read + io::Seek>(
                 fs::create_dir_all(p).map_err(|e| format!("Failed to create directory: {}", e))?;
             }
         }
-        let mut outfile = fs::File::create(outpath).map_err(|e| format!("Failed to create file: {}", e))?;
+        let mut outfile =
+            fs::File::create(outpath).map_err(|e| format!("Failed to create file: {}", e))?;
         io::copy(file, &mut outfile).map_err(|e| format!("Failed to copy file: {}", e))?;
     }
     Ok(())
-} 
+}
+
+pub fn get_mysql_connection(
+    mysql_host: String,
+    mysql_user: String,
+    mysql_password: String,
+    mysql_port: u16,
+) -> Result<PooledConn, String> {
+    let conn_str = format!(
+        "mysql://{}:{}@{}:{}/",
+        mysql_user, mysql_password, mysql_host, mysql_port
+    );
+    let pool =
+        Pool::new(conn_str.as_str()).map_err(|e| format!("Failed to connect to MySQL: {}", e))?;
+
+    let conn = pool
+        .get_conn()
+        .map_err(|e| format!("Failed to get MySQL connection: {}", e))?;
+
+    Ok(conn)
+}

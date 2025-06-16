@@ -63,7 +63,6 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       <h2 className="text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)] mb-8">Create New Site</h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-10 mb-10">
-          <pre>{JSON.stringify(formValues, null, 2)}</pre>
           {siteCreateFields.map((field) => (
             <div className={field.wrapperClassName ?? ''} key={field.name}>
               <FormFields
