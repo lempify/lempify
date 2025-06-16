@@ -8,6 +8,7 @@ use zip;
 use shared::dirs::get_lempify_app;
 
 use crate::constants;
+use crate::helpers::config::get_settings;
 use crate::helpers::file_system::AppFileSystem;
 use crate::helpers::utils::copy_zip_entry_to_path;
 
@@ -95,7 +96,7 @@ pub async fn wordpress(version: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<(), String> {
+pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<(), String> {
     let db_name = format!("{}-{}", site_name, site_tld);
     let domain = format!("{}.{}", site_name, site_tld);
     match site_type {
@@ -118,7 +119,7 @@ pub fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<(), Stri
             ];
             let wp_config_path = site_dir.join("wp-config.php");
             println!("Creating wp-config.php at: {}", wp_config_path.display());
-            
+
             let mut wp_config_contents = fs::read_to_string(&wp_config_path).map_err(|e| {
                 format!(
                     "Failed to read wp-config.php: {} - {}",
@@ -131,7 +132,7 @@ pub fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<(), Stri
             }
             fs::write(&wp_config_path, &wp_config_contents)
                 .map_err(|e| format!("Failed to write wp-config.php: {}", e))?;
-            
+
             // Set proper permissions (readable by web server)
             let mut perms = fs::metadata(&wp_config_path)
                 .map_err(|e| format!("Failed to get wp-config.php metadata: {}", e))?
@@ -139,52 +140,62 @@ pub fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<(), Stri
             perms.set_readonly(false);
             fs::set_permissions(&wp_config_path, perms)
                 .map_err(|e| format!("Failed to set wp-config.php permissions: {}", e))?;
-            
-            println!("wp-config.php created successfully with contents:\n{}", wp_config_contents);
+
+            println!(
+                "wp-config.php created successfully with contents:\n{}",
+                wp_config_contents
+            );
             // #1 - End
 
             // #2 - Start
-            // Create MySQL DB.
-            // - Update admin user with password.
-            // - Update admin user with password.
+            let settings = get_settings().await;
             let mysql_db_name = format!("{}-{}", site_name, site_tld);
+            let mysql_db_create_query =
+                format!("CREATE DATABASE IF NOT EXISTS `{}`", mysql_db_name);
+                
+            // @TODO: Add user creation and password update.
             let mysql_db_user = "lempify";
             let mysql_db_password = "lempify";
             let mysql_db_host = "localhost";
-
-            let mysql_db_create_query =
-                format!("CREATE DATABASE IF NOT EXISTS `{}`", mysql_db_name);
-            let mysql_db_user_create_query = format!(
+            let _mysql_db_user_create_query = format!(
                 "CREATE USER IF NOT EXISTS `{}`@`{}`",
                 mysql_db_user, mysql_db_host
             );
-            let mysql_db_user_password_query = format!(
+            let _mysql_db_user_password_query = format!(
                 "SET PASSWORD FOR `{}`@`{}` = PASSWORD('{}')",
                 mysql_db_user, mysql_db_host, mysql_db_password
             );
-            let mysql_db_grant_query = format!(
+            let _mysql_db_grant_query = format!(
                 "GRANT ALL PRIVILEGES ON `{}`.* TO `{}`@`{}`",
                 mysql_db_name, mysql_db_user, mysql_db_host
             );
-            let mysql_db_flush_query = "FLUSH PRIVILEGES";
+            let _mysql_db_flush_query = "FLUSH PRIVILEGES";
 
             // Connect to MySQL (installed via brew).
-            println!("Attempting to connect to MySQL...");
-            let pool = Pool::new("").map_err(|e| {
-                format!("Failed to connect to MySQL: {}", e)
-            })?;
-            println!("Pool created successfully");
+            let conn_str = format!(
+                "mysql://{}:{}@{}:{}/",
+                settings.mysql_user,
+                settings.mysql_password,
+                settings.mysql_host,
+                settings.mysql_port
+            );
+            println!("Attempting to connect to MySQL with conn_str: {}", conn_str);
             
-            let mut conn = pool.get_conn().map_err(|e| {
-                format!("Failed to get MySQL connection: {}", e)
-            })?;
+            let pool = Pool::new(conn_str.as_str())
+                .map_err(|e| format!("Failed to connect to MySQL: {}", e))?;
+
+            println!("Pool created successfully");
+
+            let mut conn = pool
+                .get_conn()
+                .map_err(|e| format!("Failed to get MySQL connection: {}", e))?;
             println!("Connection established successfully");
 
             // Test connection with a simple query
             let test_query = "SELECT VERSION()";
-            let version: Option<String> = conn.query_first(test_query).map_err(|e| {
-                format!("Failed to execute test query: {}", e)
-            })?;
+            let version: Option<String> = conn
+                .query_first(test_query)
+                .map_err(|e| format!("Failed to execute test query: {}", e))?;
             println!("MySQL Version: {:?}", version);
 
             // Execute queries.

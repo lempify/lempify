@@ -27,19 +27,10 @@ const FormFields = (props: Field) => {
         inputAttributes = {},
     } = props;
 
-    const [fieldValue, setFieldValue] = useState(defaultValue);
-
     function handleChange(e: React.ChangeEvent<HTMLInputElement>, fieldName: string = name) {
         const newValue = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
         onChange(newValue, fieldName);
-        setFieldValue(newValue);
     }
-
-    // useEffect(() => {
-    //     if (value === undefined) return;
-    //     setFieldValue(value);
-    //     setTouched(true);
-    // }, [value]);
 
     return (
         <Fragment>
@@ -51,7 +42,7 @@ const FormFields = (props: Field) => {
                     id={name}
                     name={name}
                     className={`${className}`}
-                    checked={fieldValue}
+                    checked={value}
                     onChange={(e) => onChange(e.target.checked, name)}
                     {...inputAttributes}
                 />
@@ -64,11 +55,11 @@ const FormFields = (props: Field) => {
                             name={name}
                             className={`${option.className ?? ''}`}
                             value={option.name}
-                            checked={option.name === fieldValue}
+                            checked={option.name === value}
                             onChange={handleChange}
                         />
                         <label htmlFor={option.name}>{option.label}</label>
-                        {fieldValue === option?.dependency?.[1] && option?.fields?.map((childField) => {
+                        {value === option?.dependency?.[1] && option?.fields?.map((childField) => {
                             const _name = `${name}|${option.name}|${childField.name}`;
                             return (
                                 <div className={`${childField.wrapperClassName ?? ''}`} key={childField.name}>
@@ -85,12 +76,12 @@ const FormFields = (props: Field) => {
                         })}
                     </div>
                 ))
-            ) : type === 'text' ? (
+            ) : ['text', 'password', 'number'].includes(type) ? (
                 <input
-                    type="text"
+                    type={type}
                     id={name}
                     name={name}
-                    value={fieldValue}
+                    value={value}
                     placeholder={placeholder ?? ''}
                     className={`${className} placeholder:text-neutral-500 placeholder:italic`}
                     onChange={handleChange}

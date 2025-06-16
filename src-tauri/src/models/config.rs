@@ -1,10 +1,10 @@
+use crate::helpers::file_system::get_config_dir;
+use serde::{Deserialize, Serialize};
+use shared::constants::LEMPIFY_SUDOERS_PATH;
 use std::fs;
 use std::path::Path;
-use serde::{Deserialize, Serialize};
 use tauri::State;
 use tokio::sync::RwLock;
-use shared::constants::LEMPIFY_SUDOERS_PATH;
-use crate::helpers::file_system::get_config_dir;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SiteServices {
@@ -43,6 +43,8 @@ pub struct Config {
     pub trusted: bool,
     #[serde(default = "Config::get_version")]
     pub version: String,
+    #[serde(default)]
+    pub settings: Settings,
 }
 
 impl Default for Config {
@@ -51,6 +53,7 @@ impl Default for Config {
             sites: Vec::new(),
             version: env!("CARGO_PKG_VERSION").to_string(),
             trusted: Self::check_trusted(),
+            settings: Settings::default(),
         }
     }
 }
@@ -66,6 +69,10 @@ impl Config {
 
     pub fn get_version() -> String {
         env!("CARGO_PKG_VERSION").to_string()
+    }
+
+    pub fn update_settings(&mut self, settings: Settings) {
+        self.settings = settings;
     }
 }
 
@@ -150,7 +157,11 @@ impl SiteBuilder {
     pub fn build(self) -> Result<Site, String> {
         let name = self.name.ok_or("Site name is required")?;
         let domain = self.domain.as_ref().unwrap_or(&name).clone();
-        let path = self.path.as_ref().unwrap_or(&format!("/opt/homebrew/var/www/{}", domain)).clone();
+        let path = self
+            .path
+            .as_ref()
+            .unwrap_or(&format!("/opt/homebrew/var/www/{}", domain))
+            .clone();
 
         let services = self.services.unwrap_or_else(|| SiteServices {
             php: "8.4".to_string(),
@@ -160,17 +171,17 @@ impl SiteBuilder {
 
         let site_config = self.site_config.unwrap_or_else(|| SiteConfig {
             ssl: self.ssl,
-            root: path.clone(),
+            root: path.to_string(),
             logs: format!("{}/logs", path),
-            ssl_key: if self.ssl { 
-                Some(format!("/opt/homebrew/etc/nginx/ssl/{}-key.pem", domain)) 
-            } else { 
-                None 
+            ssl_key: if self.ssl {
+                Some(format!("/opt/homebrew/etc/nginx/ssl/{}-key.pem", domain))
+            } else {
+                None
             },
-            ssl_cert: if self.ssl { 
-                Some(format!("/opt/homebrew/etc/nginx/ssl/{}.pem", domain)) 
-            } else { 
-                None 
+            ssl_cert: if self.ssl {
+                Some(format!("/opt/homebrew/etc/nginx/ssl/{}.pem", domain))
+            } else {
+                None
             },
         });
 
@@ -194,9 +205,7 @@ pub struct ConfigManagerBuilder {
 
 impl Default for ConfigManagerBuilder {
     fn default() -> Self {
-        Self {
-            config_file: None,
-        }
+        Self { config_file: None }
     }
 }
 
@@ -211,7 +220,9 @@ impl ConfigManagerBuilder {
     }
 
     pub fn build(self) -> Result<ConfigManager, String> {
-        let config_file = self.config_file.unwrap_or_else(|| "config.json".to_string());
+        let config_file = self
+            .config_file
+            .unwrap_or_else(|| "config.json".to_string());
         ConfigManager::new(config_file)
     }
 }
@@ -225,7 +236,7 @@ impl ConfigManager {
     pub fn new(config_file: String) -> Result<Self, String> {
         let config_path = get_config_dir(&config_file)?;
         let config = Self::load_config(&config_path)?;
-        
+
         Ok(Self {
             config_path,
             config: RwLock::new(config),
@@ -262,12 +273,13 @@ impl ConfigManager {
     // CRUD Operations for Sites
     pub async fn create_site(&self, site: &Site) -> Result<(), String> {
         let mut config = self.config.write().await;
-        
+        println!("Create Site: {:#?} using config: {:#?}", site, config);
+
         // Check if site already exists
         if config.sites.iter().any(|s| s.domain == site.domain) {
             return Err(format!("Site with domain '{}' already exists", site.domain));
         }
-        
+
         config.sites.push(site.clone());
         drop(config);
         self.save_config().await
@@ -285,7 +297,7 @@ impl ConfigManager {
 
     pub async fn update_site(&self, domain: &str, updated_site: Site) -> Result<(), String> {
         let mut config = self.config.write().await;
-        
+
         if let Some(site) = config.sites.iter_mut().find(|s| s.domain == domain) {
             *site = updated_site;
             drop(config);
@@ -297,7 +309,7 @@ impl ConfigManager {
 
     pub async fn delete_site(&self, domain: &str) -> Result<Site, String> {
         let mut config = self.config.write().await;
-        
+
         if let Some(pos) = config.sites.iter().position(|s| s.domain == domain) {
             let removed_site = config.sites.remove(pos);
             drop(config);
@@ -333,6 +345,25 @@ impl ConfigManager {
         config.trusted = trusted;
         drop(config);
         self.save_config().await
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Settings {
+    pub mysql_host: String,
+    pub mysql_user: String,
+    pub mysql_password: String,
+    pub mysql_port: u16,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            mysql_host: "127.0.0.1".to_string(),
+            mysql_user: "root".to_string(),
+            mysql_password: "root".to_string(),
+            mysql_port: 3306,
+        }
     }
 }
 
@@ -380,13 +411,14 @@ pub async fn delete_site_config(
     domain: String,
 ) -> Result<String, String> {
     let removed_site = config_manager.delete_site(&domain).await?;
-    Ok(format!("Site '{}' deleted successfully", removed_site.domain))
+    Ok(format!(
+        "Site '{}' deleted successfully",
+        removed_site.domain
+    ))
 }
 
 #[tauri::command]
-pub async fn get_config(
-    config_manager: State<'_, ConfigManager>,
-) -> Result<Config, String> {
+pub async fn get_config(config_manager: State<'_, ConfigManager>) -> Result<Config, String> {
     Ok(config_manager.get_config().await)
 }
 
@@ -398,8 +430,17 @@ pub async fn refresh_trusted_status_config(
 }
 
 #[tauri::command]
-pub async fn is_trusted_config(
-    config_manager: State<'_, ConfigManager>,
-) -> Result<bool, String> {
+pub async fn is_trusted_config(config_manager: State<'_, ConfigManager>) -> Result<bool, String> {
     Ok(config_manager.is_trusted().await)
-} 
+}
+
+#[tauri::command]
+pub async fn update_settings(
+    config_manager: State<'_, ConfigManager>,
+    settings: Settings,
+) -> Result<(), String> {
+    let mut config = config_manager.config.write().await;
+    config.update_settings(settings);
+    drop(config);
+    config_manager.save_config().await
+}

@@ -2,7 +2,7 @@ export default function RouteHeader({ title, description }: { title: string, des
     return (
         <header className="mb-10 relative">
             <h1 className="
-                text-8xl line-height-[200px] text-transparent font-extrabold  
+                text-8xl leading-[1.2] text-transparent font-extrabold  
                 mb-2 inline-flex 
                 bg-clip-text bg-gradient-to-l 
                 from-[var(--lempify-primary-300)] to-[var(--lempify-primary)]

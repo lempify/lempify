@@ -2,12 +2,19 @@
  * AppConfigContext for managing app config which reads from config.json
  */
 
-import { createContext, useContext, useState, ReactNode, useEffect, useReducer } from "react";
+import { createContext, useContext, ReactNode, useEffect, useReducer } from "react";
+
 import { useInvoke } from "../hooks/useInvoke";
 
 type AppConfig = {
     trusted: boolean;
     sites: any[];
+    settings?: {
+        mysql_host: string;
+        mysql_user: string;
+        mysql_password: string;
+        mysql_port: number;
+    }
 };
 
 type AppConfigContextType = {
@@ -17,9 +24,20 @@ type AppConfigContextType = {
 
 const AppConfigContext = createContext<AppConfigContextType | undefined>(undefined);
 
+const defaultConfig: AppConfig = {
+    trusted: false,
+    sites: [],
+    settings: {
+        mysql_host: "localhost",
+        mysql_user: "root",
+        mysql_password: "root",
+        mysql_port: 3306
+    }
+};
+
 export const AppConfigProvider = ({ children }: { children: ReactNode }) => {
     const { invoke } = useInvoke();
-    const [config, dispatch] = useReducer(appConfigReducer, { trusted: false, sites: [] });
+    const [config, dispatch] = useReducer(appConfigReducer, { ...defaultConfig });
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -48,6 +66,8 @@ export const appConfigReducer = (state: AppConfig, action: any): AppConfig => {
             return { ...state, sites: action.sites };
         case "set_config":
             return action.config;
+        case "set_settings":
+            return { ...state, settings: action.config.settings };
         default:
             return state;
     }

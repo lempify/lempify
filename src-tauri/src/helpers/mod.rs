@@ -7,6 +7,7 @@ pub mod hosts;
 pub mod stubs;
 pub mod nginx;
 pub mod setup;
+pub mod config;
 pub mod system;
 pub mod lempifyd;
 pub mod file_system;
