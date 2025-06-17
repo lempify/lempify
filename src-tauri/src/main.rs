@@ -23,6 +23,7 @@ fn main() -> Result<()> {
         eprintln!("⚠️ Failed to patch PATH: {}", e);
     }
 
+    // @TODO: Can this move to setup?
     if let Err(e) = helpers::nginx::add_lempify_to_conf() {
         eprintln!("⚠️ Failed to patch nginx.conf: {}", e);
     }
@@ -52,6 +53,7 @@ fn main() -> Result<()> {
             ui::menu::build(&app)?;
             // Open devtools
             ui::browser::open_devtools(&app);
+            // Initialize file system
             let _ = helpers::file_system::init();
             Ok(())
         });

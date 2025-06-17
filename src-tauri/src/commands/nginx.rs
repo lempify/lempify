@@ -1,12 +1,9 @@
 use std::fs;
 use tauri::command;
 
-use shared::{hosts::entry_exists, nginx::generate_nginx_config_template, ssl};
+use shared::{hosts::entry_exists, nginx::restart_nginx, ssl};
 
-use crate::{
-    commands::start_stop::restart_service,
-    models::service::{ServiceType, SiteInfo},
-};
+use crate::{helpers::stubs::create_nginx_config_stub, models::service::SiteInfo};
 
 use shared::dirs;
 
@@ -25,21 +22,16 @@ pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
         return Err(format!("Site directory not found: {}", site_path.display()));
     }
 
-    let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain));
-    let config_contents = generate_nginx_config_template(&domain, "test", &site_path);
+    let config_path = create_nginx_config_stub(&domain)?;
 
-    fs::write(&config_path, config_contents)
-        .map_err(|e| format!("Failed to write config: {}", e))?;
-
-    // Restart nginx
-    restart_service(ServiceType::Nginx).await?;
+    restart_nginx()?;
 
     Ok(SiteInfo::build(
         domain.to_string(),
         Some(domain.to_string()),
         Some(site_path.exists()),
         Some(entry_exists(&domain)?),
-        Some(config_path.display().to_string()),
+        Some(config_path),
         Some(ssl::has_ssl(&domain).unwrap_or(false)),
     ))
 }

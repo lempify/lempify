@@ -2,37 +2,6 @@ use std::{fs, path::Path};
 
 use crate::{brew, dirs, utils::FileSudoCommand};
 
-/// Generate a standard Nginx config template for a site
-pub fn generate_nginx_config_template(name: &str, tld: &str, root_path: &Path) -> String {
-    format!(
-        r#"
-server {{
-    listen 80;
-    server_name {name}.{tld};
-
-    ## Lempify SSL ## 
-
-    root {root};
-    index index.php index.html;
-
-    location / {{
-        try_files $uri $uri/ /index.php?$args;
-    }}
-
-    location ~ \.php$ {{
-        include fastcgi_params;
-        fastcgi_pass unix:/opt/homebrew/var/run/php/php-fpm.sock;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    }}
-}}
-"#,
-        name = name,
-        tld = tld,
-        root = root_path.display()
-    )
-}
-
 /// Add Lempify include to the main Nginx config
 pub fn add_lempify_to_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
