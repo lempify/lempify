@@ -4,8 +4,8 @@ use tauri::{command, State};
 use crate::{
     helpers::{
         hosts,
-        nginx::{generate_nginx_config_template, restart_nginx},
-        ssl::secure_site, stubs::create_site_type_stub,
+        nginx::{restart_nginx},
+        ssl::secure_site, stubs::{create_nginx_config_stub, create_site_type_stub},
     },
     models::{
         config::{ConfigManager, Site, SiteBuilder, SiteConfig, SiteServices},
@@ -15,11 +15,6 @@ use crate::{
 };
 
 use shared::{dirs, ssl::delete_certs, utils::FileSudoCommand};
-
-/// Write a file to a system location that requires elevated permissions
-fn write_file_with_sudo(content: &str, target_path: &std::path::Path) -> Result<(), String> {
-    FileSudoCommand::write(content.to_string(), target_path.to_path_buf()).run()
-}
 
 /// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
@@ -33,7 +28,6 @@ pub async fn create_site(
 ) -> Result<Site, String> {
     
     let sites_dir = dirs::get_sites()?;
-    let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
 
     let domain = &payload.domain.to_lowercase();
     let (domain_name, domain_tld) = 
@@ -50,7 +44,7 @@ pub async fn create_site(
 
     // Check if site already exists in config
     let site_config = config_manager.get_site(&domain).await;
-    if let Some(site_config) = site_config {
+    if let Some(_) = site_config {
         return Err("Site already exists in configuration.".to_string());
     }
 
@@ -58,10 +52,7 @@ pub async fn create_site(
     fs::create_dir_all(&site_path)
         .map_err(|e| format!("Failed to create site directory: {}", e))?;
 
-    let config_path = nginx_sites_enabled_dir.join(format!("{domain}.conf"));
-    let config_contents = generate_nginx_config_template(domain_name, &domain_tld, &site_path);
-    
-    write_file_with_sudo(&config_contents, &config_path)?;
+    let _ = create_nginx_config_stub(&domain)?;
 
     // Add to hosts file
     hosts::add_entry(&domain)?;
@@ -136,6 +127,8 @@ pub async fn create_site(
 
     // Store in config.json
     config_manager.create_site(&site).await?;
+
+    restart_nginx()?;
 
     Ok(site)
 }

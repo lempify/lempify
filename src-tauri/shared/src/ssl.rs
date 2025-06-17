@@ -52,13 +52,8 @@ pub fn generate_certs(domain: &str) -> Result<(), String> {
  * ```
  */
 pub fn secure_site(domain: &str) -> Result<(), String> {
-    // println!("\tsecure_site: {}", domain);
     generate_certs(domain)?;
-    // println!("\t\tgenerate_certs: Done!");
     nginx::update_nginx_config_with_ssl(domain)?;
-    // println!("\t\tupdate_nginx_config_with_ssl: Done!");
-    nginx::restart_nginx()?;
-    // println!("\t\trestart_nginx: Done!");
     Ok(())
 }
 

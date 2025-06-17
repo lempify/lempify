@@ -101,7 +101,7 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
     let domain = format!("{}.{}", site_name, site_tld);
     match site_type {
         "wordpress" => {
-            // 1. In wp-config.php, replace placeholders with actual values.
+            // 1. In wp-config.php, replace placeholders with actual values stored in the settings.
             // - DB: {{DB_NAME}}, {{DB_USER}}, {{DB_PASSWORD}}, {{DB_HOST}}
             // - @TODO: SALT: {{AUTH_KEY}}, {{SECURE_AUTH_KEY}}, {{LOGGED_IN_KEY}}, {{NONCE_KEY}}, {{AUTH_SALT}}, {{SECURE_AUTH_SALT}}, {{LOGGED_IN_SALT}}, {{NONCE_SALT}}
             // 2. Create MySQL DB.
@@ -110,12 +110,14 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
             let app_fs = AppFileSystem::new()?;
             let site_dir = app_fs.sites_dir.join(domain);
 
+            let settings = get_settings().await;
+
             // #1 - Start
             let wp_config_var_values: &[(&str, &str)] = &[
                 ("{{DB_NAME}}", &db_name),
-                ("{{DB_USER}}", "root"),
-                ("{{DB_PASSWORD}}", "mrrethman"),
-                ("{{DB_HOST}}", "localhost"),
+                ("{{DB_USER}}", &settings.mysql_user),
+                ("{{DB_PASSWORD}}", &settings.mysql_password),
+                ("{{DB_HOST}}", &settings.mysql_host),
             ];
             let wp_config_path = site_dir.join("wp-config.php");
             println!("Creating wp-config.php at: {}", wp_config_path.display());

@@ -5,6 +5,8 @@ use std::{fs, path::PathBuf};
 
 use crate::helpers::file_system::AppFileSystem;
 use crate::helpers::utils::copy_dir_recursive;
+use shared::dirs;
+use shared::utils::FileSudoCommand;
 
 #[derive(Debug)]
 struct Stub {
@@ -111,4 +113,23 @@ pub fn create_site_type_stub(site_type: &str, domain: &str, version: &str) -> Re
     }
 
     Ok(())
+}
+
+pub fn create_nginx_config_stub(domain: &str) -> Result<String, String> {
+    let app_fs = AppFileSystem::new()?;
+
+    let stub_template = app_fs
+        .app_stubs_dir
+        .join("domain_name-domain_tld.nginx.conf");
+
+    let dest_path = dirs::get_nginx_sites_enabled()?;
+    let dest_path = dest_path.join(format!("{}.conf", domain));
+
+    let config_contents =
+        fs::read_to_string(stub_template).map_err(|e| format!("Failed to read stub: {}", e))?;
+    let config_contents = config_contents.replace("{{DOMAIN}}", domain);
+
+    FileSudoCommand::write(config_contents.to_string(), dest_path.to_path_buf()).run()?;
+
+    Ok(dest_path.display().to_string())
 }
