@@ -1,6 +1,3 @@
-// Helpers for managing stubs
-
-use std::os::unix::fs::symlink;
 use std::{fs, path::PathBuf};
 
 use crate::helpers::file_system::AppFileSystem;
@@ -11,7 +8,9 @@ use shared::utils::FileSudoCommand;
 #[derive(Debug)]
 struct Stub {
     stub_dir_name: String,
+    #[allow(dead_code)]
     src_stub_path: PathBuf,
+    #[allow(dead_code)]
     domain: String,
 }
 

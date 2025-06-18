@@ -15,6 +15,8 @@ mod constants;
 use error::Result;
 use tauri::{Manager, RunEvent, WindowEvent};
 
+use shared::nginx;
+
 use crate::helpers::lempifyd;
 use crate::models::config::ConfigManagerBuilder;
 
@@ -24,7 +26,7 @@ fn main() -> Result<()> {
     }
 
     // @TODO: Can this move to setup?
-    if let Err(e) = helpers::nginx::add_lempify_to_conf() {
+    if let Err(e) = nginx::add_lempify_to_conf() {
         eprintln!("⚠️ Failed to patch nginx.conf: {}", e);
     }
 

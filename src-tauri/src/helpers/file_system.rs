@@ -1,5 +1,4 @@
-use shared::dirs::{get_config, get_lempify_app};
-// use users::get_user_by_name;
+use shared::dirs::{get_lempify_app};
 
 use std::fs;
 use std::path::Path;
@@ -11,12 +10,6 @@ use std::process::Stdio;
 use std::process::Command;
 
 use users::User;
-
-pub fn get_app_dir() -> Result<PathBuf, String> {
-    let config_dir = get_config()?;
-    let app_dir = config_dir.join("Lempify");
-    Ok(app_dir)
-}
 
 /**
  * Get a directory in the app support dir
