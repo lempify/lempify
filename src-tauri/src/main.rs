@@ -46,7 +46,7 @@ fn main() -> Result<()> {
                 .map_err(|e| format!("Failed to initialize ConfigManager: {}", e))?;
             app.manage(config_manager);
             // @TODO: Unused
-            let _config = helpers::file_system::load_json()?;
+            // let _config = helpers::file_system::load_json()?;
             // Run app setup
             helpers::setup::run()?;
             // Spawn lempifyd sidecar
@@ -56,7 +56,7 @@ fn main() -> Result<()> {
             // Open devtools
             ui::browser::open_devtools(&app);
             // Initialize file system
-            let _ = helpers::file_system::init();
+            // let _ = helpers::file_system::init();
             Ok(())
         });
 

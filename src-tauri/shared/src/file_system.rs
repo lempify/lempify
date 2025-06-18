@@ -1,44 +1,8 @@
-use shared::dirs::{get_lempify_app};
-
 use std::fs;
-use std::path::Path;
-/**
- * File system helpers
- */
-use std::path::PathBuf;
-use std::process::Stdio;
-use std::process::Command;
-
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 use users::User;
 
-/**
- * Get a directory in the app support dir
- */
-pub fn get_config_dir(dir: &str) -> Result<PathBuf, String> {
-    let config_dir = get_lempify_app()?;
-    let config_dir = config_dir.join(dir);
-    Ok(config_dir)
-}
-
-/**
- * Load JSON config file i.e. `~/Library/Application Support/Lempify/config.json` or `~/.config/lempify/config.json`
- */
-pub fn load_json() -> Result<String, String> {
-    let config_path = get_config_dir("config.json")?;
-
-    let config = if !config_path.exists() {
-        fs::write(config_path, "{}").map_err(|e| e.to_string())?;
-        "{}".to_string()
-    } else {
-        fs::read_to_string(config_path).map_err(|e| e.to_string())?
-    };
-
-    Ok(config)
-}
-
-/// File System struct
-
-#[allow(dead_code)]
 pub struct AppFileSystem {
     /** `/lempify/src-tauri/` */
     pub app_dir: PathBuf,
@@ -46,6 +10,8 @@ pub struct AppFileSystem {
     pub sites_dir: PathBuf,
     /** `/opt/homebrew/etc/nginx` or `/etc/nginx` */
     pub nginx_dir: PathBuf,
+    /** `/opt/homebrew/etc/nginx/sites-enabled` or `/etc/nginx/sites-enabled` */
+    pub nginx_sites_enabled_dir: PathBuf,
     /** `/opt/homebrew/etc/nginx/ssl` or `/etc/nginx/ssl` */
     pub certs_dir: PathBuf,
     /** `/lempify/src-tauri/stubs` */
@@ -56,18 +22,14 @@ pub struct AppFileSystem {
     pub site_types_dir: PathBuf,
 }
 
-#[allow(dead_code)]
 impl AppFileSystem {
     pub fn new() -> Result<Self, String> {
-
         let app_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR").to_string());
+        
+        let config_dir = dirs::config_dir().ok_or("Could not get config directory")?;
+        let config_dir = config_dir.join("Lempify");
 
-        let config_dir = get_lempify_app()?;
-
-        // Get src-tauri/stubs directory
         let app_stubs_dir = app_dir.join("stubs");
-
-        // Get site-types directory
         let site_types_dir = config_dir.join("site-types");
         
         // Sites directory - standard web server location
@@ -83,6 +45,8 @@ impl AppFileSystem {
         } else {
             PathBuf::from("/etc/nginx")
         };
+
+        let nginx_sites_enabled_dir = nginx_dir.join("sites-enabled");
         
         // Certs directory - standard system location
         let certs_dir = if cfg!(target_os = "macos") {
@@ -95,9 +59,10 @@ impl AppFileSystem {
             app_dir,
             sites_dir,
             nginx_dir,
+            nginx_sites_enabled_dir,
             certs_dir,
             app_stubs_dir,
-            config_dir, 
+            config_dir,
             site_types_dir,
         })
     }
@@ -117,7 +82,8 @@ impl AppFileSystem {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .spawn();
+            .spawn()
+            .map_err(|e| format!("Failed to create directory: {}", e))?;
 
         // Set permissions with sudo
         let _output = Command::new("sudo")
@@ -125,7 +91,8 @@ impl AppFileSystem {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .spawn();
+            .spawn()
+            .map_err(|e| format!("Failed to set permissions: {}", e))?;
 
         // Change ownership with sudo
         let _output = Command::new("sudo")
@@ -133,39 +100,43 @@ impl AppFileSystem {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .spawn();
+            .spawn()
+            .map_err(|e| format!("Failed to change ownership: {}", e))?;
 
         Ok(())
     }
-}
 
-pub fn init() -> Result<(), String> {
-    // let file_system = AppFileSystem::new().unwrap();
-    // println!("Config Dir:{:?}", file_system.config_dir);
-    // println!("Sites Dir:{:?}", file_system.sites_dir);
-    // println!("Nginx Dir:{:?}", file_system.nginx_dir);
-    // println!("Certs Dir:{:?}", file_system.certs_dir);
-    // println!(
-    //     "Is Path:{:?}",
-    //     file_system.is_dir(&file_system.certs_dir.as_path())
-    // );
-    // //println!(
-    //     "Is File:{:?}",
-    //     file_system.is_file(&file_system.certs_dir.as_path())
-    // );
-    // let root_user = get_user_by_name("root").unwrap();
-    // println!("Root User: {:#?}", root_user);
-    // let new_dir = file_system.mkdir(
-    //     Path::new("/tmp/lempify_test"),
-    //     &root_user,
-    //     0o755,
-    // );
-    // println!("New Dir: {:?}", new_dir);
+    pub fn load_json(&self, filename: &str) -> Result<String, String> {
+        let config_path = self.config_dir.join(filename);
 
-    // Check permissions
-    // let metadata = std::fs::metadata("/tmp/lempify_test");
-    // println!("Directory permissions: {:o}", metadata.permissions().mode());
-    // println!("Directory owner: {}", metadata.uid());
+        let config = if !config_path.exists() {
+            fs::write(&config_path, "{}").map_err(|e| e.to_string())?;
+            "{}".to_string()
+        } else {
+            fs::read_to_string(&config_path).map_err(|e| e.to_string())?
+        };
 
-    Ok(())
-}
+        Ok(config)
+    }
+
+    pub fn get_config_dir(&self) -> Result<PathBuf, String> {
+        Ok(self.config_dir.clone())
+    }
+
+    pub fn create_dir_all(&self, path: &Path) -> Result<(), String> {
+        fs::create_dir_all(path).map_err(|e| e.to_string())
+    }
+
+    pub fn write_file(&self, path: &Path, content: &str) -> Result<(), String> {
+        // Ensure parent directory exists
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        }
+
+        fs::write(path, content).map_err(|e| e.to_string())
+    }
+
+    pub fn read_file(&self, path: &Path) -> Result<String, String> {
+        fs::read_to_string(path).map_err(|e| e.to_string())
+    }
+} 

@@ -2,12 +2,12 @@ use tauri::command;
 
 use crate::models::service::SiteInfo;
 
-use shared::{constants::HOSTS_PATH, dirs, ssl};
+use shared::{constants::HOSTS_PATH, file_system::AppFileSystem, ssl};
 
 #[command]
 pub fn list_sites() -> Result<Vec<SiteInfo>, String> {
-    let sites_dir = dirs::get_sites()?;
-    let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
+    let sites_dir = AppFileSystem::new()?.sites_dir;
+    let nginx_sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
     let hosts = std::fs::read_to_string(HOSTS_PATH).unwrap_or_default();
 
     let mut sites = vec![];

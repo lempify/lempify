@@ -1,11 +1,11 @@
 use std::{fs, path::Path};
 
-use crate::{brew, dirs, utils::FileSudoCommand};
+use crate::{brew, utils::FileSudoCommand, file_system::AppFileSystem};
 
 /// Add Lempify include to the main Nginx config
 pub fn add_lempify_to_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
-    let sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
+    let sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
     let include_path = sites_enabled_dir.join("*.conf");
     let include_block = format!("# Lempify\n\tinclude {};", include_path.display());
 
@@ -65,8 +65,8 @@ pub fn add_lempify_to_conf() -> Result<(), String> {
 
 /// Update a site's Nginx config with SSL configuration
 pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
-    let sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
-    let certs_dir = dirs::get_certs()?;
+    let sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
+    let certs_dir = AppFileSystem::new()?.certs_dir;
     let nginx_config_path = sites_enabled_dir.join(format!("{}.conf", domain));
 
     let contents = fs::read_to_string(&nginx_config_path)

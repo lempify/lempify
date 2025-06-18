@@ -1,26 +1,23 @@
 use std::{fs, path::PathBuf};
 
-use crate::helpers::file_system::AppFileSystem;
 use crate::helpers::utils::copy_dir_recursive;
-use shared::dirs;
+use shared::file_system::AppFileSystem;
 use shared::utils::FileSudoCommand;
 
 #[derive(Debug)]
 struct Stub {
     stub_dir_name: String,
-    #[allow(dead_code)]
-    src_stub_path: PathBuf,
-    #[allow(dead_code)]
-    domain: String,
+    // src_stub_path: PathBuf,
+    // domain: String,
 }
 
 impl Stub {
-    pub fn new(site_type: &str, domain: &str) -> Result<Self, String> {
-        let app_fs = AppFileSystem::new()?;
-        let src_stub_path = app_fs.app_stubs_dir.join(site_type);
+    pub fn new(site_type: &str /* , domain: &str */) -> Result<Self, String> {
+        // let app_fs = AppFileSystem::new()?;
+        // let src_stub_path = app_fs.app_stubs_dir.join(site_type);
         Ok(Stub {
-            src_stub_path,
-            domain: domain.to_string(),
+            // src_stub_path,
+            // domain: domain.to_string(),
             stub_dir_name: site_type.to_string(),
         })
     }
@@ -43,7 +40,7 @@ impl Stub {
  * Get local stub directory contents.
  */
 pub fn create_site_type_stub(site_type: &str, domain: &str, version: &str) -> Result<(), String> {
-    let stub = Stub::new(&site_type, domain)?;
+    let stub = Stub::new(&site_type)?;
     let app_fs = AppFileSystem::new()?;
 
     // SOURCE
@@ -121,7 +118,7 @@ pub fn create_nginx_config_stub(domain: &str) -> Result<String, String> {
         .app_stubs_dir
         .join("domain_name-domain_tld.nginx.conf");
 
-    let dest_path = dirs::get_nginx_sites_enabled()?;
+    let dest_path = AppFileSystem::new()?.nginx_sites_enabled_dir;
     let dest_path = dest_path.join(format!("{}.conf", domain));
 
     let config_contents =

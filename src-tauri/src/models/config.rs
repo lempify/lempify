@@ -1,4 +1,4 @@
-use crate::helpers::file_system::get_config_dir;
+use shared::file_system::AppFileSystem;
 use serde::{Deserialize, Serialize};
 use shared::constants::LEMPIFY_SUDOERS_PATH;
 use std::fs;
@@ -234,7 +234,7 @@ pub struct ConfigManager {
 
 impl ConfigManager {
     pub fn new(config_file: String) -> Result<Self, String> {
-        let config_path = get_config_dir(&config_file)?;
+        let config_path = AppFileSystem::new()?.config_dir.join(config_file);
         let config = Self::load_config(&config_path)?;
 
         Ok(Self {

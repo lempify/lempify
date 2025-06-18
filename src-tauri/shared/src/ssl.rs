@@ -6,7 +6,7 @@
 use std::fs;
 use std::process::Command;
 
-use crate::{dirs, nginx};
+use crate::{file_system::AppFileSystem, nginx};
 
 /**
  * Generate SSL certificates for a domain using mkcert
@@ -19,7 +19,7 @@ use crate::{dirs, nginx};
  */
 pub fn generate_certs(domain: &str) -> Result<(), String> {
     // println!("\tgenerate_certs: {}", domain);
-    let certs_dir = dirs::get_certs()?;
+    let certs_dir = AppFileSystem::new()?.certs_dir;
 
     let cert_path = certs_dir.join(format!("{domain}.pem"));
     let key_path = certs_dir.join(format!("{domain}-key.pem"));
@@ -67,7 +67,7 @@ pub fn secure_site(domain: &str) -> Result<(), String> {
  * ```
  */
 pub fn delete_certs(domain: &str) -> Result<(), String> {
-    let certs_dir = dirs::get_certs()?;
+    let certs_dir = AppFileSystem::new()?.certs_dir;
     let cert_path = certs_dir.join(format!("{domain}.pem"));
     let key_path = certs_dir.join(format!("{domain}-key.pem"));
     if cert_path.exists() {
@@ -91,7 +91,7 @@ pub fn delete_certs(domain: &str) -> Result<(), String> {
  * ```
  */
 pub fn has_ssl(domain: &str) -> Result<bool, String> {
-    let certs_dir = dirs::get_certs()?;
+    let certs_dir = AppFileSystem::new()?.certs_dir;
     let cert_path = certs_dir.join(format!("{domain}.pem"));
     let key_path = certs_dir.join(format!("{domain}-key.pem"));
     Ok(cert_path.exists() && key_path.exists())

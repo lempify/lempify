@@ -1,7 +1,6 @@
-use std::process::{Command, Stdio};
 use std::path::PathBuf;
+use std::process::{Command, Stdio};
 
-use crate::dirs;
 use crate::utils::is_bin_installed;
 
 pub struct BrewCommand<'a> {
@@ -24,11 +23,11 @@ impl<'a> BrewCommand<'a> {
 
     pub fn run(self) -> Result<String, String> {
         let mut command = Command::new(if self.sudo { "sudo" } else { "brew" });
-        
+
         if self.sudo {
             command.arg("brew");
         }
-        
+
         let output = command
             .args(&self.args)
             .output()
@@ -107,10 +106,10 @@ fn check_service_status(service: &str, status: &str) -> bool {
  */
 pub fn install_service(service: &str) -> Result<(), String> {
     let formula = service;
-    
+
     // Install the formula
     BrewCommand::new(&["install", formula]).run()?;
-    
+
     // Link the formula
     BrewCommand::new(&["link", formula, "--overwrite", "--force"]).run()?;
 
@@ -127,9 +126,7 @@ pub fn is_service_installed(bin: &str) -> bool {
         .output()
         .map_or(false, |output| {
             let output_str = String::from_utf8_lossy(&output.stdout);
-            output_str
-                .lines()
-                .any(|line| line.contains(bin))
+            output_str.lines().any(|line| line.contains(bin))
         })
 }
 
@@ -179,7 +176,10 @@ fn stop_service_fallback(service: &str) -> Result<(), String> {
             if status.success() {
                 Ok(())
             } else {
-                Err(format!("Failed to stop service with launchctl: {}", service))
+                Err(format!(
+                    "Failed to stop service with launchctl: {}",
+                    service
+                ))
             }
         })
 }
@@ -193,7 +193,7 @@ pub fn restart_service(service: &str) -> Result<(), String> {
  * Get the launch agent path
  */
 pub fn get_launch_agent_path(service: &str) -> Result<PathBuf, String> {
-    let home = dirs::get_home()?;
+    let home = dirs::home_dir().ok_or("Could not get home directory")?;
     let plist = format!("homebrew.mxcl.{}.plist", service);
     Ok(home.join("Library").join("LaunchAgents").join(plist))
 }

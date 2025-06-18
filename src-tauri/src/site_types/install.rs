@@ -5,11 +5,10 @@ use std::fs;
 use std::fs::File;
 use zip;
 
-use shared::dirs::get_lempify_app;
+use shared::file_system::AppFileSystem;
 
 use crate::constants;
 use crate::helpers::config::get_settings;
-use crate::helpers::file_system::AppFileSystem;
 use crate::helpers::utils::copy_zip_entry_to_path;
 
 /**
@@ -17,7 +16,7 @@ use crate::helpers::utils::copy_zip_entry_to_path;
  */
 pub async fn wordpress(version: &str) -> Result<(), String> {
     // If downloaded version exists, exit early.
-    let config_dir = get_lempify_app()?;
+    let config_dir = AppFileSystem::new()?.config_dir;
     // ~/Library/Application Support/Lempify/site-types/wordpress/wordpress-{version}.zip
     let wordpress_zip_path = config_dir
         .join("site-types")
@@ -154,7 +153,7 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
             let mysql_db_name = format!("{}-{}", site_name, site_tld);
             let mysql_db_create_query =
                 format!("CREATE DATABASE IF NOT EXISTS `{}`", mysql_db_name);
-                
+
             // @TODO: Add user creation and password update.
             let mysql_db_user = "lempify";
             let mysql_db_password = "lempify";
@@ -182,7 +181,7 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
                 settings.mysql_port
             );
             println!("Attempting to connect to MySQL with conn_str: {}", conn_str);
-            
+
             let pool = Pool::new(conn_str.as_str())
                 .map_err(|e| format!("Failed to connect to MySQL: {}", e))?;
 

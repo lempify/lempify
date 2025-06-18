@@ -1,7 +1,8 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use shared::dirs::get_lempify_app;
 use std::fs::{self, File};
+
+use shared::file_system::AppFileSystem;
 
 use crate::constants;
 
@@ -45,11 +46,9 @@ pub struct WordPressPackages {
  * @returns A list of WordPress versions
  */
 pub async fn versions() -> Result<WordPressVersionResponse, String> {
+    let app_fs = AppFileSystem::new().map_err(|e| e.to_string())?;
     // Check if the cache is valid.
-    let cache_path = get_lempify_app()
-        .map_err(|e| e.to_string())?
-        .join("cache")
-        .join("wordpress-versions.json");
+    let cache_path = app_fs.config_dir.join("cache").join("wordpress-versions.json");
 
     if cache_path.exists() {
         let cache_file = File::open(&cache_path).map_err(|e| e.to_string())?;
@@ -60,9 +59,7 @@ pub async fn versions() -> Result<WordPressVersionResponse, String> {
         }
     } else {
         // Create cache directory
-        let cache_dir = get_lempify_app()
-            .map_err(|e| e.to_string())?
-            .join("cache");
+        let cache_dir = app_fs.config_dir.join("cache");
         fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     }
 
