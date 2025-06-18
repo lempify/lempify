@@ -1,4 +1,4 @@
-use mysql::{prelude::*, Pool, PooledConn};
+use mysql::{Pool, PooledConn};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::{fs, io, path::PathBuf};
@@ -6,7 +6,6 @@ use std::{fs, io, path::PathBuf};
 use crate::{
     helpers::service_utils::{get_brew_formula, get_version_args},
     models::{
-        config::Settings,
         service::{ServiceStatus, ServiceType},
     },
 };

@@ -4,7 +4,6 @@ use tauri::{command, State};
 use crate::{
     helpers::{
         hosts,
-        nginx::{restart_nginx},
         ssl::secure_site, stubs::{create_nginx_config_stub, create_site_type_stub},
     },
     models::{
@@ -14,7 +13,7 @@ use crate::{
     site_types::{install, uninstall, wordpress},
 };
 
-use shared::{dirs, ssl::delete_certs, utils::FileSudoCommand};
+use shared::{dirs, nginx::restart_nginx, ssl::delete_certs, utils::FileSudoCommand};
 
 /// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {

@@ -5,18 +5,6 @@ use std::process::Command;
 use shared::brew;
 
 /**
- * Is PHP running?
- *
- * This function checks if PHP is running.
- *
- * @return bool
- */
-pub fn is_php_running() -> bool {
-    let is_running = brew::is_service_running("php");
-
-    is_running
-}
-/**
  * Ensure the PHP socket path exists
  *
  * This function ensures that the PHP socket path exists.
@@ -43,7 +31,7 @@ pub fn ensure_php_socket_path_exists() -> Result<(), String> {
             .status()
             .map_err(|e| format!("Failed to chown socket directory: {}", e))?;
 
-        let is_running = is_php_running();
+        let is_running = brew::is_service_running("php");
 
         if is_running {
             // ✅ Restart PHP to apply change

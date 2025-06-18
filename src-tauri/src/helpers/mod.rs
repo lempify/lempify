@@ -5,7 +5,6 @@ pub mod user;
 pub mod utils;
 pub mod hosts;
 pub mod stubs;
-pub mod nginx;
 pub mod setup;
 pub mod config;
 pub mod system;
