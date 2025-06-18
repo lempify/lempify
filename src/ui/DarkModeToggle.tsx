@@ -1,4 +1,4 @@
-import { useDarkMode } from "../context/DarkModeProvider";
+import { useDarkMode } from "../context/DarkModeContext";
 
 const themes = ['light', 'system', 'dark'] as const;
 

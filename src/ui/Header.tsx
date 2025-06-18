@@ -10,7 +10,7 @@
  */
 import Services from "./Services";
 import DarkModeToggle from "./DarkModeToggle";
-import { ServicesProvider } from "../context/ServicesProvider";
+import { ServicesProvider } from "../context/ServicesContext";
 import { useInvoke } from "../hooks/useInvoke";
 import { useAppConfig } from "../context/AppConfigContext";
 

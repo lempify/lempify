@@ -8,11 +8,11 @@ export default function useLempifyd(services = defaultServices) {
     const { invoke, invokeStatus } = useInvoke();
     const requests = useRef<Record<`${ServiceType}:${string}`, Statuses>>({});
 
-    useEffect(() => {
-        for (const service of services) {
-            startService(service);
-        }
-    }, [services]);
+    // useEffect(() => {
+    //     for (const service of services) {
+    //         startService(service);
+    //     }
+    // }, [services]);
 
     const startService = async (service: ServiceType) => {
         if (requests.current[`${service}:start`]) {

@@ -16,12 +16,13 @@ import Header from "./ui/Header";
 import Sidebar from "./ui/Sidebar";
 import Dashboard from "./ui/Dashboard";
 import Settings from "./ui/Settings";
-import { ServiceProvider } from "./context/ServiceContext";
+import { AppConfigProvider } from "./context/AppConfigContext";
+import { ServicesProvider } from "./context/ServicesContext";
 
 import useLempifyd from "./hooks/useLempifyd";
+
 // import CanvasBackground from "./ui/CanvasBackground";
 // import Background from "./ui/Background";
-import { AppConfigProvider } from "./context/AppConfigContext";
 import Background from "./ui/Background";
 
 const App = () => {
@@ -30,7 +31,7 @@ const App = () => {
 
   return (
     <AppConfigProvider>
-      <ServiceProvider>
+      <ServicesProvider>
         <Router>
           <div className="h-screen grid grid-cols-[256px_1fr] grid-rows-[65px_1fr]">
 
@@ -54,7 +55,7 @@ const App = () => {
             </main>
           </div>
         </Router>
-      </ServiceProvider>
+      </ServicesProvider>
     </AppConfigProvider>
   );
 };
