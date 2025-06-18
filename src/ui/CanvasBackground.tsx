@@ -1,7 +1,7 @@
 // @TODO: Unused
 import { useCallback, useEffect, useRef, useState } from "react";
 import { debounce } from "../utils/debounce";
-import { useDarkMode } from "../context/DarkModeProvider";
+import { useDarkMode } from "../context/DarkModeContext";
 
 const spotlightRadius = 300;
 const gridSize = 80;

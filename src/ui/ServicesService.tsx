@@ -5,7 +5,7 @@ import Button from "./Button";
 import SvgNginx from "./ServicesSvgNginx";
 import SvgMysql from "./ServicesSvgMysql";
 import SvgPhp from "./ServicesSvgPhp";
-import { useService } from "../context/ServicesProvider";
+import { useService } from "../context/ServicesContext";
 
 const icons = {
   nginx: SvgNginx,

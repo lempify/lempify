@@ -2,7 +2,7 @@
 import { useState } from "react";
 /** Internal dependencies */
 import ServicesService from "./ServicesService";
-import { useServices } from "../context/ServicesProvider";
+import { useServices } from "../context/ServicesContext";
 
 const Services = () => {
   const [isOpen, setIsOpen] = useState(false);

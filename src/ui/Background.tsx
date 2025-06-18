@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import useWindowEvents from "../hooks/useWindowActive";
-import { useDarkMode } from "../context/DarkModeProvider";
+import { useDarkMode } from "../context/DarkModeContext";
 
 import "../css/bg-animation.css";
 
