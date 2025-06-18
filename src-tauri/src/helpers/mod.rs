@@ -9,5 +9,4 @@ pub mod setup;
 pub mod config;
 pub mod system;
 pub mod lempifyd;
-pub mod file_system;
 pub mod service_utils;

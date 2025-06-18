@@ -13,7 +13,7 @@ use crate::{
     site_types::{install, uninstall, wordpress},
 };
 
-use shared::{dirs, nginx::restart_nginx, ssl::delete_certs, utils::FileSudoCommand};
+use shared::{file_system::AppFileSystem, nginx::restart_nginx, ssl::delete_certs, utils::FileSudoCommand};
 
 /// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
@@ -26,7 +26,7 @@ pub async fn create_site(
     payload: SiteCreatePayload,
 ) -> Result<Site, String> {
     
-    let sites_dir = dirs::get_sites()?;
+    let sites_dir = AppFileSystem::new()?.sites_dir;
 
     let domain = &payload.domain.to_lowercase();
     let (domain_name, domain_tld) = 
@@ -137,8 +137,8 @@ pub async fn delete_site(
     config_manager: State<'_, ConfigManager>,
     domain: String,
 ) -> Result<String, String> {
-    let sites_dir = dirs::get_sites()?;
-    let nginx_sites_enabled_dir = dirs::get_nginx_sites_enabled()?;
+    let sites_dir = AppFileSystem::new()?.sites_dir;
+    let nginx_sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
 
     let domain_name = domain.split('.').next().unwrap();
     let domain_tld = domain.split('.').nth(1).unwrap();
