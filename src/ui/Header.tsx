@@ -8,9 +8,8 @@
 /**
  * Internal dependencies
  */
-import Services from "./Services";
+import HeaderServices from "./HeaderServices";
 import DarkModeToggle from "./DarkModeToggle";
-import { ServicesProvider } from "../context/ServicesContext";
 import { useInvoke } from "../hooks/useInvoke";
 import { useAppConfig } from "../context/AppConfigContext";
 
@@ -20,8 +19,8 @@ export default function Header() {
     const { trusted } = config;
 
     const handleTrust = () => {
-        invoke("trust_lempify");
-        dispatch({ type: "set_trusted", trusted: true });
+        invoke(trusted ? "untrust_lempify" : "trust_lempify");
+        dispatch({ type: "set_trusted", trusted: !trusted });
     };
 
     return (
@@ -32,21 +31,13 @@ export default function Header() {
             </div>
             <div>
                 {/* {trusted ? 'IS TRUSTED' : 'IS NOT TRUSTED'} */}
-                {trusted ? <button onClick={() => {
-                    invoke("untrust_lempify");
-                    dispatch({ type: "set_trusted", trusted: false });
-                }}>UNTRUST</button> : <button onClick={() => {
-                    invoke("trust_lempify");
-                    dispatch({ type: "set_trusted", trusted: true });
-                }}>TRUST</button>}
+                <button onClick={handleTrust}>{trusted ? 'UNTRUST' : 'TRUST'}</button>
             </div>
             <div className="text-xl ml-auto">
                 <DarkModeToggle />
             </div>
             <div className="p-5 ml-auto">
-                <ServicesProvider>
-                    <Services />
-                </ServicesProvider>
+                <HeaderServices />
             </div>
         </header>
     );

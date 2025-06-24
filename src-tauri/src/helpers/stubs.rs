@@ -27,9 +27,10 @@ impl Stub {
         let src_stub_path = app_fs.app_stubs_dir.join(&self.stub_dir_name);
         let mut stub_contents = Vec::new();
         for entry in
-            fs::read_dir(src_stub_path).map_err(|e| format!("Failed to read stub: {}", e))?
+            fs::read_dir(&src_stub_path)
+                .map_err(|e| format!("Failed to read stub: {} / {}", e, src_stub_path.display()))?
         {
-            let entry = entry.map_err(|e| format!("Failed to read stub: {}", e))?; // TODO: Handle this error
+            let entry = entry.map_err(|e| format!("Failed to read stub: {} / {}", e, src_stub_path.display()))?; // TODO: Handle this error
             stub_contents.push(entry.path().to_string_lossy().to_string());
         }
         Ok(stub_contents)
@@ -114,6 +115,8 @@ pub fn create_site_type_stub(site_type: &str, domain: &str, version: &str) -> Re
 pub fn create_nginx_config_stub(domain: &str) -> Result<String, String> {
     let app_fs = AppFileSystem::new()?;
 
+    println!("APP FS: {:#?}", app_fs);
+
     let stub_template = app_fs
         .app_stubs_dir
         .join("domain_name-domain_tld.nginx.conf");
@@ -121,8 +124,8 @@ pub fn create_nginx_config_stub(domain: &str) -> Result<String, String> {
     let dest_path = AppFileSystem::new()?.nginx_sites_enabled_dir;
     let dest_path = dest_path.join(format!("{}.conf", domain));
 
-    let config_contents =
-        fs::read_to_string(stub_template).map_err(|e| format!("Failed to read stub: {}", e))?;
+    let config_contents = fs::read_to_string(&stub_template)
+        .map_err(|e| format!("Failed to read stub: {} / {}", e, stub_template.display()))?;
     let config_contents = config_contents.replace("{{DOMAIN}}", domain);
 
     FileSudoCommand::write(config_contents.to_string(), dest_path.to_path_buf()).run()?;

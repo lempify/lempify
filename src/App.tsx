@@ -16,8 +16,10 @@ import Header from "./ui/Header";
 import Sidebar from "./ui/Sidebar";
 import Dashboard from "./ui/Dashboard";
 import Settings from "./ui/Settings";
+import Site404 from "./ui/Site404";
+import Page404 from "./ui/Page404";
 import { AppConfigProvider } from "./context/AppConfigContext";
-import { ServicesProvider } from "./context/ServicesContext";
+import { LempifydProvider } from "./context/LempifydContext";
 
 import useLempifyd from "./hooks/useLempifyd";
 
@@ -31,7 +33,7 @@ const App = () => {
 
   return (
     <AppConfigProvider>
-      <ServicesProvider>
+      <LempifydProvider>
         <Router>
           <div className="h-screen grid grid-cols-[256px_1fr] grid-rows-[65px_1fr]">
 
@@ -48,14 +50,18 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/sites" element={<Sites />} />
+                  
                   <Route path="/site/:domain" element={<Site />} />
+                  <Route path="/site/*" element={<Site404 />} />
+
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<Page404 />} />
                 </Routes>
               </div>
             </main>
           </div>
         </Router>
-      </ServicesProvider>
+      </LempifydProvider>
     </AppConfigProvider>
   );
 };

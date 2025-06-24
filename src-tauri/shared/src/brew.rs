@@ -37,11 +37,17 @@ impl<'a> BrewCommand<'a> {
             String::from_utf8(output.stdout)
                 .map_err(|e| format!("Failed to parse command output: {}", e))
         } else {
-            Err(format!("brew command failed: {}", self.args.join(" ")))
+            Err(format!(
+                "brew command failed: {}\n{}",
+                self.args.join(" "),
+                String::from_utf8_lossy(&output.stderr)
+            ))
         }
     }
 }
 
+// @TODO: Add to config.json during setup.
+// @TODO: Apply to instances of `/opt/homebrew`
 pub fn get_path_prefix() -> Result<String, String> {
     BrewCommand::new(&["--prefix"]).run()
 }
@@ -105,13 +111,11 @@ fn check_service_status(service: &str, status: &str) -> bool {
  * Install a service
  */
 pub fn install_service(service: &str) -> Result<(), String> {
-    let formula = service;
-
     // Install the formula
-    BrewCommand::new(&["install", formula]).run()?;
+    BrewCommand::new(&["install", service]).run()?;
 
     // Link the formula
-    BrewCommand::new(&["link", formula, "--overwrite", "--force"]).run()?;
+    BrewCommand::new(&["link", &service, "--overwrite", "--force"]).run()?;
 
     Ok(())
 }
@@ -158,6 +162,31 @@ pub fn stop_service(service: &str) -> Result<(), String> {
     }
 }
 
+pub fn repair_service(service: &str) -> Result<(), String> {
+    //println!("Repairing service: {}", service);
+
+    // Try to stop it gracefully
+    let _ = stop_service(service); // Ignore errors, we're gonna nuke it anyway
+
+    // Remove the .plist if it still exists
+    let _ = get_launch_agent_path(service).map(|path| {
+        if path.exists() {
+            std::fs::remove_file(&path).ok();
+        }
+    });
+
+    // Cleanup broken launchd state
+    BrewCommand::new(&["services", "cleanup"]).run()?;
+
+    // Reinstall the service (force)
+    BrewCommand::new(&["reinstall", service]).run()?;
+
+    // Start the service fresh
+    start_service(service)?;
+
+    Ok(())
+}
+
 /**
  * Stop a service fallback
  */
@@ -184,6 +213,14 @@ fn stop_service_fallback(service: &str) -> Result<(), String> {
         })
 }
 
+/**
+ * Restart a service
+ *
+ * @example
+ * ```
+ * brew::restart_service("nginx")?;
+ * ```
+ */
 pub fn restart_service(service: &str) -> Result<(), String> {
     BrewCommand::new(&["services", "restart", service]).run()?;
     Ok(())

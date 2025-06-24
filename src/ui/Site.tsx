@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import useSiteManager from "../hooks/useSiteManager";
 import { useAppConfig } from "../context/AppConfigContext";
 import Page from "./Page";
@@ -11,11 +11,11 @@ export default function Site() {
   const site = sites.find((site) => site.domain === domain);
   const siteConfig = config.sites.find((site) => site.domain === domain);
 
-  console.log("site", site);
-  console.log("siteConfig", siteConfig);
+  // console.log("site", site);
+  // console.log("siteConfig", siteConfig);
 
   if (!site) {
-    return <div>Site not found</div>;
+    return <Navigate to={`/site/404?domain=${domain}`} replace />;
   }
 
   return (

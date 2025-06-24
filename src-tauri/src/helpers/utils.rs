@@ -3,14 +3,6 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::{fs, io, path::PathBuf};
 
-use crate::{
-    helpers::service_utils::{get_brew_formula, get_version_args},
-    models::{
-        service::{ServiceStatus, ServiceType},
-    },
-};
-use shared::brew;
-
 /**
  * This regex is used to extract the version from the service output.
  * It matches the version in the following formats:
@@ -18,44 +10,33 @@ use shared::brew;
  * - Ver 1.23.0
  * - nginx/1.23.0
  */
+#[allow(dead_code)]
 static VERSION_REGEX: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"(?m)(?:PHP\s+|Ver\s+|nginx/)(?P<version>\d+(?:\.\d+)*)").expect("invalid regex")
 });
 
+#[allow(dead_code)]
 fn extract_version(input: &str) -> Option<String> {
     VERSION_REGEX
         .captures(input)
         .and_then(|caps| caps.name("version").map(|m| m.as_str().to_owned()))
 }
 
-pub async fn get_service_status(service: ServiceType) -> ServiceStatus {
-    let bin = get_brew_formula(&service);
-    let installed = brew::is_service_installed(bin);
-    let version = if installed {
-        let (args, use_stderr) = get_version_args(&service);
-        brew::get_binary_version(bin, args, use_stderr).ok()
-    } else {
-        None
-    };
-
-    ServiceStatus {
-        name: bin.to_string(),
-        running: brew::is_service_running(bin),
-        version: version
-            .as_deref()
-            .and_then(extract_version)
-            .or_else(|| Some("".to_string())),
-        installed,
-    }
-}
-
-pub async fn restart_service(service: ServiceType) -> Result<ServiceStatus, String> {
-    let formula = get_brew_formula(&service);
-    brew::stop_service(formula)?;
-    brew::start_service(formula)?;
-    Ok(get_service_status(service).await)
-}
-
+/**
+ * This function is used to copy a directory recursively.
+ * It will copy the directory and all its subdirectories and files to the destination path.
+ * 
+ * @param src - The source path
+ * @param dest - The destination path
+ * @returns A Result with an error message if the operation fails
+ * 
+ * @example
+ * ```
+ * let src = PathBuf::from("/path/to/source");
+ * let dest = PathBuf::from("/path/to/destination");
+ * let result = copy_dir_recursive(&src, &dest);
+ * ```
+ */
 pub fn copy_dir_recursive(src: &PathBuf, dest: &PathBuf) -> Result<(), String> {
     if !src.exists() {
         return Err(format!("Source path does not exist: {}", src.display()));
@@ -82,6 +63,21 @@ pub fn copy_dir_recursive(src: &PathBuf, dest: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * This function is used to copy a zip entry to a path.
+ * It will copy the zip entry to the destination path.
+ * 
+ * @param file - The zip file entry to copy
+ * @param outpath - The destination path
+ * @returns A Result with an error message if the operation fails
+ * 
+ * @example
+ * ```
+ * let file = zip::read::ZipFile::new(file);
+ * let outpath = PathBuf::from("/path/to/destination");
+ * let result = copy_zip_entry_to_path(&mut file, &outpath);
+ * ```
+ */
 pub fn copy_zip_entry_to_path<R: io::Read + io::Seek>(
     file: &mut zip::read::ZipFile<R>,
     outpath: &PathBuf,
@@ -101,7 +97,26 @@ pub fn copy_zip_entry_to_path<R: io::Read + io::Seek>(
     Ok(())
 }
 
-pub fn get_mysql_connection(
+/**
+ * This function is used to get a MySQL connection.
+ * It will return a PooledConn if the connection is successful.
+ * 
+ * @param mysql_host - The MySQL host
+ * @param mysql_user - The MySQL user
+ * @param mysql_password - The MySQL password
+ * @param mysql_port - The MySQL port
+ * @returns A Result with an error message if the connection fails
+ * 
+ * @example
+ * ```
+ * let mysql_host = "localhost";
+ * let mysql_user = "root";
+ * let mysql_password = "password";
+ * let mysql_port = 3306;
+ * let result = get_mysql_connection(mysql_host, mysql_user, mysql_password, mysql_port);
+ * ```
+ */
+ pub fn get_mysql_connection(
     mysql_host: String,
     mysql_user: String,
     mysql_password: String,

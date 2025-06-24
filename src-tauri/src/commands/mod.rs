@@ -1,10 +1,6 @@
-pub mod install;
 pub mod nginx;
-pub mod repair;
-pub mod service_status;
 pub mod site;
 pub mod sites;
 pub mod ssl;
-pub mod start_stop;
 pub mod lempifyd;
 pub mod sudoers;

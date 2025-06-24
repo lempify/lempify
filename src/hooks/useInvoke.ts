@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { InvokeStatus } from "../types";
 
 /** Generic hook for invoking Tauri commands with consistent error handling */
+// @TODO: Look into `useTransition` for better handling of async operations
 export function useInvoke() {
   const [invokeStatus, setInvokeStatus] = useState<InvokeStatus>(null);
   const safeInvoke = useCallback(
