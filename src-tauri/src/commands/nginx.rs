@@ -1,7 +1,7 @@
 use std::fs;
 use tauri::command;
 
-use shared::{file_system::AppFileSystem, hosts::entry_exists, nginx::restart_nginx, ssl};
+use shared::{brew, file_system::AppFileSystem, hosts::entry_exists, ssl};
 
 use crate::{helpers::stubs::create_nginx_config_stub, models::service::SiteInfo};
 
@@ -23,7 +23,7 @@ pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
 
     let config_path = create_nginx_config_stub(&domain)?;
 
-    restart_nginx()?;
+    brew::restart_service("nginx")?;
 
     Ok(SiteInfo::build(
         domain.to_string(),

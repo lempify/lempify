@@ -1,93 +1,157 @@
-use std::path::Path;
-use std::process::Command;
-
-use crate::helpers::php::generate_fpm_config;
-use crate::models::service_controller::ServiceController;
-
 use shared::brew;
+use shared::file_system::AppFileSystem;
 
-pub struct PhpServiceController {
-    pub version: String,
+use crate::models::Service;
+use crate::services::error::ServiceError;
+use crate::services::isolation::ServiceIsolation;
+use crate::services::config::ServiceConfig;
+
+pub struct PhpService {
+    version: String,
+    isolation: ServiceIsolation,
+    config: ServiceConfig,
 }
 
-impl ServiceController for PhpServiceController {
-    fn name(&self) -> &'static str {
+impl PhpService {
+    pub fn new(version: &str) -> Result<Self, ServiceError> {
+        let file_system = AppFileSystem::new()
+            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+        let isolation = ServiceIsolation::new("php")?;
+        let config = ServiceConfig::new(
+            file_system,
+            "php".to_string(),
+            version.to_string(),
+        )?;
+
+        Ok(Self {
+            version: version.to_string(),
+            isolation,
+            config,
+        })
+    }
+
+    fn generate_fpm_config(&self) -> String {
+        let socket_path = self.isolation.get_socket_path();
+        let log_path = self.isolation.get_log_path();
+        
+        format!(
+            r#"[global]
+pid = /opt/homebrew/var/run/php-fpm.pid
+error_log = {}
+daemonize = no
+
+[www]
+user = {}
+group = staff
+listen = {}
+listen.mode = 0666
+pm = dynamic
+pm.max_children = 5
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+"#,
+            log_path.display(),
+            whoami::username(),
+            socket_path.display(),
+        )
+    }
+
+    fn setup_config(&self) -> Result<(), ServiceError> {
+        // Ensure all required paths exist
+        self.isolation.ensure_paths()?;
+
+        // Generate and write FPM config
+        let config_content = self.generate_fpm_config();
+        self.config.write_config(&config_content)?;
+
+        Ok(())
+    }
+}
+
+impl Service for PhpService {
+    fn name(&self) -> &str {
         "php"
     }
 
-    fn install(&self) -> Result<(), String> {
-        // Install PHP via Homebrew
-        brew::install_service(&format!("php@{}", self.version))?;
+    fn version(&self) -> &str {
+        &self.version
+    }
 
-        Ok(())
+    fn isolation(&self) -> &ServiceIsolation {
+        &self.isolation
     }
 
     fn is_installed(&self) -> bool {
-        // Check for PHP binary in standard Homebrew locations
-        // TODO: Update to use AppFileSystem
-        let possible_paths = [
-            format!("/opt/homebrew/opt/php@{}/bin/php", self.version),
-            format!("/usr/local/opt/php@{}/bin/php", self.version),
-        ];
-
-        possible_paths.iter().any(|path| Path::new(path).exists())
+        brew::is_service_installed("php")
     }
 
     fn is_running(&self) -> bool {
-        let socket_path = format!("/tmp/lempify-php-{}.sock", self.version);
-        std::path::Path::new(&socket_path).exists()
+        brew::is_service_running("php")
     }
 
-    fn start(&self) -> Result<(), String> {
-        // First stop any existing processes
-        self.stop()?;
+    fn install(&self) -> Result<bool, ServiceError> {
+        if self.is_installed() {
+            return Ok(true);
+        }
 
-        let php_fpm_path = format!("/opt/homebrew/opt/php@{}/sbin/php-fpm", self.version);
-        let config_path = generate_fpm_config(&self.version)?;
+        self.isolation
+            .brew_command(&["install", &format!("php@{}", self.version)])
+            .run()
+            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
 
-        // Start PHP-FPM using generated config
-        std::process::Command::new(php_fpm_path)
-            .arg("--nodaemonize")
-            .arg("--fpm-config")
-            .arg(config_path)
-            .spawn()
-            .map_err(|e| format!("Failed to start PHP {}: {}", self.version, e))?;
+        // Set up initial configuration after install
+        self.setup_config()?;
 
-        Ok(())
+        Ok(true)
     }
 
-    fn stop(&self) -> Result<(), String> {
-        let socket_path = format!("/tmp/lempify-php-{}.sock", self.version);
-        
-        // Find and kill PHP-FPM processes using this socket
-        if let Ok(output) = Command::new("lsof")
-            .arg("-t")
-            .arg(&socket_path)
-            .output() {
-            if !output.stdout.is_empty() {
-                let pids: Vec<&str> = std::str::from_utf8(&output.stdout)
-                    .unwrap()
-                    .split('\n')
-                    .filter(|pid| !pid.is_empty())
-                    .collect();
-
-                for pid in pids {
-                    if let Err(e) = Command::new("kill")
-                        .arg("-9")
-                        .arg(pid)
-                        .output() {
-                        eprintln!("Warning: Failed to kill process {}: {}", pid, e);
-                    }
-                }
-            }
+    fn start(&self) -> Result<bool, ServiceError> {
+        if !self.is_installed() {
+            return Err(ServiceError::NotInstalled(format!("PHP {}", self.version)));
         }
 
-        // Remove the socket file if it exists
-        if std::path::Path::new(&socket_path).exists() {
-            std::fs::remove_file(&socket_path)
-                .map_err(|e| format!("Failed to remove socket file: {}", e))?;
+        if self.is_running() {
+            return Err(ServiceError::AlreadyRunning(format!("PHP {}", self.version)));
         }
 
-        Ok(())
+        // Ensure configuration is up to date before starting
+        self.setup_config()?;
+
+        self.isolation
+            .brew_command(&["services", "start", &format!("php@{}", self.version)])
+            .run()
+            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
+
+        Ok(true)
+    }
+
+    fn stop(&self) -> Result<bool, ServiceError> {
+        if !self.is_running() {
+            return Err(ServiceError::NotRunning(format!("PHP {}", self.version)));
+        }
+
+        self.isolation
+            .brew_command(&["services", "stop", &format!("php@{}", self.version)])
+            .run()
+            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
+
+        Ok(true)
+    }
+
+    fn restart(&self) -> Result<bool, ServiceError> {
+        if !self.is_installed() {
+            return Err(ServiceError::NotInstalled(format!("PHP {}", self.version)));
+        }
+
+        // Ensure configuration is up to date before restarting
+        self.setup_config()?;
+
+        self.isolation
+            .brew_command(&["services", "restart", &format!("php@{}", self.version)])
+            .run()
+            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
+
+        Ok(true)
     }
 }

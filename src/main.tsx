@@ -1,3 +1,4 @@
+// @TODO: Look into Suspense & `use` for better handling of async operations
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
@@ -15,5 +16,5 @@ ReactDOM.createRoot(rootElement).render(
     <DarkModeProvider>
       <App />
     </DarkModeProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

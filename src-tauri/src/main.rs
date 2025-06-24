@@ -62,12 +62,6 @@ fn main() -> Result<()> {
 
     let app = builder
         .invoke_handler(tauri::generate_handler![
-            commands::service_status::get_service_status,
-            commands::install::install_service,
-            commands::start_stop::start_service,
-            commands::start_stop::stop_service,
-            commands::start_stop::restart_service,
-            commands::repair::repair_service,
             commands::sites::list_sites,
             commands::site::create_site,
             commands::site::delete_site,
@@ -76,7 +70,7 @@ fn main() -> Result<()> {
             commands::lempifyd::lempifyd,
             commands::sudoers::trust_lempify,
             commands::sudoers::untrust_lempify,
-            // New config CRUD commands
+            // Config CRUD commands
             models::config::create_site_config,
             models::config::get_site_config,
             models::config::get_all_sites_config,
@@ -87,7 +81,6 @@ fn main() -> Result<()> {
             models::config::is_trusted_config,
             models::config::update_settings
         ])
-        //.menu(tauri::Menu::os_default(&tauri::generate_context!().package_info().name))
         .build(tauri::generate_context!())
         .expect("❌ Could not build application");
 

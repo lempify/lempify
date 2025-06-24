@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use users::User;
 
+#[derive(Debug)]
 pub struct AppFileSystem {
     /** `/lempify/src-tauri/` */
     pub app_dir: PathBuf,
@@ -24,7 +25,9 @@ pub struct AppFileSystem {
 
 impl AppFileSystem {
     pub fn new() -> Result<Self, String> {
-        let app_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR").to_string());
+        let app_dir = env!("CARGO_MANIFEST_DIR");
+        // remove shared from path.
+        let app_dir = PathBuf::from(app_dir.replace("shared", ""));
         
         let config_dir = dirs::config_dir().ok_or("Could not get config directory")?;
         let config_dir = config_dir.join("Lempify");

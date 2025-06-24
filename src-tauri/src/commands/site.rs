@@ -13,7 +13,7 @@ use crate::{
     site_types::{install, uninstall, wordpress},
 };
 
-use shared::{file_system::AppFileSystem, nginx::restart_nginx, ssl::delete_certs, utils::FileSudoCommand};
+use shared::{brew, file_system::AppFileSystem, ssl, utils::FileSudoCommand};
 
 /// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
@@ -127,7 +127,7 @@ pub async fn create_site(
     // Store in config.json
     config_manager.create_site(&site).await?;
 
-    restart_nginx()?;
+    brew::restart_service("nginx")?;
 
     Ok(site)
 }
@@ -139,9 +139,12 @@ pub async fn delete_site(
 ) -> Result<String, String> {
     let sites_dir = AppFileSystem::new()?.sites_dir;
     let nginx_sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
+    let site_conf_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain)); 
 
     let domain_name = domain.split('.').next().unwrap();
     let domain_tld = domain.split('.').nth(1).unwrap();
+
+    remove_file_with_sudo(&site_conf_path)?;
 
     let site_config = config_manager.get_site(&domain).await.ok_or("Site not found")?;
 
@@ -153,11 +156,8 @@ pub async fn delete_site(
         fs::remove_dir_all(&site_path)
         .map_err(|e| format!("Failed to delete site folder: {}", e))?;
     }
-    let config_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain)); 
     
-    remove_file_with_sudo(&config_path)?;
-
-    delete_certs(&domain)?;
+    ssl::delete_certs(&domain)?;
 
     hosts::remove_entry(&domain)?;
 
@@ -168,7 +168,7 @@ pub async fn delete_site(
     let _ = config_manager.delete_site(&domain).await; // Don't fail if not in config
 
     // Restart NGINX
-    restart_nginx()?;
+    brew::restart_service("nginx")?;
 
     Ok(format!("Deleted site: {}", domain))
 }

@@ -1,5 +1,5 @@
 use helpers::ipc;
-use services::get_all_services;
+// use services::get_all_services;
 
 use shared::brew;
 
@@ -17,18 +17,18 @@ fn main() {
         brew::install().unwrap();
     }
 
-    for service in get_all_services() {
-        if !service.is_installed() {
-            continue;
-        }
+    // for service in get_all_services() {
+    //     if !service.is_installed() {
+    //         continue;
+    //     }
 
-        // Ensure service is stopped before starting
-        if !service.is_running() {
-            if let Err(e) = service.start() {
-                eprintln!("❌ Failed to start {}: {}", service.name(), e);
-            }
-        }
-    }
+    //     // Ensure service is stopped before starting
+    //     if !service.is_running() {
+    //         if let Err(e) = service.start() {
+    //             eprintln!("❌ Failed to start {}: {}", service.name(), e);
+    //         }
+    //     }
+    // }
 
     loop {
         //println!("[lempifyd]: heartbeat");

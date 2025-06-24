@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use crate::{brew, utils::FileSudoCommand, file_system::AppFileSystem};
+use crate::{file_system::AppFileSystem, utils::FileSudoCommand};
 
 /// Add Lempify include to the main Nginx config
 pub fn add_lempify_to_conf() -> Result<(), String> {
@@ -92,12 +92,6 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
     write_file_with_sudo(&patched, &nginx_config_path)?;
 
     Ok(())
-}
-
-/// Restart the Nginx service
-pub fn restart_nginx() -> Result<(), String> {
-    //println!("Restarting nginx");
-    brew::restart_service("nginx")
 }
 
 /// Write a file to a system location that requires elevated permissions
