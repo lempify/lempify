@@ -24,6 +24,14 @@ pub struct AppFileSystem {
 }
 
 impl AppFileSystem {
+    /**
+     * Get and configure app file system.
+     *
+     * @example
+     * ```
+     * let file_system = AppFileSystem::new()?;
+     * ```
+     */
     pub fn new() -> Result<Self, String> {
         let app_dir = env!("CARGO_MANIFEST_DIR");
         // remove shared from path.

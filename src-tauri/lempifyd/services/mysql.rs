@@ -1,6 +1,5 @@
 use shared::brew;
 use shared::file_system::AppFileSystem;
-use std::path::PathBuf;
 
 use crate::models::Service;
 use crate::services::error::ServiceError;
@@ -97,8 +96,8 @@ max_heap_table_size = 32M
         self.config.create_dir(&data_path)?;
 
         // Generate and write MySQL config
-        let config_content = self.generate_mysql_config();
-        self.config.write_config(&config_content)?;
+        // let config_content = self.generate_mysql_config();
+        // self.config.write_config(&config_content)?;
 
         Ok(())
     }

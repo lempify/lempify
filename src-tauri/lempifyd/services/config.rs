@@ -18,8 +18,7 @@ impl ServiceConfig {
         version: String,
     ) -> Result<Self, ServiceError> {
         let config_path = file_system
-            .get_config_dir()
-            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?
+            .config_dir
             .join(format!("{}.conf", service_name));
 
         Ok(Self {
