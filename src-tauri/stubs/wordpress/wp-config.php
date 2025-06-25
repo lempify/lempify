@@ -29,7 +29,7 @@ define( 'DB_USER', '{{DB_USER}}' );
 define( 'DB_PASSWORD', '{{DB_PASSWORD}}' );
 
 /** Database hostname */
-define( 'DB_HOST', '{{DB_HOST}}' );
+define( 'DB_HOST', '{{DB_HOST}}:{{DB_PORT}}' );
 
 /** Database charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8' );
