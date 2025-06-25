@@ -6,6 +6,8 @@ use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
 use crate::services::config::ServiceConfig;
 
+use std::path::PathBuf;
+
 pub struct PhpService {
     version: String,
     isolation: ServiceIsolation,
@@ -62,8 +64,8 @@ pm.max_spare_servers = 3
         self.isolation.ensure_paths()?;
 
         // Generate and write FPM config
-        let config_content = self.generate_fpm_config();
-        self.config.write_config(&config_content)?;
+        // let config_content = self.generate_fpm_config();
+        // self.config.write_config(&config_content)?;
 
         Ok(())
     }
@@ -119,7 +121,7 @@ impl Service for PhpService {
         self.setup_config()?;
 
         self.isolation
-            .brew_command(&["services", "start", &format!("php@{}", self.version)])
+            .brew_command(&["services", "start", "php"])
             .run()
             .map_err(|e| ServiceError::BrewError(e.to_string()))?;
 
@@ -132,7 +134,7 @@ impl Service for PhpService {
         }
 
         self.isolation
-            .brew_command(&["services", "stop", &format!("php@{}", self.version)])
+            .brew_command(&["services", "stop", "php"])
             .run()
             .map_err(|e| ServiceError::BrewError(e.to_string()))?;
 
@@ -148,7 +150,7 @@ impl Service for PhpService {
         self.setup_config()?;
 
         self.isolation
-            .brew_command(&["services", "restart", &format!("php@{}", self.version)])
+            .brew_command(&["services", "restart", "php"])
             .run()
             .map_err(|e| ServiceError::BrewError(e.to_string()))?;
 

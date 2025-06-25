@@ -86,3 +86,39 @@ pub fn patch_php_fpm_socket_conf() -> Result<(), String> {
 
     Ok(())
 }
+
+/**
+ * Ensure the PHP log directory exists
+ *
+ * This function ensures that the PHP log directory exists.
+ * If it does not exist, it will be created with the correct permissions.
+ *
+ * @return Result<(), String>
+ */
+pub fn ensure_php_log_directory_exists() -> Result<(), String> {
+    let log_dir = format!(
+        "{}/Library/Application Support/Lempify/services/php",
+        std::env::var("HOME").unwrap_or_else(|_| "/Users/jaredrethman".to_string())
+    );
+
+    let path = Path::new(&log_dir);
+
+    if !path.exists() {
+        fs::create_dir_all(path)
+            .map_err(|e| format!("Failed to create log directory: {}", e))?;
+        //println!("✅ Created PHP log directory");
+
+        // Set ownership to current user
+        let username = whoami::username();
+        //println!("Setting ownership of log directory to {}", username);
+        Command::new("chown")
+            .arg(username)
+            .arg(&log_dir)
+            .status()
+            .map_err(|e| format!("Failed to chown log directory: {}", e))?;
+    } else {
+        //println!("✅ Verified PHP log directory exists");
+    }
+
+    Ok(())
+}
