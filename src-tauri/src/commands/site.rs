@@ -21,12 +21,17 @@ fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
 }
 
 #[command]
+// @TODO: wire up site_type_config, either.
+//  - https://github.com/ronaldbradford/schema/blob/master/wordpress.sql
+//  - WP CLI
 pub async fn create_site(
     config_manager: State<'_, ConfigManager>,
     payload: SiteCreatePayload,
 ) -> Result<Site, String> {
     
     let sites_dir = AppFileSystem::new()?.sites_dir;
+
+    // println!("Site Type Config: {:#?}", payload.site_type_config);
 
     let domain = &payload.domain.to_lowercase();
     let (domain_name, domain_tld) = 

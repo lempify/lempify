@@ -28,6 +28,13 @@ const defaultPayload = {
   type: DEFAULT_SITE_TYPE,
 };
 
+type Payload = {
+  domain: string;
+  ssl: boolean;
+  site_type: string;
+  site_type_config: Record<string, any>;
+}
+
 export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
   const { invoke, invokeStatus } = useInvoke();
   const [formValues, setFormValues] = useState<Record<string, any>>({ ...defaultPayload });
@@ -36,18 +43,29 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    console.log("formValues", formValues);
+    const payload: Payload = {
+      domain: formValues.domain,
+      site_type: formValues.type,
+      ssl: formValues.ssl,
+      site_type_config: {}
+    };
+
+    for (const [key, value] of Object.entries(formValues)) {
+      // i.e. type|wordpress
+      if (key.includes(`type|${formValues.type}|`)) {
+        const [nestedKey, , nestedName] = key.split('|');
+        if (nestedKey === 'type') {
+          payload['site_type_config'][nestedName] = value ?? {};
+        }
+        // Handle other cases in the future.
+      }
+    }
+
+    console.log("payload", payload);
 
     try {
       const { data, error } = await invoke<Site>("create_site", {
-        payload: {
-          domain: formValues.domain,
-          site_type: formValues.type,
-          ssl: formValues.ssl,
-          [formValues.type]: {
-            
-          }
-        }
+        payload
       });
       if (error) {
         console.error("Failed to create site:", error);
