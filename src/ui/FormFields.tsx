@@ -2,7 +2,7 @@
 /**
  * External imports
  */
-import { Fragment, useEffect, useState } from "react";
+import { Fragment } from "react";
 
 /**
  * Internal imports
@@ -19,7 +19,6 @@ const FormFields = (props: Field) => {
         description,
         type,
         value,
-        defaultValue,
         onChange = () => { },
         className = '',
         options,
@@ -30,8 +29,6 @@ const FormFields = (props: Field) => {
     } = props;
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>, fieldName: string = name) {
-        console.log("handleChange", { name, label, value, fieldName, formValue: value });
-        console.log("handleChange", e, fieldName);
         const newValue = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
         onChange(newValue, fieldName);
     }
@@ -72,7 +69,7 @@ const FormFields = (props: Field) => {
                                         {...childField}
                                         name={_name}
                                         className={`${childField.className ?? ''}`}
-                                        onChange={(change) => handleChange(change, _name)}
+                                        onChange={(change) => onChange(change, _name)}
                                         {...childField.inputAttributes ?? {}}
                                     />
                                 </div>
