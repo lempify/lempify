@@ -1,11 +1,15 @@
 use shared::brew;
 use shared::file_system::AppFileSystem;
 use std::fs;
+use std::path::PathBuf;
 
 use crate::models::Service;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
 use crate::services::config::ServiceConfig;
+
+const NGINX_STUB_PATH: &str = "src-tauri/stubs/domain_name-domain_tld.nginx.conf";
+const NGINX_SITES_ENABLED: &str = "/opt/homebrew/etc/nginx/sites-enabled";
 
 pub struct NginxService {
     version: String,
@@ -31,7 +35,7 @@ impl NginxService {
         })
     }
 
-    /// Generate NGINX config from stub, filling in variables
+    // Generate NGINX config from stub, filling in variables
     fn generate_site_config(&self, domain: &str) -> Result<String, ServiceError> {
         let stub = fs::read_to_string(NGINX_STUB_PATH)
             .map_err(|e| ServiceError::ConfigError(format!("Failed to read NGINX stub: {}", e)))?;
@@ -42,7 +46,7 @@ impl NginxService {
         Ok(config)
     }
 
-    /// Setup default NGINX configuration
+    // Setup default NGINX configuration
     fn setup_default(&self) -> Result<(), ServiceError> {
         self.isolation.ensure_paths()?;
         self.config.ensure_paths()?;

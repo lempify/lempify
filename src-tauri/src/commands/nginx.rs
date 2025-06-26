@@ -21,7 +21,7 @@ pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
         return Err(format!("Site directory not found: {}", site_path.display()));
     }
 
-    let config_path = create_nginx_config_stub(&domain)?;
+    let config_path = create_nginx_config_stub(&domain, None)?;
 
     brew::restart_service("nginx")?;
 

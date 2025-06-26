@@ -2,49 +2,52 @@ use shared::brew;
 use shared::file_system::AppFileSystem;
 
 use crate::models::Service;
+use crate::services::config::ServiceConfig;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
-use crate::services::config::ServiceConfig;
-
-use std::path::PathBuf;
 
 pub struct PhpService {
     version: String,
     isolation: ServiceIsolation,
     config: ServiceConfig,
+    supported_versions: Vec<&'static str>,
 }
 
 impl PhpService {
     pub fn new(version: &str) -> Result<Self, ServiceError> {
-        let file_system = AppFileSystem::new()
-            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+        let file_system =
+            AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
         let isolation = ServiceIsolation::new("php")?;
-        let config = ServiceConfig::new(
-            file_system,
-            "php".to_string(),
-            version.to_string(),
-        )?;
+        let config = ServiceConfig::new(file_system, "php".to_string(), version.to_string())?;
 
-        Ok(Self {
+        let service = Self {
             version: version.to_string(),
             isolation,
             config,
-        })
+            supported_versions: vec!["8.4", "8.3", "8.2", "8.1", "8.0"],
+        };
+
+        // Ensure configuration is set up when service is created
+        service.setup_config()?;
+
+        Ok(service)
     }
 
     fn generate_fpm_config(&self) -> String {
-        let socket_path = self.isolation.get_socket_path();
-        let log_path = self.isolation.get_log_path();
-        
+        let socket_path = self
+            .isolation
+            .get_service_socket_dir_no_spaces()
+            .join(format!("php-{}.sock", self.version));
+        let log_path = self.isolation.get_service_log_dir().join("php-fpm.log");
+        let pid_path = format!("/opt/homebrew/var/run/php-fpm-{}.pid", self.version);
+
         format!(
             r#"[global]
-pid = /opt/homebrew/var/run/php-fpm.pid
+pid = {}
 error_log = {}
-daemonize = no
+daemonize = yes
 
 [www]
-user = {}
-group = staff
 listen = {}
 listen.mode = 0666
 pm = dynamic
@@ -53,8 +56,8 @@ pm.start_servers = 2
 pm.min_spare_servers = 1
 pm.max_spare_servers = 3
 "#,
+            pid_path,
             log_path.display(),
-            whoami::username(),
             socket_path.display(),
         )
     }
@@ -64,8 +67,10 @@ pm.max_spare_servers = 3
         self.isolation.ensure_paths()?;
 
         // Generate and write FPM config
-        // let config_content = self.generate_fpm_config();
-        // self.config.write_config(&config_content)?;
+        let config_content = self.generate_fpm_config();
+        let config_path = self.isolation.get_service_config_dir().join("php-fpm.conf");
+
+        self.config.write_file(&config_path, &config_content)?;
 
         Ok(())
     }
@@ -89,7 +94,21 @@ impl Service for PhpService {
     }
 
     fn is_running(&self) -> bool {
-        brew::is_service_running("php")
+        // Check if our isolated PHP-FPM process is running
+        let socket_path = self
+            .isolation
+            .get_service_socket_dir_no_spaces()
+            .join(format!("php-{}.sock", self.version));
+
+        // Check if socket exists and is accessible
+        if !socket_path.exists() {
+            return false;
+        }
+
+        match std::os::unix::net::UnixStream::connect(&socket_path) {
+            Ok(_) => true,
+            Err(_) => false,
+        }
     }
 
     fn install(&self) -> Result<bool, ServiceError> {
@@ -114,18 +133,75 @@ impl Service for PhpService {
         }
 
         if self.is_running() {
-            return Err(ServiceError::AlreadyRunning(format!("PHP {}", self.version)));
+            return Err(ServiceError::AlreadyRunning(format!(
+                "PHP {}",
+                self.version
+            )));
         }
 
         // Ensure configuration is up to date before starting
         self.setup_config()?;
 
-        self.isolation
-            .brew_command(&["services", "start", "php"])
-            .run()
-            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
+        // Ensure the socket directory exists
+        let socket_path = self
+            .isolation
+            .get_service_socket_dir_no_spaces()
+            .join(format!("php-{}.sock", self.version));
+        if let Some(socket_dir) = socket_path.parent() {
+            std::fs::create_dir_all(socket_dir).map_err(|e| {
+                ServiceError::ServiceError(format!("Failed to create socket directory: {}", e))
+            })?;
+        }
 
-        Ok(true)
+        // Remove any existing socket file
+        if socket_path.exists() {
+            let _ = std::fs::remove_file(&socket_path);
+        }
+
+        // Start PHP-FPM using our isolated config directly
+        let config_path = self.isolation.get_service_config_dir().join("php-fpm.conf");
+
+        // Find the php-fpm binary
+        let php_fpm_binary = {
+            let version_specific = format!("/opt/homebrew/bin/php-fpm{}", self.version);
+            if std::path::Path::new(&version_specific).exists() {
+                version_specific
+            } else if std::path::Path::new("/opt/homebrew/bin/php-fpm").exists() {
+                "/opt/homebrew/bin/php-fpm".to_string()
+            } else if std::path::Path::new("/opt/homebrew/sbin/php-fpm").exists() {
+                "/opt/homebrew/sbin/php-fpm".to_string()
+            } else {
+                match std::process::Command::new("which").arg("php-fpm").output() {
+                    Ok(output) if output.status.success() => {
+                        String::from_utf8_lossy(&output.stdout).trim().to_string()
+                    }
+                    _ => {
+                        return Err(ServiceError::ServiceError(
+                            "Could not find php-fpm binary".to_string(),
+                        ));
+                    }
+                }
+            }
+        };
+
+        // Start PHP-FPM with our isolated config
+        std::process::Command::new(&php_fpm_binary)
+            .arg("--fpm-config")
+            .arg(&config_path)
+            .spawn()
+            .map_err(|e| ServiceError::ServiceError(format!("Failed to start PHP-FPM: {}", e)))?;
+
+        // Give the process a moment to start
+        std::thread::sleep(std::time::Duration::from_millis(1000));
+
+        // Verify the service is running
+        if self.is_running() {
+            Ok(true)
+        } else {
+            Err(ServiceError::ServiceError(
+                "PHP-FPM failed to start".to_string(),
+            ))
+        }
     }
 
     fn stop(&self) -> Result<bool, ServiceError> {
@@ -133,10 +209,26 @@ impl Service for PhpService {
             return Err(ServiceError::NotRunning(format!("PHP {}", self.version)));
         }
 
-        self.isolation
-            .brew_command(&["services", "stop", "php"])
-            .run()
-            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
+        // Kill the process using our PID file
+        let pid_file = format!("/opt/homebrew/var/run/php-fpm-{}.pid", self.version);
+
+        if let Ok(pid_content) = std::fs::read_to_string(&pid_file) {
+            if let Ok(pid) = pid_content.trim().parse::<u32>() {
+                let _ = std::process::Command::new("kill")
+                    .arg("-TERM")
+                    .arg(pid.to_string())
+                    .status();
+            }
+        }
+
+        // Remove the socket file
+        let socket_path = self
+            .isolation
+            .get_service_socket_dir_no_spaces()
+            .join(format!("php-{}.sock", self.version));
+        if socket_path.exists() {
+            let _ = std::fs::remove_file(&socket_path);
+        }
 
         Ok(true)
     }
@@ -149,11 +241,10 @@ impl Service for PhpService {
         // Ensure configuration is up to date before restarting
         self.setup_config()?;
 
-        self.isolation
-            .brew_command(&["services", "restart", "php"])
-            .run()
-            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
+        // Stop first
+        self.stop()?;
 
-        Ok(true)
+        // Start with new config
+        self.start()
     }
 }

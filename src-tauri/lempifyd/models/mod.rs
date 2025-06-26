@@ -1,5 +1,3 @@
-pub mod service_controller;
-
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
 
