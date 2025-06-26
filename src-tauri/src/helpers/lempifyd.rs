@@ -62,6 +62,8 @@ pub fn spawn(sidecar: Command) -> Result<(), Box<dyn std::error::Error>> {
                     if let Ok(s) = String::from_utf8(line) {
                         if s.contains("READY") {
                             println!("[lempifyd] Daemon READY");
+                        } else {
+                            println!("[lempifyd]: {}", s.trim());
                         }
                     }
                 }

@@ -56,11 +56,6 @@ pub async fn create_site(
     fs::create_dir_all(&site_path)
         .map_err(|e| format!("Failed to create site directory: {}", e))?;
 
-    let _ = create_nginx_config_stub(&domain)?;
-
-    // Add to hosts file
-    hosts::add_entry(&domain)?;
-
     // Create site object and store in config.json
     let site_services = SiteServices {
         php: "8.4".to_string(),
@@ -68,6 +63,17 @@ pub async fn create_site(
         nginx: "1.25".to_string(),
     };
     
+    // Generate isolated PHP socket path for lempifyd
+    let php_socket = format!(
+        "unix:/tmp/lempify/services/php/sockets/php-{}.sock",
+        site_services.php
+    );
+
+    let _ = create_nginx_config_stub(&domain, Some(&php_socket))?;
+
+    // Add to hosts file
+    hosts::add_entry(&domain)?;
+
     // Setup SSL if requested
     if payload.ssl {
         secure_site(&domain)?;
@@ -88,9 +94,9 @@ pub async fn create_site(
     };
 
     
-    // Install WordPress if it doesn't exist
+    // Install Site Type
     if site_type == "wordpress" {
-        // Install WordPress if it doesn't exist
+        // Install WordPress if it doesn't exist.
         let latest_version = match wordpress::versions().await {
             Ok(versions) => {
                 let version = &versions.offers[0].version;

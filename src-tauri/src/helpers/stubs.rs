@@ -112,7 +112,7 @@ pub fn create_site_type_stub(site_type: &str, domain: &str, version: &str) -> Re
     Ok(())
 }
 
-pub fn create_nginx_config_stub(domain: &str) -> Result<String, String> {
+pub fn create_nginx_config_stub(domain: &str, php_socket: Option<&str>) -> Result<String, String> {
     let app_fs = AppFileSystem::new()?;
 
     println!("APP FS: {:#?}", app_fs);
@@ -126,7 +126,10 @@ pub fn create_nginx_config_stub(domain: &str) -> Result<String, String> {
 
     let config_contents = fs::read_to_string(&stub_template)
         .map_err(|e| format!("Failed to read stub: {} / {}", e, stub_template.display()))?;
-    let config_contents = config_contents.replace("{{DOMAIN}}", domain);
+    
+    let config_contents = config_contents
+        .replace("{{DOMAIN}}", domain)
+        .replace("{{PHP_SOCKET}}", php_socket.unwrap_or("unix:/opt/homebrew/var/run/php/php-fpm.sock"));
 
     FileSudoCommand::write(config_contents.to_string(), dest_path.to_path_buf()).run()?;
 
