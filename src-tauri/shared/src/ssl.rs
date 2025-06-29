@@ -3,7 +3,7 @@
  * @module ssl
  */
 
-use std::fs;
+use std::{collections::HashMap, fs};
 use std::process::Command;
 
 use crate::{file_system::AppFileSystem, nginx};
@@ -17,7 +17,7 @@ use crate::{file_system::AppFileSystem, nginx};
  * ssl::generate_certs("example.com");
  * ```
  */
-pub fn generate_certs(domain: &str) -> Result<(), String> {
+pub fn generate_certs(domain: &str) -> Result<HashMap<String, String>, String> {
     // println!("\tgenerate_certs: {}", domain);
     let certs_dir = AppFileSystem::new()?.certs_dir;
 
@@ -39,22 +39,25 @@ pub fn generate_certs(domain: &str) -> Result<(), String> {
     }
     // println!("\tgenerate_certs: Done!");
 
-    Ok(())
+    Ok(HashMap::from([
+        ("cert_path".to_string(), cert_path.to_string_lossy().to_string()),
+        ("key_path".to_string(), key_path.to_string_lossy().to_string()),
+    ]))
 }
 
 /**
  * Secure a site with SSL by generating certs and updating nginx config
  * @param domain: The domain to secure
- * @returns: Result<(), String>
+ * @returns: Result<HashMap<String, String>, String>
  * @example
  * ```
  * ssl::secure_site("example.com");
  * ```
  */
-pub fn secure_site(domain: &str) -> Result<(), String> {
-    generate_certs(domain)?;
+pub fn secure_site(domain: &str) -> Result<HashMap<String, String>, String> {
+    let certs = generate_certs(domain)?;
     nginx::update_nginx_config_with_ssl(domain)?;
-    Ok(())
+    Ok(certs)
 }
 
 /**
