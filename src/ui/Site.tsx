@@ -1,28 +1,23 @@
-import { useParams, Navigate } from "react-router-dom";
-import useSiteManager from "../hooks/useSiteManager";
+import { useParams } from "react-router-dom";
 import { useAppConfig } from "../context/AppConfigContext";
 import Page from "./Page";
+import { openInBrowser } from "../utils/tauri";
 
 export default function Site() {
   const { domain } = useParams();
-  const { sites } = useSiteManager();
   const { config } = useAppConfig();
 
-  const site = sites.find((site) => site.domain === domain);
-  const siteConfig = config.sites.find((site) => site.domain === domain);
-
-  // console.log("site", site);
-  // console.log("siteConfig", siteConfig);
+  const site = config.sites.find((site) => site.domain === domain);
 
   if (!site) {
-    return <Navigate to={`/site/404?domain=${domain}`} replace />;
+    return null;
   }
 
   return (
-    <Page title={site.domain} description="Site editor">
+    <Page title={site.domain} description={() => <><button onClick={() => openInBrowser(site.domain, site.ssl)} className="text-sm text-[var(--lempify-primary)] hover:underline">View in browser</button></>}>
       <div className="flex flex-col gap-4">
         <h1>{site.domain}</h1>
-        <pre>{JSON.stringify({ site, siteConfig }, null, 2)}</pre>
+        <pre>{JSON.stringify({ site }, null, 2)}</pre>
       </div>
     </Page>
   );
