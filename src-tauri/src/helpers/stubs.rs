@@ -62,13 +62,13 @@ pub fn create_site_type_stub(site_type: &str, domain: &str, version: &str) -> Re
         copy_dir_recursive(&src_path, &destination_path)?;
     }
 
-    println!("--------------------------------");
-    println!("STUB: {:#?}", stub);
-    println!("\t- Stub contents: {:#?}", stub.get_stub_contents()?);
-    println!("DEST Site dir: {:#?}", dest_site_dir);
-    println!("ARG: Site type: {:#?}", site_type);
-    println!("ARG: Version: {:#?}", version.to_string());
-    println!("--------------------------------");
+    // println!("--------------------------------");
+    // println!("STUB: {:#?}", stub);
+    // println!("\t- Stub contents: {:#?}", stub.get_stub_contents()?);
+    // println!("DEST Site dir: {:#?}", dest_site_dir);
+    // println!("ARG: Site type: {:#?}", site_type);
+    // println!("ARG: Version: {:#?}", version.to_string());
+    // println!("--------------------------------");
 
     // #2, match site type and perform specific actions.
     match site_type {
@@ -105,6 +105,12 @@ pub fn create_site_type_stub(site_type: &str, domain: &str, version: &str) -> Re
                     }
                 }
             }
+        }
+        "vanilla" => {
+            // Copy all files from `src-tauri/stubs/vanilla` to the site directory.
+            let src_stub_dir = app_fs.app_stubs_dir.join(site_type);
+            let dest_site_dir = app_fs.sites_dir.join(domain);
+            copy_dir_recursive(&src_stub_dir, &dest_site_dir)?;
         }
         _ => {}
     }

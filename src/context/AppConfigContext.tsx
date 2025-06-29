@@ -5,10 +5,11 @@
 import { createContext, useContext, ReactNode, useEffect, useReducer } from "react";
 
 import { useInvoke } from "../hooks/useInvoke";
+import { Site } from "../types";
 
 type AppConfig = {
     trusted: boolean;
-    sites: any[];
+    sites: Site[];
     settings?: {
         mysql_host: string;
         mysql_user: string;

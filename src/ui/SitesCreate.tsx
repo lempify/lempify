@@ -61,8 +61,6 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       }
     }
 
-    console.log("payload", payload);
-
     try {
       const { data, error } = await invoke<Site>("create_site", {
         payload

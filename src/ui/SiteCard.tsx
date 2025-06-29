@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom';
 // Components
 import Loader from './Loader';
 // Types
-import { SiteInfo } from "../types";
+import { Site, SiteInfo } from "../types";
 // Hooks
 import { useInvoke } from '../hooks/useInvoke';
 import { openInBrowser } from '../utils/tauri';
+import { useAppConfig } from '../context/AppConfigContext';
 
 /**
  * Handle events closure for the SitesSite component
@@ -24,36 +25,54 @@ import { openInBrowser } from '../utils/tauri';
  *
  * @returns Closure for the events
  */
-const handleEvents = (domain: SiteInfo["domain"], refresh: () => void, invoke: (command: string, args: any) => Promise<any>) => {
+function handleEvents(
+  domain: SiteInfo["domain"],
+  success: () => void,
+  error: (err: any) => void,
+  invoke: (command: string, args: any) => Promise<any>,
+  sites: Site[],
+  dispatch: (action: any) => void
+) {
   return {
     async deleteSite() {
       try {
-        const result = await invoke("delete_site", { domain });
-        console.log(result);
-        refresh();
+        const { data } = await invoke("delete_site", { domain });
+        if (data) {
+          dispatch({ type: "set_sites", sites: data });
+        }
+        success();
       } catch (err) {
-        console.error("Delete failed", err);
+        error(err);
       }
     },
     async addSsl() {
       try {
-        const result = await invoke("add_ssl", { domain });
-        console.log(result);
-        refresh();
+        const { data: { cert_path, key_path } } = await invoke("add_ssl", { domain });
+        if (cert_path && key_path) {
+          dispatch({
+            type: "set_sites", sites: sites.map((site) => {
+              if (site.domain === domain) {
+                return {
+                  ...site,
+                  ssl: true,
+                  site_config: {
+                    ...site.site_config,
+                    ssl: true,
+                    ssl_key: key_path,
+                    ssl_cert: cert_path
+                  }
+                };
+              }
+              return site;
+            })
+          });
+        }
+        success();
       } catch (err) {
-        console.error("Add SSL failed", err);
-      }
-    },
-    async addNginxConfig() {
-      try {
-        const result = await invoke("generate_nginx_config", { domain });
-        console.log(result);
-        refresh();
-      } catch (err) {
-        console.error("Generate Nginx config failed", err);
+        error(err);
       }
     }
-  }
+  };
 }
 
 /**
@@ -62,15 +81,22 @@ const handleEvents = (domain: SiteInfo["domain"], refresh: () => void, invoke: (
  * @param site - The site info
  * @param refresh - The refresh function
  */
-function SiteCard({ site, refresh }: { site: SiteInfo, refresh: () => void }) {
-
-  const { domain, is_ssl } = site;
+function SiteCard({ site, refresh }: { site: Site, refresh: () => void }) {
+  const { config, dispatch } = useAppConfig();
+  const { domain, ssl: is_ssl } = site;
   const { invoke, invokeStatus } = useInvoke();
-  const handleEvent = useCallback(() => handleEvents(domain, refresh, invoke), [domain, refresh, invoke]);
+  const handleEvent = useCallback(() => handleEvents(
+    domain,
+    refresh,
+    (err) => console.error(err),
+    invoke,
+    config.sites,
+    dispatch
+  ), [domain, refresh, invoke]);
 
   const navigate = useNavigate();
 
-  const editSite = () => {
+  function editSite() {
     navigate(`/site/${site.domain}`);
   }
 
@@ -80,13 +106,26 @@ function SiteCard({ site, refresh }: { site: SiteInfo, refresh: () => void }) {
         <div className={`flex justify-between items-center mb-2`}>
           <h3 className="text-lg font-semibold text-[var(--lempify-primary)]">{domain}</h3>
           <div className="flex gap-2">
-            {/* NGINX config generator */}
-            <span className={`text-xs px-2 py-0.5 rounded-full ${site.config_path ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {site.config_path ? 'Mapped' : <button onClick={handleEvent().addNginxConfig}>Add Config</button>}
-            </span>
             {/* SSL cert generator */}
-            <span className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {is_ssl ? '🔒 Secure' : <button onClick={handleEvent().addSsl}>Add SSL</button>}
+            <span 
+              className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+              role="status"
+              aria-live="polite"
+            >
+              {is_ssl ? (
+                <>
+                  <span aria-label="SSL certificate is active" role="img">🔒</span>
+                  <span className="sr-only">SSL certificate is active</span>
+                </>
+              ) : (
+                <button 
+                  onClick={handleEvent().addSsl}
+                  className="text-red-800 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
+                  aria-label={`Add SSL certificate for ${domain}`}
+                >
+                  Add SSL
+                </button>
+              )}
             </span>
           </div>
         </div>

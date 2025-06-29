@@ -7,9 +7,12 @@ import SvgRefresh from './SvgRefresh';
 import useSiteManager from "../hooks/useSiteManager";
 
 import { cornerBottomLeft, pageSection } from "./css";
+import { useAppConfig } from "../context/AppConfigContext";
 
 const Sites = () => {
-  const { sites, loading, error, refresh } = useSiteManager();
+  const { loading, error, refresh } = useSiteManager();
+
+  const { config } = useAppConfig();
 
   return (
     <Page title="Sites" description="Manage your sites">
@@ -22,8 +25,8 @@ const Sites = () => {
             <SvgRefresh />
           </button>
         </header>
-        {sites.length ? <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sites.map(site => (
+        {config.sites.length ? <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {config.sites.map(site => (
             <SiteCard key={site.name} refresh={refresh} site={site} />
           ))}
         </ul> : <p>No sites found! <a href="#create-site">Add a new site</a> to get started.</p>}
