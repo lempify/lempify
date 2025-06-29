@@ -110,8 +110,11 @@ pub async fn create_site(
         install::wordpress(&latest_version).await?;
         // Add site type stub.
         create_site_type_stub(&site_type, &domain, &latest_version)?;
-        // Install WordPress dependencies.
+    } else if site_type == "vanilla" {
+        // Install Vanilla dependencies.
+        create_site_type_stub(&site_type, &domain, "")?;
     }
+    // Install WordPress dependencies.
     install::site(&site_type, &domain_name, &domain_tld).await?;
     
 
@@ -147,7 +150,7 @@ pub async fn create_site(
 pub async fn delete_site(
     config_manager: State<'_, ConfigManager>,
     domain: String,
-) -> Result<String, String> {
+) -> Result<Vec<Site>, String> {
     let sites_dir = AppFileSystem::new()?.sites_dir;
     let nginx_sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
     let site_conf_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain)); 
@@ -181,5 +184,7 @@ pub async fn delete_site(
     // Restart NGINX
     brew::restart_service("nginx")?;
 
-    Ok(format!("Deleted site: {}", domain))
+    let sites = config_manager.get_all_sites().await;
+
+    Ok(sites)
 }
