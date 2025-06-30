@@ -2,7 +2,7 @@
  * AppConfigContext for managing app config which reads from config.json
  */
 
-import { createContext, useContext, ReactNode, useEffect, useReducer } from "react";
+import { createContext, useContext, ReactNode, useEffect, useReducer, useState } from "react";
 
 import { useInvoke } from "../hooks/useInvoke";
 import { Site } from "../types";
@@ -21,6 +21,8 @@ type AppConfig = {
 type AppConfigContextType = {
     config: AppConfig;
     dispatch: React.Dispatch<any>;
+    loading: boolean;
+    error: string | null;
 };
 
 const AppConfigContext = createContext<AppConfigContextType | undefined>(undefined);
@@ -39,21 +41,26 @@ const defaultConfig: AppConfig = {
 export const AppConfigProvider = ({ children }: { children: ReactNode }) => {
     const { invoke } = useInvoke();
     const [config, dispatch] = useReducer(appConfigReducer, { ...defaultConfig });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchConfig = async () => {
+            setLoading(true);
             const { data, error } = await invoke("get_config");
             if (error) {
                 console.error(error);
+                setError(error);
             } else {
                 dispatch({ type: "set_config", config: data as AppConfig });
+                setLoading(false);
             }
         };
         fetchConfig();
     }, []);
 
     return (
-        <AppConfigContext.Provider value={{ config, dispatch }}>
+        <AppConfigContext.Provider value={{ config, dispatch, loading, error }}>
             {children}
         </AppConfigContext.Provider>
     );

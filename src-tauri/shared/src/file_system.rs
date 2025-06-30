@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use users::User;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AppFileSystem {
     /** `/lempify/src-tauri/` */
     pub app_dir: PathBuf,

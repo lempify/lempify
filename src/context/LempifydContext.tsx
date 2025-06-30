@@ -186,7 +186,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
                     try {
                         const payload = JSON.parse(event.payload);
                         let name = payload.name as ServiceType;
-                        
+
                         // Remove pending action first
                         dispatch({
                             type: 'SET_PENDING_ACTION',
@@ -195,7 +195,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
                                 pending: false,
                             },
                         });
-                        
+
                         if (payload.result.error) {
                             dispatch({
                                 type: 'SERVICE_ERROR',
@@ -257,12 +257,11 @@ export function useLempifyd(): {
     dispatch: React.Dispatch<LempifydAction>;
 } {
     const context = useContext(LempifydContext);
-    const { invoke, invokeStatus } = useInvoke();
-
     if (!context) {
         throw new Error('useLempifyd must be used within a LempifydProvider');
     }
 
+    const { invoke, invokeStatus } = useInvoke();
     const { state, dispatch } = context;
 
     const emit = async (name: ServiceType, action: string) => {
@@ -273,7 +272,7 @@ export function useLempifyd(): {
                     name,
                     pending: true,
                 },
-            }); 
+            });
             await invoke("lempifyd", {
                 name,
                 action,

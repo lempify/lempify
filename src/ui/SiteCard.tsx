@@ -103,11 +103,18 @@ function SiteCard({ site, refresh }: { site: Site, refresh: () => void }) {
   return (
     <div className={`relative`}>
       <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
-        <div className={`flex justify-between items-center mb-2`}>
-          <h3 className="text-lg font-semibold text-[var(--lempify-primary)]">{domain}</h3>
-          <div className="flex gap-2">
+        <div className={`flex items-center gap-2`}>
+          <h3 className="flex-1 flex items-center gap-1">
+            <span className="flex-1 truncate">
+              {domain.split('.').at(0)}
+            </span>
+            <span className="flex-shrink-0">
+              {domain.split(".").at(1)}
+            </span>
+          </h3>
+          <div className="flex-shrink-0">
             {/* SSL cert generator */}
-            <span 
+            <div
               className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
               role="status"
               aria-live="polite"
@@ -118,7 +125,7 @@ function SiteCard({ site, refresh }: { site: Site, refresh: () => void }) {
                   <span className="sr-only">SSL certificate is active</span>
                 </>
               ) : (
-                <button 
+                <button
                   onClick={handleEvent().addSsl}
                   className="text-red-800 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
                   aria-label={`Add SSL certificate for ${domain}`}
@@ -126,7 +133,7 @@ function SiteCard({ site, refresh }: { site: Site, refresh: () => void }) {
                   Add SSL
                 </button>
               )}
-            </span>
+            </div>
           </div>
         </div>
         <div className="mt-3 flex gap-2">

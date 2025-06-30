@@ -1,15 +1,13 @@
 use shared::brew;
 use shared::file_system::AppFileSystem;
 use std::fs;
-use std::path::PathBuf;
 
 use crate::models::Service;
+use crate::services::config::ServiceConfig;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
-use crate::services::config::ServiceConfig;
 
-const NGINX_STUB_PATH: &str = "src-tauri/stubs/domain_name-domain_tld.nginx.conf";
-const NGINX_SITES_ENABLED: &str = "/opt/homebrew/etc/nginx/sites-enabled";
+const NGINX_STUB_PATH: &str = "domain_name-domain_tld.nginx.conf";
 
 pub struct NginxService {
     version: String,
@@ -19,14 +17,10 @@ pub struct NginxService {
 
 impl NginxService {
     pub fn new(version: &str) -> Result<Self, ServiceError> {
-        let file_system = AppFileSystem::new()
-            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+        let file_system =
+            AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
         let isolation = ServiceIsolation::new("nginx")?;
-        let config = ServiceConfig::new(
-            file_system,
-            "nginx".to_string(),
-            version.to_string(),
-        )?;
+        let config = ServiceConfig::new(file_system, "nginx".to_string(), version.to_string())?;
 
         Ok(Self {
             version: version.to_string(),
@@ -37,7 +31,7 @@ impl NginxService {
 
     // Generate NGINX config from stub, filling in variables
     fn generate_site_config(&self, domain: &str) -> Result<String, ServiceError> {
-        let stub = fs::read_to_string(NGINX_STUB_PATH)
+        let stub = fs::read_to_string(self.config.file_system.app_stubs_dir.join(NGINX_STUB_PATH))
             .map_err(|e| ServiceError::ConfigError(format!("Failed to read NGINX stub: {}", e)))?;
         let config = stub
             .replace("{{DOMAIN}}", domain)
