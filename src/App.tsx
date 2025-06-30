@@ -21,15 +21,11 @@ import Page404 from "./ui/Page404";
 import { AppConfigProvider } from "./context/AppConfigContext";
 import { LempifydProvider } from "./context/LempifydContext";
 
-import useLempifyd from "./hooks/useLempifyd";
-
 // import CanvasBackground from "./ui/CanvasBackground";
 // import Background from "./ui/Background";
 import Background from "./ui/Background";
 
 const App = () => {
-  // Start Nginx, MySQL, PHP services
-  useLempifyd();
 
   return (
     <AppConfigProvider>

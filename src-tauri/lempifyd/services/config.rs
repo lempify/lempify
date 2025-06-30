@@ -5,7 +5,7 @@ use users::{get_current_uid, get_user_by_uid};
 use super::error::ServiceError;
 
 pub struct ServiceConfig {
-    file_system: AppFileSystem,
+    pub file_system: AppFileSystem,
     service_name: String,
     version: String,
     config_path: PathBuf,
