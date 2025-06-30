@@ -5,7 +5,7 @@
   background:
     var(--noise-svg),
     /* Grid lines */
-    linear-gradient(rgba(210, 210, 210, 0.9) 1px, transparent 1px),
+      linear-gradient(rgba(210, 210, 210, 0.9) 1px, transparent 1px),
     linear-gradient(90deg, rgba(210, 210, 210, 0.9) 1px, transparent 1px);
   background-size:
     200px 200px,
@@ -20,7 +20,7 @@
   background:
     var(--noise-svg),
     /* Grid lines */
-    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size:
     200px 200px,
@@ -38,40 +38,50 @@
   pointer-events: none;
 }
 .falling-line {
-  --gradient-blue: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(56, 182, 255, 0.25) 20%,
-      rgba(56, 182, 255, 0.5) 50%,
-      rgba(56, 182, 255, 0.75) 80%,
-      rgba(56, 182, 255, 1) 100%);
+  --gradient-blue: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(56, 182, 255, 0.25) 20%,
+    rgba(56, 182, 255, 0.5) 50%,
+    rgba(56, 182, 255, 0.75) 80%,
+    rgba(56, 182, 255, 1) 100%
+  );
 
-  --gradient-darkblue: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(25, 112, 163, 0.25) 20%,
-      rgba(25, 112, 163, 0.5) 50%,
-      rgba(25, 112, 163, 0.75) 80%,
-      rgba(25, 112, 163, 1) 100%);
+  --gradient-darkblue: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(25, 112, 163, 0.25) 20%,
+    rgba(25, 112, 163, 0.5) 50%,
+    rgba(25, 112, 163, 0.75) 80%,
+    rgba(25, 112, 163, 1) 100%
+  );
 
-  --gradient-lightblue: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(143, 211, 255, 0.25) 20%,
-      rgba(143, 211, 255, 0.5) 50%,
-      rgba(143, 211, 255, 0.75) 80%,
-      rgba(143, 211, 255, 1) 100%);
+  --gradient-lightblue: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(143, 211, 255, 0.25) 20%,
+    rgba(143, 211, 255, 0.5) 50%,
+    rgba(143, 211, 255, 0.75) 80%,
+    rgba(143, 211, 255, 1) 100%
+  );
 
-  --gradient-orange: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(240, 92, 7, 0.25) 20%,
-      rgba(240, 92, 7, 0.5) 50%,
-      rgba(240, 92, 7, 0.75) 80%,
-      rgba(240, 92, 7, 1) 100%);
+  --gradient-orange: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(240, 92, 7, 0.25) 20%,
+    rgba(240, 92, 7, 0.5) 50%,
+    rgba(240, 92, 7, 0.75) 80%,
+    rgba(240, 92, 7, 1) 100%
+  );
 
-  --gradient-yellow: linear-gradient(to bottom,
-      transparent 0%,
-      rgba(255, 221, 0, 0.25) 20%,
-      rgba(255, 221, 0, 0.5) 50%,
-      rgba(255, 221, 0, 0.75) 80%,
-      rgba(255, 221, 0, 1) 100%);
+  --gradient-yellow: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 221, 0, 0.25) 20%,
+    rgba(255, 221, 0, 0.5) 50%,
+    rgba(255, 221, 0, 0.75) 80%,
+    rgba(255, 221, 0, 1) 100%
+  );
 
   will-change: transform;
   width: 1px;
@@ -83,7 +93,7 @@
   top: -100px;
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 2px;
     inset: 0;
@@ -92,35 +102,35 @@
 }
 
 /* Alternative: Stronger glow variant */
-.falling-line.color-blue{
+.falling-line.color-blue {
   background: var(--gradient-blue);
   &::after {
     background: var(--gradient-blue);
   }
 }
 
-.falling-line.color-lightblue{
+.falling-line.color-lightblue {
   background: var(--gradient-lightblue);
   &::after {
     background: var(--gradient-lightblue);
   }
 }
 
-.falling-line.color-darkblue{
+.falling-line.color-darkblue {
   background: var(--gradient-darkblue);
   &::after {
     background: var(--gradient-darkblue);
   }
 }
 
-.falling-line.color-orange{
+.falling-line.color-orange {
   background: var(--gradient-orange);
   &::after {
     background: var(--gradient-orange);
   }
 }
 
-.falling-line.color-yellow{
+.falling-line.color-yellow {
   background: var(--gradient-yellow);
   &::after {
     background: var(--gradient-yellow);
@@ -149,11 +159,13 @@
 
 /* Spotlight follow effect */
 .spotlight-follow {
-  background: radial-gradient(50vh circle at var(--mouse-x, 0) var(--mouse-y, 0),
-      rgba(255, 255, 255, 0) 50%,
-      rgba(255, 255, 255, 0.25) 60%,
-      rgba(255, 255, 255, 0.5) 70%,
-      rgba(255, 255, 255, 0.7) 100%);
+  background: radial-gradient(
+    50vh circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.25) 60%,
+    rgba(255, 255, 255, 0.5) 70%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
   position: absolute;
   top: 0;
   left: 0;
@@ -162,9 +174,11 @@
 }
 
 .dark .spotlight-follow {
-  background: radial-gradient(50vh circle at var(--mouse-x, 0) var(--mouse-y, 0),
-      rgba(0, 0, 0, 0) 50%,
-      rgba(0, 0, 0, 0.25) 60%,
-      rgba(0, 0, 0, 0.5) 70%,
-      rgba(0, 0, 0, 0.6) 100%);
+  background: radial-gradient(
+    50vh circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0.25) 60%,
+    rgba(0, 0, 0, 0.5) 70%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
 }

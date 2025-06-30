@@ -61,4 +61,4 @@ export interface SiteFieldRelationships {
     dependencies: [boolean, string, string];
     fields: LaravelFields;
   };
-} 
+}

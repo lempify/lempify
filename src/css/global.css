@@ -1,11 +1,11 @@
-@import "tailwindcss";
-@import "./bg-animation.css";
+@import 'tailwindcss';
+@import './bg-animation.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --lempify-primary: rgb(56, 182, 255);
-  --lempify-primary-50:  rgb(227, 245, 255);
+  --lempify-primary-50: rgb(227, 245, 255);
   --lempify-primary-100: rgb(185, 228, 255);
   --lempify-primary-200: rgb(143, 211, 255);
   --lempify-primary-300: rgb(101, 194, 255);
@@ -38,7 +38,7 @@
     --lempify-bg: var(--lempify-bg-dark);
     --lempify-text: var(--lempify-text-dark);
   }
-  
+
   /* Override system preference when manual dark mode is active */
   .light {
     --lempify-bg: var(--lempify-bg-light);

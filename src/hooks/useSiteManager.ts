@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { SiteInfo } from "../types";
+import { useEffect, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { SiteInfo } from '../types';
 
 export default function useSiteManager() {
   const [sites, setSites] = useState<SiteInfo[]>([]);
@@ -11,11 +11,11 @@ export default function useSiteManager() {
     setLoading(true);
     setError(null);
     try {
-      const result = await invoke<SiteInfo[]>("list_sites");
+      const result = await invoke<SiteInfo[]>('list_sites');
       setSites(result);
     } catch (err: any) {
-      console.error("❌ Failed to load sites:", err);
-      setError(err?.message || "Unknown error");
+      console.error('❌ Failed to load sites:', err);
+      setError(err?.message || 'Unknown error');
     } finally {
       setLoading(false);
     }

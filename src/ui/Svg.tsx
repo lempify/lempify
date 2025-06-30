@@ -13,7 +13,7 @@ const Svg: React.FC<ServiceIconProps> = ({
       className={className}
       style={{ width: size, height: size }}
       viewBox={viewBox}
-      xmlns="http://www.w3.org/2000/svg"
+      xmlns='http://www.w3.org/2000/svg'
       {...props}
     >
       {children}
@@ -21,4 +21,4 @@ const Svg: React.FC<ServiceIconProps> = ({
   );
 };
 
-export default Svg; 
+export default Svg;

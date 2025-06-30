@@ -1,7 +1,9 @@
 /**
  * Supported OS architectures.
  */
-export const SUPPORTED_OSS = ["aarch64-apple-darwin",/*  "x86_64-apple-darwin" */];
+export const SUPPORTED_OSS = [
+  'aarch64-apple-darwin' /*  "x86_64-apple-darwin" */,
+];
 
 /**
  * The directory containing the daemon source code.

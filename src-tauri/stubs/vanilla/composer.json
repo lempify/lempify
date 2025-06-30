@@ -1,9 +1,9 @@
 {
-    "name": "COMPOSER_NAME",
-    "description": "COMPOSER_DESCRIPTION",
-    "require": {
-      "php": "COMPOSER_PHP_VERSION",
-      "composer/installers": "^1.0 || ^2.0",
-      "psr/container": "1.0.0"
-    }
+  "name": "COMPOSER_NAME",
+  "description": "COMPOSER_DESCRIPTION",
+  "require": {
+    "php": "COMPOSER_PHP_VERSION",
+    "composer/installers": "^1.0 || ^2.0",
+    "psr/container": "1.0.0"
   }
+}
