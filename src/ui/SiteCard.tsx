@@ -104,14 +104,7 @@ function SiteCard({ site, refresh }: { site: Site, refresh: () => void }) {
     <div className={`relative`}>
       <div className="p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
         <div className={`flex items-center gap-2`}>
-          <h3 className="flex-1 flex items-center gap-1">
-            <span className="flex-1 truncate">
-              {domain.split('.').at(0)}
-            </span>
-            <span className="flex-shrink-0">
-              {domain.split(".").at(1)}
-            </span>
-          </h3>
+          <h3 className="flex-1 text-lg font-semibold text-[var(--lempify-primary)] truncate">{domain}</h3>
           <div className="flex-shrink-0">
             {/* SSL cert generator */}
             <div
