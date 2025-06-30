@@ -1,6 +1,6 @@
-import { useCallback, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { InvokeStatus } from "../types";
+import { useCallback, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { InvokeStatus } from '../types';
 
 /** Generic hook for invoking Tauri commands with consistent error handling */
 // @TODO: Look into `useTransition` for better handling of async operations
@@ -19,7 +19,7 @@ export function useInvoke() {
       } catch (error: any) {
         console.error(`❌ invoke(${command}) failed`, error);
         setInvokeStatus('error');
-        return { error: error?.message || "Unknown error" };
+        return { error: error?.message || 'Unknown error' };
       }
     },
     []

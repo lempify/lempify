@@ -3,11 +3,13 @@ const THEME_KEY = 'lempify-theme';
 export type Theme = 'light' | 'dark' | 'system';
 
 export function getSystemTheme(): 'light' | 'dark' {
-  return window?.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return window?.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
 }
 
 export function getSavedTheme(): Theme {
-  return localStorage.getItem(THEME_KEY) as Theme || 'system';
+  return (localStorage.getItem(THEME_KEY) as Theme) || 'system';
 }
 
 export function applyTheme(theme: Theme = 'system') {

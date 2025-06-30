@@ -1,1 +1,1 @@
-export const DEFAULT_SITE_TYPE = "wordpress";
+export const DEFAULT_SITE_TYPE = 'wordpress';
