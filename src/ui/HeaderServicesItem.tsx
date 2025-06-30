@@ -5,9 +5,9 @@ import { Statuses, ServiceType } from "../types";
 import Dialog from "./Dialog";
 import Button from "./Button";
 import Loader from "./Loader";
-import SvgPhp from "./ServicesSvgPhp";
-import SvgNginx from "./ServicesSvgNginx";
-import SvgMysql from "./ServicesSvgMysql";
+import SvgPhp from "./HeaderServicesSvgPhp";
+import SvgNginx from "./HeaderServicesSvgNginx";
+import SvgMysql from "./HeaderServicesSvgMysql";
 import { ServiceStatus, useLempifyd } from "../context/LempifydContext";
 
 const icons = {
@@ -16,7 +16,7 @@ const icons = {
   php: SvgPhp,
 };
 
-const ServicesStatusIcon = ({ name, running, installed }: { name: string; running: boolean; installed: boolean }) => {
+const ServicesStatusIcon = ({ name, running }: { name: string; running: boolean; installed: boolean }) => {
   const Icon = icons[name as keyof typeof icons];
   return (
     <p className="flex items-center mb-2 gap-2 text-sm text-neutral-700 dark:text-neutral-300">
