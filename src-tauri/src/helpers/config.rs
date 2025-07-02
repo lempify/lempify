@@ -14,6 +14,7 @@ pub async fn get_settings() -> Settings {
     config.settings
 }
 
+#[allow(dead_code)]
 pub async fn get_sites() -> Vec<Site> {
     let config = get_config().await;
     config.sites
