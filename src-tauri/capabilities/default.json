@@ -24,6 +24,9 @@
     },
     "core:window:default",
     "core:window:allow-start-dragging",
-    "core:event:default"
+    "core:event:default",
+    "core:window:allow-create",
+    "core:window:allow-set-size",
+    "core:window:allow-set-position"
   ]
 }

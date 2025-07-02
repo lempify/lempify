@@ -3,6 +3,7 @@
  */
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { invoke } from '@tauri-apps/api/core';
 
 /**
  * Internal imports
@@ -107,6 +108,17 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
     navigate(`/site/${site.domain}`);
   }
 
+  async function openInTauriWindow() {
+    try {
+      await invoke('open_site_window', {
+        domain: site.domain,
+        ssl: site.ssl
+      });
+    } catch (err) {
+      console.error('Failed to open site window:', err);
+    }
+  }
+
   return (
     <div className={`relative`}>
       <div className='p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800'>
@@ -152,6 +164,12 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
             className='text-sm text-[var(--lempify-primary)] hover:underline'
           >
             Open
+          </button>
+          <button
+            onClick={openInTauriWindow}
+            className='text-sm text-[var(--lempify-primary)] hover:underline'
+          >
+            Preview
           </button>
           <button
             onClick={handleEvent().deleteSite}
