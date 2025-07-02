@@ -4,13 +4,13 @@
     windows_subsystem = "windows"
 )]
 
-mod ui;
-mod error;
-mod models;
-mod helpers;
 mod commands;
-mod site_types;
 mod constants;
+mod error;
+mod helpers;
+mod models;
+mod site_types;
+mod ui;
 
 use error::Result;
 use tauri::{Manager, RunEvent, WindowEvent};
@@ -54,7 +54,10 @@ fn main() -> Result<()> {
             // Build menu
             ui::menu::build(&app)?;
             // Open devtools
-            ui::browser::open_devtools(&app);
+            #[cfg(debug_assertions)]
+            if cfg!(debug_assertions) {
+                ui::browser::open_devtools(&app);
+            }
             // Initialize file system
             // let _ = helpers::file_system::init();
             Ok(())
@@ -70,6 +73,7 @@ fn main() -> Result<()> {
             commands::lempifyd::lempifyd,
             commands::sudoers::trust_lempify,
             commands::sudoers::untrust_lempify,
+            commands::debug::log,
             // Config CRUD commands
             models::config::create_site_config,
             models::config::get_site_config,
@@ -79,7 +83,8 @@ fn main() -> Result<()> {
             models::config::get_config,
             models::config::refresh_trusted_status_config,
             models::config::is_trusted_config,
-            models::config::update_settings
+            models::config::update_settings,
+            // Debug commands
         ])
         .build(tauri::generate_context!())
         .expect("❌ Could not build application");

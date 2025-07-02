@@ -29,24 +29,20 @@ pub fn setup_tray(app: &mut App) -> Result<()> {
                 //println!("menu item {:?} not handled", event.id);
             }
         })
-        .on_tray_icon_event(|tray, event| match event {
-            tauri::tray::TrayIconEvent::Click {
-                button: MouseButton::Left,
-                button_state: MouseButtonState::Up,
-                ..
-            } => {
-                #[cfg(debug_assertions)]
-                //println!("left click pressed and released");
-
-                let app = tray.app_handle();
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
+        .on_tray_icon_event(|tray, event| {
+            match event {
+                tauri::tray::TrayIconEvent::Click {
+                    button: MouseButton::Left,
+                    button_state: MouseButtonState::Up,
+                    ..
+                } => {
+                    let app = tray.app_handle();
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
                 }
-            }
-            _ => {
-                //#[cfg(debug_assertions)]
-                //println!("unhandled event {event:?}");
+                _ => {}
             }
         })
         .build(app)

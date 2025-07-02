@@ -14,10 +14,11 @@ import { useInvoke } from '../hooks/useInvoke';
 // Constants
 import siteCreateFields from '../utils/site-create-fields';
 import Loader from './Loader';
-import { cornerTopRight, pageSection } from './css';
+import { buttonPrimary, cornerTopRight, pageSection } from './css';
 import { useAppConfig } from '../context/AppConfigContext';
 import { Site } from '../types';
 import { DEFAULT_SITE_TYPE } from '../constants';
+import Heading from './Heading';
 
 /**
  * Constants
@@ -83,33 +84,36 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <div id='create-site' className={`${pageSection} ${cornerTopRight}`}>
-      <h2 className='text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)] mb-8'>
-        Create New Site
-      </h2>
-      <form onSubmit={handleSubmit}>
-        <div className='grid grid-cols-1 gap-10 mb-10'>
-          {siteCreateFields.map(field => (
-            <div className={field.wrapperClassName ?? ''} key={field.name}>
-              <FormFields
-                {...field}
-                key={field.name}
-                value={formValues[field.name]}
-                onChange={(value, fieldName = field.name) =>
-                  setFormValues({ ...formValues, [fieldName]: value })
-                }
-              />
-            </div>
-          ))}
-        </div>
-        <button
-          type='submit'
-          disabled={formValues?.domain === ''}
-          className='bg-[var(--lempify-primary)] hover:bg-[var(--lempify-primary-700)] text-white px-4 py-2 rounded disabled:opacity-50 disabled:bg-neutral-400'
-        >
-          Submit form
-        </button>
-      </form>
-      <Loader isVisible={invokeStatus === 'pending'} />
+      <details>
+        <summary className='text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)] mb-8'>
+          <Heading size='h2'>Create New Site</Heading>
+        </summary>
+
+        <form onSubmit={handleSubmit}>
+          <div className='grid grid-cols-1 gap-10 mb-10'>
+            {siteCreateFields.map(field => (
+              <div className={field.wrapperClassName ?? ''} key={field.name}>
+                <FormFields
+                  {...field}
+                  key={field.name}
+                  value={formValues[field.name]}
+                  onChange={(value, fieldName = field.name) =>
+                    setFormValues({ ...formValues, [fieldName]: value })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            type='submit'
+            disabled={formValues?.domain === ''}
+            className={buttonPrimary}
+          >
+            Submit form
+          </button>
+        </form>
+        <Loader isVisible={invokeStatus === 'pending'} />
+      </details>
     </div>
   );
 }

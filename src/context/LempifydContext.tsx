@@ -123,20 +123,22 @@ function lempifydReducer(
         ],
       };
     case 'UPDATE_SERVICE_STATUS':
+      const updatedServices = {
+        ...state.services,
+        [action.payload.name]: {
+          ...state.services[action.payload.name as ServiceType],
+          ...action.payload.result,
+        },
+      };
+      
       return {
         ...state,
-        services: {
-          ...state.services,
-          [action.payload.name]: {
-            ...state.services[action.payload.name as ServiceType],
-            ...action.payload.result,
-          },
-        },
-        isAllServicesRunning: Object.values(state.services).every(
+        services: updatedServices,
+        isAllServicesRunning: Object.values(updatedServices).every(
           service => service.is_running
         ),
-        servicesCount: Object.values(state.services).length,
-        runningServicesCount: Object.values(state.services).filter(
+        servicesCount: Object.values(updatedServices).length,
+        runningServicesCount: Object.values(updatedServices).filter(
           service => service.is_running
         ).length,
       };
@@ -174,6 +176,7 @@ const LempifydContext = createContext<{
 
 export function LempifydProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(lempifydReducer, initialState);
+  const { invoke } = useInvoke();
   let unlisten: () => void;
   let unlistenResponse: () => void;
 
@@ -193,12 +196,15 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
               },
             });
           } catch (error) {
-            console.error('[lempifyd] Error parsing service event:', error);
+            invoke('log', { message: `[lempifyd] Error parsing service event: ${error}` });
           }
         });
 
         // Listen for responses
         unlistenResponse = await listen<string>('lempifyd:response', event => {
+          // Log to file in release builds
+          invoke('log', { message: `[lempifyd] Response received: ${event.payload}` });
+          
           try {
             const payload = JSON.parse(event.payload);
             let name = payload.name as ServiceType;
@@ -227,7 +233,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
               payload,
             });
           } catch (error) {
-            console.error('[lempifyd] Error parsing response event:', error);
+            invoke('log', { message: `[lempifyd] Error parsing response: ${error}` });
           }
         });
 

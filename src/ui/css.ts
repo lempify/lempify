@@ -16,3 +16,11 @@ export const pageSection =
   'bg-neutral-50/80 dark:bg-neutral-900/60 ' +
   'backdrop-blur-[1px] ' +
   'relative';
+
+export const buttonPrimary = 'bg-[var(--lempify-primary)] hover:bg-[var(--lempify-primary-700)] text-white px-4 py-2 rounded disabled:opacity-50 disabled:bg-neutral-400';
+
+export const primaryGradientToLeft = 'bg-gradient-to-l from-[var(--lempify-primary-300)] to-[var(--lempify-primary)] dark:from-[var(--lempify-primary-700)] dark:to-[var(--lempify-primary)]';
+export const primaryGradientToLeftHover = 'hover:bg-gradient-to-l hover:from-[var(--lempify-primary-300)] hover:to-[var(--lempify-primary)] dark:hover:from-[var(--lempify-primary-700)] dark:hover:to-[var(--lempify-primary)]';
+
+export const primaryGradientToRight = 'bg-gradient-to-r from-[var(--lempify-primary-300)] to-[var(--lempify-primary)] dark:from-[var(--lempify-primary-700)] dark:to-[var(--lempify-primary)]';
+export const primaryGradientToRightHover = 'hover:bg-gradient-to-r hover:from-[var(--lempify-primary-300)] hover:to-[var(--lempify-primary)] dark:hover:from-[var(--lempify-primary-700)] dark:hover:to-[var(--lempify-primary)]';

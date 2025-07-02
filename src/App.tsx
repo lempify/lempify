@@ -14,15 +14,12 @@ import Site from './ui/Site';
 import Sites from './ui/Sites';
 import Header from './ui/Header';
 import Sidebar from './ui/Sidebar';
-import Dashboard from './ui/Dashboard';
 import Settings from './ui/Settings';
 import Site404 from './ui/Site404';
 import Page404 from './ui/Page404';
 import { AppConfigProvider } from './context/AppConfigContext';
 import { LempifydProvider } from './context/LempifydContext';
 
-// import CanvasBackground from "./ui/CanvasBackground";
-// import Background from "./ui/Background";
 import Background from './ui/Background';
 
 const App = () => {

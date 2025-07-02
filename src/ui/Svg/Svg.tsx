@@ -1,5 +1,5 @@
 import React from 'react';
-import { ServiceIconProps } from '../types/ui';
+import { ServiceIconProps } from '../../types/ui';
 
 const Svg: React.FC<ServiceIconProps> = ({
   size = 24,

@@ -4,17 +4,30 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --lempify-primary: rgb(56, 182, 255);
+  --lempify-primary: rgb(248, 148, 55); /* Base */
+
+  --lempify-secondary: rgb(56, 182, 255);
+
   --lempify-primary-50: rgb(227, 245, 255);
   --lempify-primary-100: rgb(185, 228, 255);
   --lempify-primary-200: rgb(143, 211, 255);
   --lempify-primary-300: rgb(101, 194, 255);
   --lempify-primary-400: rgb(59, 177, 255);
-  --lempify-primary-500: rgb(56, 182, 255); /* Base */
+  --lempify-primary-500: rgb(56, 182, 255);
   --lempify-primary-600: rgb(38, 147, 209);
   --lempify-primary-700: rgb(25, 112, 163);
   --lempify-primary-800: rgb(11, 77, 117);
   --lempify-primary-900: rgb(0, 42, 71);
+
+  --lempify-orange: rgb(255, 123, 0);
+  --lempify-red: rgb(255, 0, 0);
+  --lempify-green: rgb(17, 179, 17);
+  --lempify-blue: rgb(0, 0, 255);
+  --lempify-purple: rgb(128, 0, 128);
+  --lempify-yellow: rgb(255, 255, 0);
+  --lempify-pink: rgb(255, 192, 203);
+  --lempify-brown: rgb(139, 69, 19);
+  --lempify-gray: rgb(128, 128, 128);
 
   --lempify-bg-light: #ffffff;
   --lempify-bg-dark: #0d1117;
@@ -43,6 +56,27 @@
   .light {
     --lempify-bg: var(--lempify-bg-light);
     --lempify-text: var(--lempify-text-light);
+  }
+}
+
+@theme {
+  --animate-slide-out-in: slide-out-in 0.2s ease-out;
+
+  @keyframes slide-out-in {
+    0% {
+      transform: translateY(0);
+    }
+    33% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    34% {
+      transform: translateY(-100%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(0);
+    }
   }
 }
 
