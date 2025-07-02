@@ -9,18 +9,14 @@ import useSiteManager from '../hooks/useSiteManager';
 import { cornerBottomLeft, pageSection } from './css';
 import { useAppConfig } from '../context/AppConfigContext';
 import Heading from './Heading';
-import { useLempifyd } from '../context/LempifydContext';
 
 const Sites = () => {
   const { loading, error, refresh } = useSiteManager();
 
   const { config } = useAppConfig();
 
-  const { state } = useLempifyd();
-
   return (
     <Page title='Sites' description='Manage your sites'>
-      <pre>{JSON.stringify(state, null, 2)}</pre>
       {error && <p className='text-red-500'>Error: {error}</p>}
       <SiteCreate onRefresh={refresh} />
       <div className={`${pageSection} ${cornerBottomLeft}`}>

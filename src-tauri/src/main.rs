@@ -74,6 +74,7 @@ fn main() -> Result<()> {
             commands::sudoers::trust_lempify,
             commands::sudoers::untrust_lempify,
             commands::debug::log,
+            commands::window::open_site_window,
             // Config CRUD commands
             models::config::create_site_config,
             models::config::get_site_config,
