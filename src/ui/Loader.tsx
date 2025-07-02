@@ -1,4 +1,4 @@
-import SvgSpinner from './SvgSpinner';
+import { SvgSpinner } from './Svg';
 
 export default function Loader({ isVisible = false }: { isVisible?: boolean }) {
   return isVisible ? (

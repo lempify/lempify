@@ -5,9 +5,7 @@ import { Statuses, ServiceType } from '../types';
 import Dialog from './Dialog';
 import Button from './Button';
 import Loader from './Loader';
-import SvgPhp from './SvgPhp';
-import SvgNginx from './SvgNginx';
-import SvgMysql from './SvgMysql';
+import { SvgNginx, SvgMysql, SvgPhp } from './Svg';
 import { ServiceStatus, useLempifyd } from '../context/LempifydContext';
 
 const icons = {
@@ -86,9 +84,9 @@ export default function HeaderServicesItem({
     <li className='relative p-2'>
       <Dialog open={service.lastError !== ''} onClose={clearServiceError}>
         <div className='text-center w-full'>
-          <h2 className='text-lg font-bold rounded-full bg-red-500 text-white p-2 text-center w-10 h-10 mx-auto'>
+          <div className='text-lg font-bold rounded-full bg-red-500 text-white p-2 text-center w-10 h-10 mx-auto'>
             !
-          </h2>
+          </div>
         </div>
         <p className='text-sm'>
           <strong>{service.name}:</strong> {service.lastError}

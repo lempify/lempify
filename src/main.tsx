@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 
 import './css/global.css';
+import './css/bg-animation.css';
 import { DarkModeProvider } from './context/DarkModeContext';
 import trackMousePosition from './utils/mouse-position';
 

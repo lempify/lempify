@@ -9,7 +9,8 @@ import settingsFields from '../utils/settings-fields';
 import { useAppConfig } from '../context/AppConfigContext';
 
 import { Site } from '../types';
-import { cornerTopRight, pageSection } from './css';
+import { buttonPrimary, cornerTopRight, pageSection } from './css';
+import Heading from './Heading';
 
 const defaultPayload = {
   mysql_host: 'localhost',
@@ -65,9 +66,7 @@ export default function Dashboard() {
     <Page title='Settings' description='Manage your settings'>
       <div className={`${pageSection} ${cornerTopRight}`}>
         <div className='flex flex-col gap-2'>
-          <h2 className='text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)] mb-8'>
-            MySQL
-          </h2>
+          <Heading size='h2'>MySQL</Heading>
           <form onSubmit={handleSubmit}>
             <div className='grid grid-cols-2 gap-10 mb-10'>
               {settingsFields.map(field => (
@@ -89,7 +88,7 @@ export default function Dashboard() {
             </div>
             <button
               type='submit'
-              className='bg-blue-500 text-white px-4 py-2 rounded-md'
+              className={buttonPrimary}
             >
               Save
             </button>

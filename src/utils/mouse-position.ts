@@ -5,7 +5,7 @@ export default function trackMousePosition(rootElement: HTMLElement) {
   let currentY = 0;
   let animationFrameId: number;
   let isAnimating = false;
-  let isMouseInWindow = true;
+  // let isMouseInWindow = true;
 
   rootElement.style.setProperty('--mouse-x', '0px');
   rootElement.style.setProperty('--mouse-y', '0px');
@@ -66,7 +66,7 @@ export default function trackMousePosition(rootElement: HTMLElement) {
         animate(0.3);
         isAnimating = false;
       }
-      isMouseInWindow = false;
+      // isMouseInWindow = false;
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = 0;
@@ -79,7 +79,7 @@ export default function trackMousePosition(rootElement: HTMLElement) {
     'mouseenter',
     () => {
       startAnimation();
-      isMouseInWindow = true;
+      // isMouseInWindow = true;
     },
     { passive: true }
   );

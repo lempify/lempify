@@ -2,27 +2,30 @@ import Page from './Page';
 import Loader from './Loader';
 import SiteCard from './SiteCard';
 import SiteCreate from './SitesCreate';
-import SvgRefresh from './SvgRefresh';
+import { SvgRefresh } from './Svg';
 
 import useSiteManager from '../hooks/useSiteManager';
 
 import { cornerBottomLeft, pageSection } from './css';
 import { useAppConfig } from '../context/AppConfigContext';
+import Heading from './Heading';
+import { useLempifyd } from '../context/LempifydContext';
 
 const Sites = () => {
   const { loading, error, refresh } = useSiteManager();
 
   const { config } = useAppConfig();
 
+  const { state } = useLempifyd();
+
   return (
     <Page title='Sites' description='Manage your sites'>
+      <pre>{JSON.stringify(state, null, 2)}</pre>
       {error && <p className='text-red-500'>Error: {error}</p>}
       <SiteCreate onRefresh={refresh} />
       <div className={`${pageSection} ${cornerBottomLeft}`}>
         <header className='flex items-center gap-2 mb-8'>
-          <h2 className='text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)]'>
-            Existing Sites
-          </h2>
+          <Heading size='h2'>Existing Sites</Heading>
           <button
             onClick={refresh}
             className='hover:rotate-270 transition-transform duration-300 ml-auto'
