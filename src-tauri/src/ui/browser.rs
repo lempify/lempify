@@ -28,6 +28,7 @@ pub fn open_devtools(app: &App) {
     }
 }
 
+#[allow(unused)]
 pub fn close_devtools(app: &App) {
     let window = app.get_webview_window("main").unwrap();
     #[cfg(debug_assertions)]
