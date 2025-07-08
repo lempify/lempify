@@ -19,6 +19,17 @@ export const fieldRelationships: Field[] = [
     },
   },
   {
+    label: 'Name:',
+    name: 'site_name',
+    defaultValue: '',
+    className:
+      'border border-neutral-200 focus:border-neutral-300 outline-none dark:border-neutral-700 mb-3 px-4 py-3 w-full',
+    labelPosition: 'top',
+    required: false,
+    type: 'text',
+    placeholder: 'e.g. My Site',
+  },
+  {
     label: 'Site type?',
     name: 'type',
     defaultValue: DEFAULT_SITE_TYPE,

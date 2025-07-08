@@ -5,7 +5,7 @@ const themes = ['light', 'system', 'dark'] as const;
 
 const iconBtnCss =
   'flex-1 ' +
-  'w-[20px] ' +
+  'w-[var(--btn-width)] ' +
   'z-10 ' +
   'text-[0.6rem] font-medium text-zinc-600 dark:text-zinc-300 ' +
   'transition-colors duration-200 ' +
@@ -13,9 +13,25 @@ const iconBtnCss =
 
 const sliderCss =
   'absolute ' +
-  'h-5 w-[20px] ' +
+  'h-5 w-[var(--btn-width)] ' +
   'bg-white rounded-full shadow ' +
   'transition-transform duration-300';
+
+const containerCss = `
+  relative 
+  h-6 
+  bg-neutral-200 dark:bg-neutral-700 
+  rounded-full 
+  flex items-center 
+  inset-shadow-2xs
+  border-1 border-neutral-300 dark:border-neutral-700
+  px-0.5
+`;
+
+const containerStyles = {
+  '--btn-width': '30px',
+  '--btns-width': `calc(var(--btn-width) * ${themes.length})`,
+} as React.CSSProperties;
 
 export default function DarkModeToggle() {
   const { theme, setTheme } = useDarkMode();
@@ -23,16 +39,7 @@ export default function DarkModeToggle() {
   const activeIndex = themes.findIndex(t => theme === t);
 
   return (
-    <div className='
-      relative 
-      h-6 
-      bg-neutral-200 dark:bg-neutral-700 
-      rounded-full 
-      flex items-center 
-      inset-shadow-2xs
-      border-1 border-neutral-300 dark:border-neutral-700
-      px-0.5
-    '>
+    <div className={containerCss} style={containerStyles}>
       {/* Sliding Pill */}
       <div
         className={sliderCss}

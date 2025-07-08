@@ -12,15 +12,24 @@ export const cornerBottomLeft =
 
 export const pageSection =
   'p-10 w-full ' +
-  'border border-neutral-300 dark:border-neutral-600 ' +
+  'border-t border-r border-l border-neutral-300 dark:border-neutral-600 last:border-b ' +
   'bg-neutral-50/80 dark:bg-neutral-900/60 ' +
   'backdrop-blur-[1px] ' +
   'relative';
 
-export const buttonPrimary = 'bg-[var(--lempify-primary)] hover:bg-[var(--lempify-primary-700)] text-white px-4 py-2 rounded disabled:opacity-50 disabled:bg-neutral-400';
+export const buttonPrimary = `
+  bg-neutral-700 hover:bg-neutral-900 
+  
+  text-white hover:text-[var(--lempify-secondary)] dark:hover:text-neutral-300 
 
-export const primaryGradientToLeft = 'bg-gradient-to-l from-[var(--lempify-primary-300)] to-[var(--lempify-primary)] dark:from-[var(--lempify-primary-700)] dark:to-[var(--lempify-primary)]';
-export const primaryGradientToLeftHover = 'hover:bg-gradient-to-l hover:from-[var(--lempify-primary-300)] hover:to-[var(--lempify-primary)] dark:hover:from-[var(--lempify-primary-700)] dark:hover:to-[var(--lempify-primary)]';
+  px-4 
+  py-2 
+  rounded 
+  disabled:opacity-50
+`;
 
-export const primaryGradientToRight = 'bg-gradient-to-r from-[var(--lempify-primary-300)] to-[var(--lempify-primary)] dark:from-[var(--lempify-primary-700)] dark:to-[var(--lempify-primary)]';
-export const primaryGradientToRightHover = 'hover:bg-gradient-to-r hover:from-[var(--lempify-primary-300)] hover:to-[var(--lempify-primary)] dark:hover:from-[var(--lempify-primary-700)] dark:hover:to-[var(--lempify-primary)]';
+export const headerGradient =
+  'bg-gradient-to-r from-neutral-700 to-neutral-900 dark:from-white dark:to-neutral-300';
+
+export const primaryGradientToLeft =
+  'bg-gradient-to-l from-[var(--lempify-secondary)] to-[var(--lempify-primary)] dark:from-[var(--lempify-secondary)] dark:to-[var(--lempify-primary)]';

@@ -1,7 +1,7 @@
 /**
  * External imports
  */
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 
 /**
  * Internal imports
@@ -19,6 +19,7 @@ import { useAppConfig } from '../context/AppConfigContext';
 import { Site } from '../types';
 import { DEFAULT_SITE_TYPE } from '../constants';
 import Heading from './Heading';
+import Details from './Details';
 
 /**
  * Constants
@@ -42,7 +43,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
     ...defaultPayload,
   });
   const { config, dispatch } = useAppConfig();
-
+  const inputRef = useRef<HTMLInputElement>(null);
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -83,37 +84,51 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
   }
 
   return (
-    <div id='create-site' className={`${pageSection} ${cornerTopRight}`}>
-      <details>
-        <summary className='text-4xl text-[var(--lempify-primary)] to-[var(--lempify-primary-700)] mb-8'>
-          <Heading size='h2'>Create New Site</Heading>
-        </summary>
-
-        <form onSubmit={handleSubmit}>
-          <div className='grid grid-cols-1 gap-10 mb-10'>
-            {siteCreateFields.map(field => (
-              <div className={field.wrapperClassName ?? ''} key={field.name}>
-                <FormFields
-                  {...field}
-                  key={field.name}
-                  value={formValues[field.name]}
-                  onChange={(value, fieldName = field.name) =>
-                    setFormValues({ ...formValues, [fieldName]: value })
-                  }
-                />
-              </div>
-            ))}
-          </div>
-          <button
-            type='submit'
-            disabled={formValues?.domain === ''}
-            className={buttonPrimary}
-          >
-            Submit form
-          </button>
-        </form>
-        <Loader isVisible={invokeStatus === 'pending'} />
-      </details>
-    </div>
+    <Details
+      className={`group`}
+      icon={{
+        size: 20,
+      }}
+      onToggle={open => {
+        if (open) {
+          inputRef.current?.focus();
+        }
+      }}
+      summary={open => (
+        <Heading
+          size='h2'
+          className='flex-1 select-none'
+          title={`${open ? 'Creating' : 'Create'} New Site`}
+        />
+      )}
+    >
+      <form onSubmit={handleSubmit}>
+        <div className='grid grid-cols-1 gap-10 mb-10'>
+          {siteCreateFields.map((field, index) => (
+            <div className={field.wrapperClassName ?? ''} key={field.name}>
+              <FormFields
+                {...field}
+                inputRef={index === 0 ? inputRef : null}
+                key={field.name}
+                value={formValues[field.name]}
+                onChange={(value, fieldName = field.name) =>
+                  setFormValues({ ...formValues, [fieldName]: value })
+                }
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          type='submit'
+          disabled={
+            formValues?.domain === '' || !formValues?.domain.includes('.')
+          }
+          className={buttonPrimary}
+        >
+          Submit form
+        </button>
+      </form>
+      <Loader isVisible={invokeStatus === 'pending'} />
+    </Details>
   );
 }

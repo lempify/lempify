@@ -32,7 +32,6 @@ export default function Header() {
           ify
         </span>
       </div>
-
       <button
         onClick={handleTrust}
         className={`relative group flex items-center gap-2 ${

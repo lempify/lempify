@@ -1,7 +1,7 @@
 /**
  * External imports
  */
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 
 /**
  * Internal imports
@@ -18,6 +18,7 @@ const FormFields = (props: Field) => {
     description,
     type,
     value,
+    inputRef,
     onChange = () => {},
     className = '',
     options,
@@ -25,7 +26,14 @@ const FormFields = (props: Field) => {
     placeholder,
     descriptionPosition = 'bottom',
     inputAttributes = {},
+    required = false,
   } = props;
+
+  useEffect(() => {
+    if (inputRef?.current) {
+      inputRef.current.focus();
+    }
+  }, [inputRef]);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -39,8 +47,9 @@ const FormFields = (props: Field) => {
   return (
     <Fragment>
       {label && labelPosition === 'top' && (
-        <label htmlFor={name} className='block mb-2 cursor-pointer'>
+        <label htmlFor={name} className='text-xl text-neutral-700 dark:text-neutral-300 block mb-2 cursor-pointer'>
           {label}
+          {required && <span className='text-red-500'> *</span>}
         </label>
       )}
       {description && descriptionPosition === 'top' && (
@@ -101,6 +110,7 @@ const FormFields = (props: Field) => {
           placeholder={placeholder ?? ''}
           className={`${className} placeholder:text-neutral-500 placeholder:italic`}
           onChange={handleChange}
+          ref={inputRef}
           {...inputAttributes}
         />
       ) : null}
