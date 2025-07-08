@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useAppConfig } from '../context/AppConfigContext';
 import Page from './Page';
 import { openInBrowser } from '../utils/tauri';
+import Anchor from './Anchor';
 
 export default function Site() {
   const { domain } = useParams();
@@ -18,12 +19,12 @@ export default function Site() {
       title={site.domain}
       description={() => (
         <>
-          <button
+          <Anchor
             onClick={() => openInBrowser(site.domain, site.ssl)}
-            className='text-sm text-[var(--lempify-primary)] hover:underline'
+            className='text-sm hover:underline'
           >
             View in browser
-          </button>
+          </Anchor>
         </>
       )}
     >

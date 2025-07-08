@@ -113,7 +113,7 @@ export default function Background() {
   }, [windowEvent]);
 
   return (
-    <div className='grid-background fixed w-[100vh] h-[100vh] top-0 left-0'>
+    <div className='grid-background fixed size-[100vh] top-0 left-0'>
       {/* Falling lines container */}
       <div ref={containerRef} className='falling-lines-container'>
         {fallingLines.map(line => (

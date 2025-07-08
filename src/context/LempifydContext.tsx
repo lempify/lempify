@@ -130,7 +130,7 @@ function lempifydReducer(
           ...action.payload.result,
         },
       };
-      
+
       return {
         ...state,
         services: updatedServices,
@@ -196,15 +196,19 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
               },
             });
           } catch (error) {
-            invoke('log', { message: `[lempifyd] Error parsing service event: ${error}` });
+            invoke('log', {
+              message: `[lempifyd] Error parsing service event: ${error}`,
+            });
           }
         });
 
         // Listen for responses
         unlistenResponse = await listen<string>('lempifyd:response', event => {
           // Log to file in release builds
-          invoke('log', { message: `[lempifyd] Response received: ${event.payload}` });
-          
+          invoke('log', {
+            message: `[lempifyd] Response received: ${event.payload}`,
+          });
+
           try {
             const payload = JSON.parse(event.payload);
             let name = payload.name as ServiceType;
@@ -233,7 +237,9 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
               payload,
             });
           } catch (error) {
-            invoke('log', { message: `[lempifyd] Error parsing response: ${error}` });
+            invoke('log', {
+              message: `[lempifyd] Error parsing response: ${error}`,
+            });
           }
         });
 
@@ -277,6 +283,7 @@ export function useLempifyd(): {
   state: LempifydState;
   emitStatus: InvokeStatus;
   dispatch: React.Dispatch<LempifydAction>;
+  isActionPending: boolean;
 } {
   const context = useContext(LempifydContext);
   if (!context) {
@@ -303,5 +310,13 @@ export function useLempifyd(): {
       console.error('[lempifyd] Error emitting event:', error);
     }
   };
-  return { emit, state, emitStatus: invokeStatus, dispatch };
+  return {
+    emit,
+    state,
+    emitStatus: invokeStatus,
+    dispatch,
+    isActionPending: Object.values(state.services).some(
+      service => service.pendingAction
+    ),
+  };
 }

@@ -26,10 +26,10 @@ const ServicesStatusIcon = ({
   return (
     <p className='flex items-center mb-2 gap-2 text-sm text-neutral-700 dark:text-neutral-300'>
       <span
-        className={`w-2 h-2 rounded-full ${running ? 'bg-green-500' : 'bg-red-500'}`}
+        className={`size-2 rounded-full ${running ? 'bg-green-500' : 'bg-red-500'}`}
       />
       <span>{name}</span>
-      <span className='ml-auto h-6 w-6 flex items-center justify-center'>
+      <span className='ml-auto size-6 flex items-center justify-center'>
         <Icon />
       </span>
     </p>

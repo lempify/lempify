@@ -1,12 +1,13 @@
 import { NavLink } from 'react-router-dom';
+
 import { SvgCog, SvgPlus, SvgSites } from './Svg';
+
+import { useAppConfig } from '../context/AppConfigContext';
 
 const HOVER_CSS = `
   hover:bg-neutral-200 
   dark:hover:bg-neutral-800
-  
-  hover:text-neutral-900 
-  dark:hover:text-neutral-100`;
+`;
 
 const STANDARD_CSS = `
   rounded-md 
@@ -18,14 +19,15 @@ const STANDARD_CSS = `
   p-2 
   mb-2 
   last:mb-0
+
+  text-neutral-800 
+  dark:text-neutral-200
   
   ${HOVER_CSS}
   `;
 
 const INACTIVE_CSS = `
   bg-transparent 
-  text-neutral-500 
-  dark:text-neutral-400
   `;
 const ACTIVE_CSS = `
   bg-white 
@@ -59,6 +61,7 @@ const LINKS = [
 ];
 
 export default function Sidebar() {
+  const { config } = useAppConfig();
   return (
     <aside className='sticky top-0 z-1 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white border-r border-neutral-300 dark:border-neutral-700'>
       <nav className='flex flex-col p-2 text-sm'>
@@ -72,7 +75,16 @@ export default function Sidebar() {
             }
           >
             <i className='flex-shrink-0'>{link.icon}</i>
-            <span className='flex-1'>{link.label}</span>
+            <span className='flex-1'>
+              {link.label}
+              {link.label === 'Sites' && config.sites.length ? (
+                <sup className='text-neutral-500 dark:text-neutral-400'>
+                  {` (${config.sites.length})`}
+                </sup>
+              ) : (
+                ''
+              )}
+            </span>
           </NavLink>
         ))}
       </nav>

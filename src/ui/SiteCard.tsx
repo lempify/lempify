@@ -79,6 +79,14 @@ function handleEvents(
   };
 }
 
+const btnClassName =
+  'text-xs' +
+  ' text-neutral-400 dark:text-neutral-300' +
+  ' rounded-full' +
+  ' border border-neutral-200 dark:border-neutral-700' +
+  ' hover:bg-neutral-100 dark:hover:bg-neutral-800' +
+  ' px-2 py-1';
+
 /**
  * SitesSite component
  *
@@ -108,22 +116,22 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
     navigate(`/site/${site.domain}`);
   }
 
-  async function openInTauriWindow() {
-    try {
-      await invoke('open_site_window', {
-        domain: site.domain,
-        ssl: site.ssl
-      });
-    } catch (err) {
-      console.error('Failed to open site window:', err);
-    }
-  }
+  // async function openInTauriWindow() {
+  //   try {
+  //     await invoke('open_site_window', {
+  //       domain: site.domain,
+  //       ssl: site.ssl
+  //     });
+  //   } catch (err) {
+  //     console.error('Failed to open site window:', err);
+  //   }
+  // }
 
   return (
     <div className={`relative`}>
-      <div className='p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800'>
+      <div className='p-4'>
         <div className={`flex items-center gap-2`}>
-          <h3 className='flex-1 text-lg font-semibold text-[var(--lempify-primary)] truncate'>
+          <h3 className='flex-1 text-lg italic text-[var(--lempify-secondary)] truncate'>
             {domain}
           </h3>
           <div className='flex-shrink-0'>
@@ -155,31 +163,31 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
         <div className='mt-3 flex gap-2'>
           <button
             onClick={editSite}
-            className='text-sm text-[var(--lempify-primary)] hover:underline'
+            className={btnClassName}
           >
             Edit
           </button>
           <button
             onClick={() => openInBrowser(domain, is_ssl)}
-            className='text-sm text-[var(--lempify-primary)] hover:underline'
+            className={btnClassName}
           >
             Open
           </button>
-          <button
+          {/* <button
             onClick={openInTauriWindow}
             className='text-sm text-[var(--lempify-primary)] hover:underline'
           >
             Preview
-          </button>
+          </button> */}
           <button
             onClick={handleEvent().deleteSite}
-            className='text-sm text-red-500 hover:underline'
+            className={btnClassName}
           >
             Delete
           </button>
         </div>
       </div>
-      <Loader isVisible={invokeStatus === 'pending'} />
+      <Loader isVisible={invokeStatus === 'pending'} size={20} />
     </div>
   );
 }
