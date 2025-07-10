@@ -17,28 +17,32 @@ export default function Heading({
   if (size === 'h1') {
     headingClassName = `
     text-8xl leading-[1.2] text-transparent font-semibold  
-    mb-2 inline-flex 
+    mb-2
     bg-clip-text 
-    ${headerGradient}
+    break-all 
+    ${headerGradient} 
     `;
   }
   if (size === 'h2') {
-    headingClassName = 'text-neutral-900 dark:text-neutral-100 text-4xl font-medium';
-    firstWordClassName = 'text-sm font-normal block text-neutral-700 dark:text-neutral-300';
+    headingClassName =
+      'text-neutral-900 dark:text-neutral-100 text-4xl font-medium ';
+    firstWordClassName =
+      'text-sm font-normal block text-neutral-700 dark:text-neutral-300';
   }
 
   const titleParts = title.split(' ');
-  const newTitle = (
-    <>
-      <span className={firstWordClassName}>
-        {titleParts.at(0)}
-      </span>{' '}
-      {titleParts.slice(1).join(' ')}
-    </>
-  );
+  const newTitle =
+    titleParts.length > 2 ? (
+      <>
+        <span className={firstWordClassName}>{titleParts.at(0)}</span>{' '}
+        {titleParts.slice(1).join(' ')}
+      </>
+    ) : (
+      title
+    );
   return (
     <>
-      <HeadingElement className={`${headingClassName} ${className}`}>
+      <HeadingElement className={`${headingClassName}${className ?? ''}`}>
         {newTitle}
       </HeadingElement>
       {subheading && (
