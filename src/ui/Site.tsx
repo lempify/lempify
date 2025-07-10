@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useAppConfig } from '../context/AppConfigContext';
 import Page from './Page';
 import { openInBrowser } from '../utils/tauri';
@@ -6,6 +6,7 @@ import Anchor from './Anchor';
 
 export default function Site() {
   const { domain } = useParams();
+  const location = useLocation();
   const { config } = useAppConfig();
 
   const site = config.sites.find(site => site.domain === domain);
@@ -30,7 +31,8 @@ export default function Site() {
     >
       <div className='flex flex-col gap-4'>
         <h1>{site.domain}</h1>
-        <pre>{JSON.stringify({ site }, null, 2)}</pre>
+        <p>{location.pathname}</p>
+        <pre>{JSON.stringify({ domain, site, location }, null, 2)}</pre>
       </div>
     </Page>
   );

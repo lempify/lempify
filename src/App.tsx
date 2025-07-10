@@ -39,11 +39,11 @@ const App = () => {
               <Background />
               <div className='p-10 relative'>
                 <Routes>
-                  {/* <Route path='/' element={<Dashboard />} /> */}
-                  <Route path='/' element={<Sites />} />
+                  <Route path='/' element={<></>} />
+                  <Route path='/sites' element={<Sites />} />
 
-                  <Route path='/site/:domain' element={<Site />} />
-                  <Route path='/site/*' element={<Site404 />} />
+                  <Route path='/sites/:domain' element={<Site />} />
+                  <Route path='/sites/*' element={<Site404 />} />
 
                   <Route path='/settings' element={<Settings />} />
                   <Route path='*' element={<Page404 />} />

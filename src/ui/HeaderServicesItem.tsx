@@ -77,8 +77,17 @@ export default function HeaderServicesItem({
     });
   }
 
-  const btnCss =
-    'text-neutral-700 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 rounded-lg text-xs px-1 py-0.5 dark:bg-gray-800 dark:text-neutral-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700';
+  const btnCss = `
+    text-neutral-700 dark:text-neutral-300 
+    bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700
+    border border-neutral-300 dark:border-neutral-600 dark:hover:border-neutral-600
+    
+    rounded-lg 
+    
+    text-xs 
+    
+    px-1 py-0.5 
+  `;
 
   return (
     <li className='relative p-2'>

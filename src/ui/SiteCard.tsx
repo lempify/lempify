@@ -2,8 +2,7 @@
  * External imports
  */
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { invoke } from '@tauri-apps/api/core';
+import { NavLink } from 'react-router-dom';
 
 /**
  * Internal imports
@@ -110,31 +109,30 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
     [domain, refresh, invoke]
   );
 
-  const navigate = useNavigate();
-
-  function editSite() {
-    navigate(`/site/${site.domain}`);
+  async function openInTauriWindow() {
+    try {
+      await invoke('open_site_window', {
+        domain: site.domain,
+        ssl: site.ssl,
+      });
+    } catch (err) {
+      console.error('Failed to open site window:', err);
+    }
   }
 
-  // async function openInTauriWindow() {
-  //   try {
-  //     await invoke('open_site_window', {
-  //       domain: site.domain,
-  //       ssl: site.ssl
-  //     });
-  //   } catch (err) {
-  //     console.error('Failed to open site window:', err);
-  //   }
-  // }
-
   return (
-    <div className={`relative`}>
+    <div className={`relative group`}>
       <div className='p-4'>
-        <div className={`flex items-center gap-2`}>
-          <h3 className='flex-1 text-lg italic text-[var(--lempify-secondary)] truncate'>
-            {domain}
+        <header className={`flex gap-2`}>
+          <h3 className='flex-1 text-lg relative italic text-neutral-600 dark:text-neutral-400 truncate group-hover:whitespace-normal group-hover:break-all'>
+            <NavLink to={`/sites/${site.domain}`}>
+              <span className='hidden group-hover:inline'>
+                {domain}
+              </span>
+              <span className='group-hover:hidden'>{domain}</span>
+            </NavLink>
           </h3>
-          <div className='flex-shrink-0'>
+          <div className='flex-shrink-0 mt-1'>
             {/* SSL cert generator */}
             <div
               className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
@@ -159,30 +157,18 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
               )}
             </div>
           </div>
-        </div>
+        </header>
         <div className='mt-3 flex gap-2'>
-          <button
-            onClick={editSite}
-            className={btnClassName}
-          >
-            Edit
-          </button>
           <button
             onClick={() => openInBrowser(domain, is_ssl)}
             className={btnClassName}
           >
             Open
           </button>
-          {/* <button
-            onClick={openInTauriWindow}
-            className='text-sm text-[var(--lempify-primary)] hover:underline'
-          >
+          <button onClick={openInTauriWindow} className={btnClassName}>
             Preview
-          </button> */}
-          <button
-            onClick={handleEvent().deleteSite}
-            className={btnClassName}
-          >
+          </button>
+          <button onClick={handleEvent().deleteSite} className={btnClassName}>
             Delete
           </button>
         </div>
