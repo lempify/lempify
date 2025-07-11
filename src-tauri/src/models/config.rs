@@ -270,81 +270,95 @@ impl ConfigManager {
         Ok(())
     }
 
-    // CRUD Operations for Sites
-    pub async fn create_site(&self, site: &Site) -> Result<(), String> {
+    pub async fn with_config<F, T>(&self, f: F) -> Result<T, String>
+    where
+        F: FnOnce(&mut Config) -> Result<T, String>,
+    {
         let mut config = self.config.write().await;
-        println!("Create Site: {:#?} using config: {:#?}", site, config);
-
-        // Check if site already exists
-        if config.sites.iter().any(|s| s.domain == site.domain) {
-            return Err(format!("Site with domain '{}' already exists", site.domain));
-        }
-
-        config.sites.push(site.clone());
+        let result = f(&mut config)?;
         drop(config);
-        self.save_config().await
+        self.save_config().await?;
+        Ok(result)
+    }
+
+    pub async fn with_config_read<F, T>(&self, f: F) -> Result<T, String>
+    where
+        F: FnOnce(&Config) -> Result<T, String>,
+    {
+        let config = self.config.read().await;
+        let result = f(&config)?;
+        Ok(result)
+    }
+
+    pub async fn create_site(&self, site: &Site) -> Result<(), String> {
+        self.with_config(|config| {
+            // Check if site already exists
+            if config.sites.iter().any(|s| s.domain == site.domain) {
+                return Err(format!("Site with domain '{}' already exists", site.domain));
+            }
+            config.sites.push(site.clone());
+            Ok(())
+        }).await
     }
 
     pub async fn get_site(&self, domain: &str) -> Option<Site> {
-        let config = self.config.read().await;
-        config.sites.iter().find(|s| s.domain == domain).cloned()
+        self.with_config_read(|config| {
+            Ok(config.sites.iter().find(|s| s.domain == domain).cloned())
+        }).await.ok().flatten()
     }
 
     pub async fn get_all_sites(&self) -> Vec<Site> {
-        let config = self.config.read().await;
-        config.sites.clone()
+        self.with_config_read(|config| {
+            Ok(config.sites.clone())
+        }).await.unwrap_or_default()
     }
 
     pub async fn update_site(&self, domain: &str, updated_site: Site) -> Result<(), String> {
-        let mut config = self.config.write().await;
-
-        if let Some(site) = config.sites.iter_mut().find(|s| s.domain == domain) {
-            *site = updated_site;
-            drop(config);
-            self.save_config().await
-        } else {
-            Err(format!("Site with domain '{}' not found", domain))
-        }
+        self.with_config(|config| {
+            if let Some(site) = config.sites.iter_mut().find(|s| s.domain == domain) {
+                *site = updated_site;
+                Ok(())
+            } else {
+                Err(format!("Site with domain '{}' not found", domain))
+            }
+        }).await
     }
 
     pub async fn delete_site(&self, domain: &str) -> Result<Site, String> {
-        let mut config = self.config.write().await;
-
-        if let Some(pos) = config.sites.iter().position(|s| s.domain == domain) {
-            let removed_site = config.sites.remove(pos);
-            drop(config);
-            self.save_config().await?;
-            Ok(removed_site)
-        } else {
-            Err(format!("Site with domain '{}' not found", domain))
-        }
+        self.with_config(|config| {
+            if let Some(pos) = config.sites.iter().position(|s| s.domain == domain) {
+                let removed_site = config.sites.remove(pos);
+                Ok(removed_site)
+            } else {
+                Err(format!("Site with domain '{}' not found", domain))
+            }
+        }).await
     }
 
-    // Config Operations
     pub async fn get_config(&self) -> Config {
-        let config = self.config.read().await;
-        config.clone()
+        self.with_config_read(|config| {
+            Ok(config.clone())
+        }).await.unwrap_or_default()
     }
 
     pub async fn refresh_trusted_status(&self) -> Result<bool, String> {
-        let mut config = self.config.write().await;
-        config.refresh_trusted_status();
-        let trusted = config.trusted;
-        drop(config);
-        self.save_config().await?;
-        Ok(trusted)
+        self.with_config(|config| {
+            config.refresh_trusted_status();
+            Ok(config.trusted)
+        }).await
     }
 
     pub async fn is_trusted(&self) -> bool {
-        let config = self.config.read().await;
-        config.trusted
+        self.with_config_read(|config| {
+            Ok(config.trusted)
+        }).await.unwrap_or(false)
     }
 
     pub async fn set_trusted(&self, trusted: bool) -> Result<(), String> {
-        let mut config = self.config.write().await;
-        config.trusted = trusted;
-        drop(config);
-        self.save_config().await
+        self.with_config(|config| {
+            config.trusted = trusted;
+            Ok(())
+        }).await
     }
 }
 
@@ -367,7 +381,6 @@ impl Default for Settings {
     }
 }
 
-// Tauri command wrappers
 #[tauri::command]
 pub async fn create_site_config(
     config_manager: State<'_, ConfigManager>,
