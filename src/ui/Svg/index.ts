@@ -17,3 +17,5 @@ export { default as SvgNginx } from './SvgNginx';
 export { default as SvgPhp } from './SvgPhp';
 
 export { default as SvgSpinner } from './SvgSpinner';
+export { default as SvgChevron } from './SvgChevron';
+export { default as SvgLock } from './SvgLock';

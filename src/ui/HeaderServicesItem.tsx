@@ -150,7 +150,7 @@ export default function HeaderServicesItem({
             </Button>
           </>
         )}
-        <Loader isVisible={service.pendingAction} />
+        <Loader isVisible={service.pendingAction} size={20} />
       </div>
     </li>
   );
