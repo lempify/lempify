@@ -15,6 +15,7 @@ import { Site, SiteInfo } from '../types';
 import { useInvoke } from '../hooks/useInvoke';
 import { openInBrowser } from '../utils/tauri';
 import { useAppConfig } from '../context/AppConfigContext';
+import { SvgLock } from './Svg';
 
 /**
  * Handle events closure for the SitesSite component
@@ -126,23 +127,21 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
         <header className={`flex gap-2`}>
           <h3 className='flex-1 text-lg relative italic text-neutral-600 dark:text-neutral-400 truncate group-hover:whitespace-normal group-hover:break-all'>
             <NavLink to={`/sites/${site.domain}`}>
-              <span className='hidden group-hover:inline'>
-                {domain}
-              </span>
+              <span className='hidden group-hover:inline'>{domain}</span>
               <span className='group-hover:hidden'>{domain}</span>
             </NavLink>
           </h3>
           <div className='flex-shrink-0 mt-1'>
             {/* SSL cert generator */}
             <div
-              className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+              className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'text-green-300' : 'text-[var(--lempify-red)]'}`}
               role='status'
               aria-live='polite'
             >
               {is_ssl ? (
                 <>
                   <span aria-label='SSL certificate is active' role='img'>
-                    🔒
+                    <SvgLock size={16} />
                   </span>
                   <span className='sr-only'>SSL certificate is active</span>
                 </>
