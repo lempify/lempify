@@ -1,5 +1,5 @@
 /** External dependencies */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 /** Internal dependencies */
 import HeaderServicesItem from './HeaderServicesItem';
 import { useLempifyd } from '../context/LempifydContext';
@@ -8,16 +8,31 @@ import { SvgSpinner } from './Svg';
 
 const HeaderServices = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const servicesRef = useRef<HTMLDivElement>(null);
   const { emit, state, isActionPending } = useLempifyd();
 
   useEffect(() => {
-    async function giddyUp() {
+    async function emitServices() {
       emit('php', 'is_running');
       emit('nginx', 'is_running');
       emit('mysql', 'is_running');
     }
-    giddyUp();
+    emitServices();
+
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        servicesRef.current &&
+        !servicesRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   return (
@@ -50,6 +65,7 @@ const HeaderServices = () => {
       </button>
       <div
         className={`overflow-hidden absolute top-[calc(100%+1px)] right-0${isOpen ? '' : ' pointer-events-none'}`}
+        ref={servicesRef}
       >
         <ul
           className={`grid grid-cols-3 bg-neutral-100 dark:bg-neutral-900 border-b border-l border-neutral-300 dark:border-neutral-700 divide-x-1 divide-neutral-200 dark:divide-neutral-700 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-[calc(100%+1px)]'}`}
