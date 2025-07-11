@@ -72,6 +72,11 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
     let contents = fs::read_to_string(&nginx_config_path)
         .map_err(|e| format!("Failed to read nginx config: {}", e))?;
 
+    // Bail if ssl config exists
+    if !contents.contains("listen 443 ssl") {
+        return Ok(());
+    }
+
     let mut patched_lines = vec![];
 
     for line in contents.lines() {

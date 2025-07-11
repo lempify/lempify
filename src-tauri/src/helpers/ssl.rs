@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use shared::{brew, file_system::AppFileSystem, osascript, ssl, utils};
 
-use crate::helpers::config::get_config_manager;
+use crate::models::config::ConfigManager;
 
-pub async fn secure_site(domain: &str) -> Result<HashMap<String, String>, String> {
+pub async fn secure_site(domain: &str, config_manager: &ConfigManager) -> Result<HashMap<String, String>, String> {
     // @TODO move to function
     if !utils::is_bin_installed("mkcert").unwrap_or(false) {
         crate::helpers::service_utils::install_via_brew("mkcert")
@@ -27,18 +27,17 @@ pub async fn secure_site(domain: &str) -> Result<HashMap<String, String>, String
 
     let certs = ssl::secure_site(domain)?;
 
-    let config_manager = get_config_manager().await;
     let certs_dir = AppFileSystem::new()?.certs_dir;
-    let mut sites = config_manager.get_all_sites().await;
-
-    // If the site is already stored in config.json, update it with the new SSL status.
-    if let Some(site) = sites.iter_mut().find(|site| site.domain == domain) {
-        site.ssl = true;
-        site.site_config.ssl = true;
-        site.site_config.ssl_key = Some(format!("{}/{}-key.pem", certs_dir.display(), domain));
-        site.site_config.ssl_cert = Some(format!("{}/{}.pem", certs_dir.display(), domain));
-        config_manager.update_site(domain, site.clone()).await?;
-    }
+    
+    config_manager.with_config(|config| {
+        if let Some(site) = config.sites.iter_mut().find(|site| site.domain == domain) {
+            site.ssl = true;
+            site.site_config.ssl = true;
+            site.site_config.ssl_key = Some(format!("{}/{}-key.pem", certs_dir.display(), domain));
+            site.site_config.ssl_cert = Some(format!("{}/{}.pem", certs_dir.display(), domain));
+        }
+        Ok(())
+    }).await?;
 
     // Restart nginx.
     brew::restart_service("nginx")?;

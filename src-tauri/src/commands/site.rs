@@ -76,7 +76,7 @@ pub async fn create_site(
 
     // Setup SSL if requested
     if payload.ssl {
-        secure_site(&domain).await?;
+        secure_site(&domain, &config_manager).await?;
     }
     let ssl_key = if payload.ssl {
         Some(format!(
