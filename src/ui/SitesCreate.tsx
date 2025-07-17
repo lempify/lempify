@@ -26,12 +26,15 @@ import Details from './Details';
  */
 const defaultPayload = {
   domain: '',
+  site_name: '',
   ssl: true,
-  type: DEFAULT_SITE_TYPE,
+  site_type: DEFAULT_SITE_TYPE,
+  site_type_config: {},
 };
 
 type Payload = {
   domain: string;
+  site_name: string;
   ssl: boolean;
   site_type: string;
   site_type_config: Record<string, any>;
@@ -49,16 +52,17 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
 
     const payload: Payload = {
       domain: formValues.domain,
-      site_type: formValues.type,
+      site_name: formValues.site_name,
       ssl: formValues.ssl,
+      site_type: formValues.site_type,
       site_type_config: {},
     };
 
     for (const [key, value] of Object.entries(formValues)) {
-      // i.e. type|wordpress
-      if (key.includes(`type|${formValues.type}|`)) {
+      // i.e. site_type|wordpress
+      if (key.includes(`site_type|${formValues.site_type}|`)) {
         const [nestedKey, , nestedName] = key.split('|');
-        if (nestedKey === 'type') {
+        if (nestedKey === 'site_type') {
           payload['site_type_config'][nestedName] = value ?? {};
         }
         // Handle other cases in the future.
@@ -103,6 +107,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       )}
     >
       <form onSubmit={handleSubmit}>
+        <pre>{JSON.stringify(formValues, null, 2)}</pre>
         <div className='grid grid-cols-1 gap-10 mb-10'>
           {siteCreateFields.map((field, index) => (
             <div className={field.wrapperClassName ?? ''} key={field.name}>

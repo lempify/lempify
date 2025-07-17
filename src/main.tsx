@@ -13,9 +13,9 @@ const rootElement = document.getElementById('root') as HTMLElement;
 trackMousePosition(rootElement);
 
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <DarkModeProvider>
-      <App />
-    </DarkModeProvider>
-  </React.StrictMode>
+    <App />
+  </DarkModeProvider>
+  // </React.StrictMode>
 );

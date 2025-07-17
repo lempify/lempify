@@ -1,0 +1,95 @@
+body.resize-in-progress {
+  user-select: none;
+}
+
+
+.ec-resizable {
+  --ec-resizable-offset: calc(var(--ec-resizable-handle-dimension) / 2);
+  --ec-resizable-color-bg: #f8f8f8;
+  --ec-resizable-init-dimension: var(--ec-resizable-handle-dimension);
+  --ec-resizable-bg-color: rgba(0, 0, 0, 0.4);
+
+  background-color: rgba(248, 248, 248, 0.2);
+ 
+  max-height: 100vh;
+  overflow: hidden;
+  top: 0;
+  width: 100%;
+
+  .ec-resizable__back {
+    height: 100%;
+    background-color: var(--ec-resizable-bg-color);
+  }
+
+  .ec-resizable__debug {
+    background-color: #f8f8f8;
+    position: absolute;
+    padding: 1rem;
+  }
+
+  .ec-resizable__debug-snap-point {
+    border-color: var(--ec-color-gray-20);
+    border-style: dashed;
+    left: 0;
+    margin: 0;
+    position: absolute;
+    pointer-events: none;
+    width: 100%;
+  }
+
+  .ec-resizable__resizer {
+    background-color: var(--ec-resizable-color-bg);
+    color: var(--ec-color-gray-40);
+    height: 100%;
+    width: 100%;
+    position: relative;
+    /* Remove height-based positioning */
+  }
+
+  .ec-resizable__resizer-handle {
+    background-color: #ffffff;
+    border-left: 1px solid var(--ec-color-gray-60);
+    border-right: 1px solid var(--ec-color-gray-60);
+    box-shadow: 4px 0px 1px 0px rgba(0, 0, 0, 0.1);
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ec-resizable-handle-dimension);
+    height: 100%;
+    right: 0;
+    top: 0;
+    position: absolute;
+    padding: 0;
+    text-align: center;
+    transition: none; /* Remove transitions to prevent delays */
+
+    svg {
+      transition: none; /* Remove SVG transitions */
+    }
+
+    path {
+      fill: var(--ec-color-gray);
+    }
+
+    &:active {
+      cursor: grabbing;
+      width: calc(var(--ec-resizable-handle-dimension) * 1.5);
+
+      svg {
+        transform: scale(1.2);
+      }
+    }
+  }
+
+  .ec-resizable__resizer-content {
+    overflow: auto;
+    height: 100%;
+    width: 100%;
+    padding-right: 2em;
+  }
+}
+
+body:has(.main + .ec-resizable) {
+  overflow: hidden;
+}

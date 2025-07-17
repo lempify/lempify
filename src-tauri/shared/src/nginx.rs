@@ -73,7 +73,7 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
         .map_err(|e| format!("Failed to read nginx config: {}", e))?;
 
     // Bail if ssl config exists
-    if !contents.contains("listen 443 ssl") {
+    if contents.contains("listen 443 ssl") {
         return Ok(());
     }
 
@@ -86,7 +86,7 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
             let domain_cert_path = certs_dir.join(format!("{}.pem", domain));
             let domain_key_path = certs_dir.join(format!("{}-key.pem", domain));
 
-            patched_lines.push(format!("\n\t## Lempify SSL ##\n\tlisten 443 ssl;\n\tssl_certificate {};\n\tssl_certificate_key {};\n\tssl_protocols TLSv1.2 TLSv1.3;\n\tssl_ciphers HIGH:!aNULL:!MD5;", domain_cert_path.display(), domain_key_path.display()));
+            patched_lines.push(format!("\t## Lempify SSL ##\n\tlisten 443 ssl;\n\tssl_certificate {};\n\tssl_certificate_key {};\n\tssl_protocols TLSv1.2 TLSv1.3;\n\tssl_ciphers HIGH:!aNULL:!MD5;", domain_cert_path.display(), domain_key_path.display()));
         } else {
             patched_lines.push(line.to_string());
         }
