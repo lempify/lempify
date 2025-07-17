@@ -5,6 +5,7 @@ import { SvgCog, SvgDashboard, SvgPlus, SvgSites } from './Svg';
 
 import { useAppConfig } from '../context/AppConfigContext';
 import SvgChevron from './Svg/SvgChevron';
+import Resizer from './Resizer';
 
 const HOVER_CSS = `
   
@@ -73,75 +74,79 @@ export default function Sidebar() {
     (location.pathname.startsWith(to) && to === '/sites');
 
   return (
-    <aside className='sticky top-0 z-1 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white border-r border-neutral-300 dark:border-neutral-700'>
-      <nav className='flex flex-col p-2 text-sm'>
-        <ul>
-          {LINKS.map(link => (
-            <li key={link.to} className='mb-2 last:mb-0'>
-              <div className='flex items-center'>
-                <NavLink
-                  to={link.to}
-                  className={({ isActive }) =>
-                    `flex-1 ${STANDARD_CSS} ${isActive ? `${ACTIVE_CSS}` : INACTIVE_CSS}`
-                  }
-                >
-                  <i className='flex-shrink-0'>{link.icon}</i>
-                  <span className='flex-1'>
-                    {link.label}
-                    {link.label === 'Sites' && config.sites.length ? (
-                      <sup className='text-neutral-500 dark:text-neutral-400'>
-                        {` (${config.sites.length})`}
-                      </sup>
-                    ) : (
-                      ''
-                    )}
-                  </span>
-                </NavLink>
-                {link.label === 'Sites' && (
-                  <button
-                    className={`${isActive(link.to) ? 'bg-white dark:bg-black' : ''} rounded-md p-3 ml-2 flex-shrink-0 text-neutral-500 dark:text-neutral-400`}
-                    onClick={() => setIsExpanded(!isExpanded)}
+    <Resizer>
+      <aside className='flex flex-col sticky top-0 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white border-r border-neutral-300 dark:border-neutral-700 overflow-y-auto'>
+        <nav className='flex-shrink-0 flex flex-col p-2 text-sm'>
+          <ul>
+            {LINKS.map(link => (
+              <li key={link.to} className='mb-2 last:mb-0'>
+                <div className='flex items-center'>
+                  <NavLink
+                    to={link.to}
+                    className={({ isActive }) =>
+                      `flex-1 ${STANDARD_CSS} ${isActive ? `${ACTIVE_CSS}` : INACTIVE_CSS}`
+                    }
                   >
-                    {isExpanded ? (
-                      <SvgChevron direction='up' size={16} />
-                    ) : (
-                      <SvgChevron direction='down' size={16} />
-                    )}
-                  </button>
-                )}
-              </div>
-              {link.label === 'Sites' && isExpanded && (
-                <ul className='mx-2 text-sm mt-2'>
-                  {config.sites.map(site => (
-                    <li
-                      key={site.name}
-                      className='border-b border-neutral-300 dark:border-neutral-700'
+                    <i className='flex-shrink-0'>{link.icon}</i>
+                    <span className='flex-1'>
+                      {link.label}
+                      {link.label === 'Sites' && config.sites.length ? (
+                        <sup className='text-neutral-500 dark:text-neutral-400'>
+                          {` (${config.sites.length})`}
+                        </sup>
+                      ) : (
+                        ''
+                      )}
+                    </span>
+                  </NavLink>
+                  {link.label === 'Sites' && (
+                    <button
+                      className={`${isActive(link.to) ? 'bg-white dark:bg-black' : ''} rounded-md p-3 ml-2 flex-shrink-0 text-neutral-500 dark:text-neutral-400`}
+                      onClick={() => setIsExpanded(!isExpanded)}
                     >
-                      <NavLink
-                        to={`/sites/${site.domain}`}
-                        className={({ isActive }) =>
-                          `p-2 block truncate group hover:text-neutral-900 dark:hover:text-neutral-100 ${isActive ? `text-neutral-900 dark:text-neutral-100` : 'text-neutral-600 dark:text-neutral-400'}`
-                        }
+                      {isExpanded ? (
+                        <SvgChevron direction='up' size={16} />
+                      ) : (
+                        <SvgChevron direction='down' size={16} />
+                      )}
+                    </button>
+                  )}
+                </div>
+                {link.label === 'Sites' && isExpanded && (
+                  <ul className='mx-2 text-sm mt-2'>
+                    {config.sites.map(site => (
+                      <li
+                        key={site.name}
+                        className='border-b border-neutral-300 dark:border-neutral-700'
                       >
-                        {/* Active */}
-                        <span className='hidden group-hover:block absolute'>
-                          {site.name}
-                        </span>
-                        <span className='group-hover:invisible'>
-                          {site.name}
-                        </span>
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <button className='opacity-50 p-5 transition-opacity hover:opacity-100 rounded-md bg-white dark:bg-black absolute bottom-[10%] left-[50%] translate-x-[-50%] p-2 text-sm'>
-        <SvgPlus size={46} />
-      </button>
-    </aside>
+                        <NavLink
+                          to={`/sites/${site.domain}`}
+                          className={({ isActive }) =>
+                            `p-2 block truncate group hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-950 ${isActive ? `bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100` : 'text-neutral-600 dark:text-neutral-400'}`
+                          }
+                        >
+                          {/* Active */}
+                          <span className='hidden group-hover:block absolute'>
+                            {site.name}
+                          </span>
+                          <span className='group-hover:invisible'>
+                            {site.name}
+                          </span>
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className='flex-1 flex items-end justify-center'>
+          <button className='opacity-80 p-5 transition-opacity hover:opacity-100 rounded-full bg-white dark:bg-black p-2 text-sm mb-[10%]'>
+            <SvgPlus size={20} />
+          </button>
+        </div>
+      </aside>
+    </Resizer>
   );
 }

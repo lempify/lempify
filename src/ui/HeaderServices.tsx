@@ -10,7 +10,7 @@ const HeaderServices = () => {
   const [isOpen, setIsOpen] = useState(false);
   const servicesRef = useRef<HTMLDivElement>(null);
   const { emit, state, isActionPending } = useLempifyd();
-
+  const buttonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     async function emitServices() {
       emit('php', 'is_running');
@@ -21,6 +21,8 @@ const HeaderServices = () => {
 
     function handleClickOutside(event: MouseEvent) {
       if (
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node) &&
         servicesRef.current &&
         !servicesRef.current.contains(event.target as Node)
       ) {
@@ -40,18 +42,19 @@ const HeaderServices = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className='flex items-center text-neutral-700 dark:text-neutral-300 text-sm'
+        ref={buttonRef}
       >
         {isActionPending ? (
           <SvgSpinner size={16} />
         ) : (
           <>
             {state.isAllServicesRunning
-              ? !isOpen
-                ? ''
-                : 'All Services Running'
-              : !isOpen
-                ? `(${state.servicesCount - state.runningServicesCount})`
-                : `${state.servicesCount - state.runningServicesCount} ${state.runningServicesCount === 1 ? 'Services' : 'Service'} Down`}{' '}
+              ? isOpen
+                ? 'All Services Running'
+                : ''
+              : isOpen
+                ? `${state.servicesCount - state.runningServicesCount} ${state.runningServicesCount === 1 ? 'Services' : 'Service'} Down`
+                : `(${state.servicesCount - state.runningServicesCount})`}
             <span
               className={`${state.isAllServicesRunning ? 'text-[var(--lempify-green)]' : 'text-[var(--lempify-red)]'}`}
             >

@@ -32,7 +32,7 @@ export default function Heading({
 
   const titleParts = title.split(' ');
   const newTitle =
-    titleParts.length > 2 ? (
+    titleParts.length > 1 ? (
       <>
         <span className={firstWordClassName}>{titleParts.at(0)}</span>{' '}
         {titleParts.slice(1).join(' ')}

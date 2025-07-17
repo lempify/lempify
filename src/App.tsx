@@ -27,14 +27,12 @@ const App = () => {
     <AppConfigProvider>
       <LempifydProvider>
         <Router>
-          <div className='h-screen grid grid-cols-[256px_1fr] grid-rows-[65px_1fr]'>
-            {/* Header spans both columns */}
+          <div className='h-screen grid grid-cols-[auto_1fr] grid-rows-[65px_1fr]'>
+            {/* Header - sticky */}
             <Header />
-
-            {/* Sidebar - fixed in left column */}
+            {/* Sidebar - sticky */}
             <Sidebar />
-
-            {/* Main content - scrollable in right column */}
+            {/* Main content */}
             <main className='overflow-y-auto bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)]'>
               <Background />
               <div className='p-10 relative'>

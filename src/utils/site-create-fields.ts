@@ -31,7 +31,7 @@ export const fieldRelationships: Field[] = [
   },
   {
     label: 'Site type?',
-    name: 'type',
+    name: 'site_type',
     defaultValue: DEFAULT_SITE_TYPE,
     required: false,
     type: 'radio',
@@ -54,7 +54,7 @@ export const fieldRelationships: Field[] = [
         defaultValue: true,
         required: false,
         type: 'checkbox',
-        dependency: ['type', 'wordpress'],
+        dependency: ['site_type', 'wordpress'],
         description: 'Whether the site should have WordPress installed',
         wrapperClassName: 'flex items-center gap-2 h-[42px]',
         fields: [
