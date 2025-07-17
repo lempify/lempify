@@ -23,7 +23,7 @@ export default function Resizer({ children }: PropsWithChildren) {
 
   return (
     <div
-      className='ec-resizable relative z-1 min-w-[250px]'
+      className='ec-resizable relative z-1 min-w-[250px] border-r border-neutral-300 dark:border-neutral-700'
       ref={el.container}
       style={
         {

@@ -1,8 +1,6 @@
 import { parsIntCssVar, getCssVar, parsePercentages } from './parse';
 import * as ResizableTypes from '../types/resizer';
 
-// import './style.css';
-
 const mandatory = (param: string) => {
   throw new Error(`${param} param is missing!`);
 };
