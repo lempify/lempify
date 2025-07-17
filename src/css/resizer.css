@@ -1,7 +1,7 @@
 body.resize-in-progress {
   user-select: none;
+  -webkit-user-select: none;
 }
-
 
 .ec-resizable {
   --ec-resizable-offset: calc(var(--ec-resizable-handle-dimension) / 2);
@@ -39,7 +39,6 @@ body.resize-in-progress {
 
   .ec-resizable__resizer {
     background-color: var(--ec-resizable-color-bg);
-    color: var(--ec-color-gray-40);
     height: 100%;
     width: 100%;
     position: relative;
@@ -47,10 +46,6 @@ body.resize-in-progress {
   }
 
   .ec-resizable__resizer-handle {
-    background-color: #ffffff;
-    border-left: 1px solid var(--ec-color-gray-60);
-    border-right: 1px solid var(--ec-color-gray-60);
-    box-shadow: 4px 0px 1px 0px rgba(0, 0, 0, 0.1);
     cursor: grab;
     display: flex;
     align-items: center;
@@ -69,12 +64,11 @@ body.resize-in-progress {
     }
 
     path {
-      fill: var(--ec-color-gray);
+      fill: currentColor;
     }
 
     &:active {
       cursor: grabbing;
-      width: calc(var(--ec-resizable-handle-dimension) * 1.5);
 
       svg {
         transform: scale(1.2);
@@ -86,7 +80,7 @@ body.resize-in-progress {
     overflow: auto;
     height: 100%;
     width: 100%;
-    padding-right: 2em;
+    padding-right: var(--ec-resizable-handle-dimension);
   }
 }
 
