@@ -24,12 +24,12 @@ const Sites = () => {
       <div ref={createSiteRef} className={`${pageSection} ${cornerTopRight}`}>
         <SiteCreate onRefresh={refresh} />
       </div>
-      <div className={`${pageSection} ${cornerBottomLeft}`}>
+      <div className={`${pageSection} ${cornerBottomLeft} @container`}>
         <header className='flex items-center gap-2 mb-8'>
           <Heading size='h2' title='Existing Sites' />
         </header>
         {config.sites.length ? (
-          <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
+          <ul className='grid grid-cols-1 @md:grid-cols-1 @lg:grid-cols-2 @2xl:grid-cols-3'>
             <>
               {config.sites.map(site => (
                 <li

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
 import { SvgCog, SvgDashboard, SvgPlus, SvgSites } from './Svg';
 
 import { useAppConfig } from '../context/AppConfigContext';
 import SvgChevron from './Svg/SvgChevron';
-import Resizer from './Resizer';
+import Resizable from './Resizable';
+import { getPreferences, setPreferences } from '../utils/storage';
 
 const HOVER_CSS = `
   
@@ -65,17 +66,26 @@ const LINKS = [
 
 export default function Sidebar() {
   const { config } = useAppConfig();
+  const preferences = getPreferences();
   // TODO: update when/if more dropdowns are added.
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(preferences.isSiteDropdownOpen ?? false);
   // get the current path
   const location = useLocation();
   const isActive = (to: string) =>
     location.pathname === to ||
     (location.pathname.startsWith(to) && to === '/sites');
 
+
+  useEffect(() => {
+    setPreferences({
+      ...getPreferences(),
+      isSiteDropdownOpen: isExpanded,
+    });
+  }, [isExpanded]);
+
   return (
-    <Resizer>
-      <aside className='flex flex-col sticky top-0 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white border-r border-neutral-300 dark:border-neutral-700 overflow-y-auto'>
+    <Resizable>
+      <aside className='flex flex-col sticky top-0 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white overflow-y-auto'>
         <nav className='flex-shrink-0 flex flex-col p-2 text-sm'>
           <ul>
             {LINKS.map(link => (
@@ -147,6 +157,6 @@ export default function Sidebar() {
           </button>
         </div>
       </aside>
-    </Resizer>
+    </Resizable>
   );
 }

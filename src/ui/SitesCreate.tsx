@@ -107,7 +107,6 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       )}
     >
       <form onSubmit={handleSubmit}>
-        <pre>{JSON.stringify(formValues, null, 2)}</pre>
         <div className='grid grid-cols-1 gap-10 mb-10'>
           {siteCreateFields.map((field, index) => (
             <div className={field.wrapperClassName ?? ''} key={field.name}>

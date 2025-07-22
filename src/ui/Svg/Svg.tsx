@@ -8,10 +8,11 @@ const Svg: React.FC<ServiceIconProps> = ({
   children,
   ...props
 }) => {
+  const [width, height] = Array.isArray(size) ? size : [size, size];
   return (
     <svg
       className={className}
-      style={{ width: size, height: size }}
+      style={{ width, height }}
       viewBox={viewBox}
       xmlns='http://www.w3.org/2000/svg'
       {...props}

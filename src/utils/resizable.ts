@@ -10,7 +10,7 @@ export class Resizable {
   static ACTIVE_BODY_CLASS: string = 'resize-in-progress';
 
   // Class prefix for the component
-  static CLASS_PREFIX: string = 'ec-resizable';
+  static CLASS_PREFIX: string = 'resizable';
 
   el: {
     body: HTMLElement; // Class added to body during resize
@@ -27,15 +27,19 @@ export class Resizable {
   handleDimension: number;
   direction: ResizableTypes.Direction;
   isDebug: boolean = false;
+  onResize?: (dimension: number) => void;
+  minDimension: number;
 
   constructor(
     container: ResizableTypes.Elem = mandatory('container'),
     {
       elementResizer,
       elementHandle,
+      onResize,
     }: {
       elementResizer?: HTMLElement;
       elementHandle?: HTMLElement;
+      onResize?: (dimension: number) => void;
     } = {}
   ) {
     this.el = {
@@ -44,21 +48,29 @@ export class Resizable {
       resizer:
         elementResizer ??
         (container.getElementsByClassName(
-          'ec-resizable__resizer'
+          'resizable__resizer'
         )[0] as HTMLElement),
       handle:
         elementHandle ??
         (container.getElementsByClassName(
-          'ec-resizable__resizer-handle'
+          'resizable__resizer-handle'
         )?.[0] as HTMLElement),
       debug: null,
     };
+
+    this.onResize = onResize ?? (() => {});
 
     this.direction =
       getCssVar<ResizableTypes.Direction>({
         cssVar: `--${Resizable.CLASS_PREFIX}-direction`,
         element: this.el.container,
       }) ?? 'y';
+
+    this.minDimension =
+      parsIntCssVar({
+        cssVar: `--${Resizable.CLASS_PREFIX}-min-dimension`,
+        element: this.el.container,
+      }) ?? 250;
 
     const clientDimension =
       this.direction === 'x' ? 'clientWidth' : 'clientHeight';
@@ -93,7 +105,7 @@ export class Resizable {
         currentDimension: 0,
         expanding: false,
         hasInteracted: false,
-        minDimension: 250,
+        minDimension: this.minDimension,
         maxDimension: /* this.el.container[clientDimension] */1000,
         offset,
         prevDimension: 0,
@@ -148,7 +160,7 @@ export class Resizable {
       init: () => {
         this.el.debug =
           this.el.container.getElementsByClassName(
-            'ec-resizable__debug'
+            'resizable__debug'
           )?.[0] ?? null;
         this.isDebug = this.el.debug !== null;
         this.debug().render();
@@ -170,12 +182,12 @@ export class Resizable {
         // Build snap points
         // if (
         //   this.el.container.getElementsByClassName(
-        //     'ec-resizable__debug-snap-point'
+        //     'resizable__debug-snap-point'
         //   ).length === 0
         // ) {
         //   for (let i = 0, m = this.snapPoints.length; i < m; i++) {
         //     const point = document.createElement('hr');
-        //     point.classList.add('ec-resizable__debug-snap-point');
+        //     point.classList.add('resizable__debug-snap-point');
         //     // @TODO Custom
         //     const position = this.direction === 'x' ? 'left' : 'bottom';
         //     point.style[position] = `${this.snapPoints[i]}px`;
@@ -290,10 +302,13 @@ export class Resizable {
     // Apply dimension immediately to the container (not the resizer)
     if (dimension < this.data.minDimension) {
       (this.el.container as HTMLElement).style[cssDimension] = `${this.data.minDimension}px`;
+      this.onResize?.(this.data.minDimension);
     } else if (dimension > this.data.maxDimension) {
       (this.el.container as HTMLElement).style[cssDimension] = `${this.data.maxDimension}px`;
+      this.onResize?.(this.data.maxDimension);
     } else {
       (this.el.container as HTMLElement).style[cssDimension] = `${dimension}px`;
+      this.onResize?.(dimension);
     }
   }
 
@@ -338,6 +353,7 @@ export class Resizable {
   }
 
   destroy() {
+    console.log('destroy');
     this.el.body.classList.remove(Resizable.ACTIVE_BODY_CLASS);
     window.removeEventListener('pointermove', this.resize);
     window.removeEventListener('pointerup', this.stopResize);

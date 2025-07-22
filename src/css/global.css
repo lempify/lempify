@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import './bg-animation.css';
 @import './animations.css';
-@import './resizer.css';
+@import './resizable.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 

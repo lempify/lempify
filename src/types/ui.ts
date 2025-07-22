@@ -1,5 +1,5 @@
 export interface ServiceIconProps extends React.SVGProps<SVGSVGElement> {
-  size?: number;
+  size?: number | Array<number>;
   viewBox?: string;
   className?: string;
 }
