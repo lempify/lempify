@@ -7,8 +7,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { createStorage } from '../utils/storage';
 
 type Theme = 'light' | 'dark' | 'system';
+
+const themeStorage = createStorage<Theme>({
+  key: 'theme',
+  defaultValue: 'system',
+});
 
 interface DarkModeContextValue {
   theme: Theme;
@@ -24,8 +30,6 @@ interface DarkModeContextValue {
 const DarkModeContext = createContext<DarkModeContextValue | undefined>(
   undefined
 );
-
-const THEME_KEY = 'theme';
 
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window !== 'undefined' && window.matchMedia) {
@@ -50,7 +54,7 @@ function applyHtmlClass(theme: Theme) {
 export function DarkModeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'system';
-    return (localStorage.getItem(THEME_KEY) as Theme) ?? 'system';
+    return themeStorage.get();
   });
 
   const [isDark, setIsDark] = useState(() => {
@@ -63,7 +67,7 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
     const resolved = theme === 'system' ? getSystemTheme() : theme;
     setIsDark(resolved === 'dark');
     applyHtmlClass(theme);
-    localStorage.setItem(THEME_KEY, theme);
+    themeStorage.set(theme);
     if (theme !== 'system') return;
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = (event: MediaQueryListEvent) => {
@@ -75,7 +79,7 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
     return () => media.removeEventListener('change', handler);
   }, [theme]);
 
-  const setTheme = (newTheme: Theme) => setThemeState(newTheme);
+  const setThemeHandler = (newTheme: Theme) => setThemeState(newTheme);
   const toggleTheme = () =>
     setThemeState(prev =>
       prev === 'dark'
@@ -92,7 +96,7 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
 
   return (
     <DarkModeContext.Provider
-      value={{ theme, valueByTheme, isDark, setTheme, toggleTheme }}
+      value={{ theme, valueByTheme, isDark, setTheme: setThemeHandler, toggleTheme }}
     >
       {children}
     </DarkModeContext.Provider>

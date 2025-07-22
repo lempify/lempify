@@ -1,0 +1,61 @@
+body.resize-in-progress {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.resizable {
+  --resizable-offset: calc(var(--resizable-handle-dimension) / 2);
+  --resizable-color-bg: #f8f8f8;
+  --resizable-init-dimension: var(--resizable-handle-dimension);
+
+  top: 0;
+  width: 100%;
+
+  .resizable__resizer {
+    height: 100%;
+    width: 100%;
+    position: relative;
+  }
+
+  .resizable__resizer-content {
+    overflow: auto;
+    height: 100%;
+    width: 100%;
+  }
+}
+.resizable__resizer-handle {
+  align-items: center;
+  cursor: ew-resize;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  width: var(--resizable-handle-dimension);
+  top: 0;
+  position: absolute;
+  z-index: 1;
+  padding: 0;
+  text-align: center;
+  transition: none; /* Remove transitions to prevent delays */
+
+  &:before {
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 1px;
+    z-index: -1;
+  }
+
+  svg {
+    transition: none; /* Remove SVG transitions */
+  }
+
+  path {
+    fill: currentColor;
+  }
+
+  &:hover {
+    &:before {
+      transform: scaleX(1.5);
+    }
+  }
+}
