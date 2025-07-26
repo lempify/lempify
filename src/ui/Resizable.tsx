@@ -31,15 +31,15 @@ export default function Resizable({ children }: PropsWithChildren) {
 
   return (
     <div
-    className='resizable relative z-1 min-w-[250px]'
+      className='resizable relative z-1 min-w-[56px]'
       ref={el.container}
       style={
         {
-          '--resizable-handle-dimension': '10px',
-          '--resizable-init-dimension': '60%',
-          '--resizable-direction': 'x',
-          '--resizable-min-dimension': '250px',
           width: `${preferences.sidebarWidth ?? 250}px`,
+          '--resizable-direction': 'x',
+          '--resizable-min-dimension': '56px',
+          '--resizable-handle-dimension': '10px',
+          '--resizable-snap-threshold': '20px',
         } as CSSProperties
       }
     >

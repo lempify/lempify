@@ -1,0 +1,41 @@
+.lempify-dialog {
+  @apply inset-4 bg-white/90 dark:bg-black/90 h-full z-50;
+
+  transition:
+    opacity 0.3s ease-in-out,
+    translate 0.3s ease-in-out,
+    overlay 0.3s allow-discrete,
+    display 0.3s allow-discrete;
+
+  opacity: 0;
+  translate: 0 -100%;
+
+  &::backdrop {
+    backdrop-filter: blur(3px);
+    transition:
+      display 0.3s allow-discrete,
+      overlay 0.3s allow-discrete,
+      background-color 0.3s;
+    background-color: hsl(0 0 0 / 0);
+  }
+
+  &[open] {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  &[open]::backdrop {
+    background-color: hsl(0 0 0 / 50%);
+  }
+}
+
+@starting-style {
+  .lempify-dialog[open] {
+    opacity: 0;
+    translate: 0 -100%;
+
+    &::backdrop {
+      background-color: hsl(0 0 0 / 0);
+    }
+  }
+}

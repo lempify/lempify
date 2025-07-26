@@ -1,7 +1,5 @@
 export type Elem = HTMLElement | Element;
 
-export type Snap = 'closest' | 'next';
-
 export type Direction = 'x' | 'y';
 
 export type Data = {
@@ -14,7 +12,6 @@ export type Data = {
   prevDimension: number;
   originalCoordinate: number;
   originalPointerCoordinate: number;
-  snap?: Snap;
-  snapThreshold: number;
   currentPercentage: number;
+  snapThreshold: number;
 };

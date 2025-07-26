@@ -23,7 +23,6 @@ export class Resizable {
   data: ResizableTypes.Data;
 
   // Static
-  snapPoints: number[] = [];
   handleDimension: number;
   direction: ResizableTypes.Direction;
   isDebug: boolean = false;
@@ -83,22 +82,6 @@ export class Resizable {
 
     const offset = this.handleDimension / 2;
 
-    // Only calculate snap points if snap is enabled
-    const snap = getCssVar<ResizableTypes.Snap>({
-      cssVar: `--${Resizable.CLASS_PREFIX}-snap`,
-      element: this.el.container,
-    });
-    
-    if (snap) {
-      this.snapPoints = parsePercentages({
-        total: /* this.el.container[clientDimension] */1000,
-        percentage: 20,
-        startAt: this.handleDimension,
-      });
-    }
-
-    this.debug().init();
-
     this.data = new Proxy(
       {
         // @TODO Custom
@@ -112,10 +95,6 @@ export class Resizable {
         originalCoordinate: 0,
         originalPointerCoordinate: 0,
         currentPercentage: 0,
-        snap: getCssVar<ResizableTypes.Snap>({
-          cssVar: `--${Resizable.CLASS_PREFIX}-snap`,
-          element: this.el.container,
-        }),
         snapThreshold:
           parsIntCssVar({
             cssVar: `--${Resizable.CLASS_PREFIX}-snap-threshold`,
@@ -128,10 +107,6 @@ export class Resizable {
         },
         set: (target: ResizableTypes.Data, prop, value) => {
           (target as any)[prop] = value;
-          // Only update debug if debug is enabled
-          if (this.isDebug) {
-            this.debug().update();
-          }
           return true;
         },
       }
@@ -150,73 +125,12 @@ export class Resizable {
     this.el.handle.addEventListener('pointerdown', this.initialiseResize);
   }
 
-  /**
-   * Debug
-   *
-   * @returns Debug callbacks
-   */
-  debug() {
-    return {
-      init: () => {
-        this.el.debug =
-          this.el.container.getElementsByClassName(
-            'resizable__debug'
-          )?.[0] ?? null;
-        this.isDebug = this.el.debug !== null;
-        this.debug().render();
-      },
-      update: () => {
-        if (!this.el.debug || !this.isDebug) {
-          return;
-        }
-        const update = JSON.stringify(this.data, null, 2);
-        // If no child nodes, add a pre element
-        if (this.el.debug.firstChild) {
-          this.el.debug.firstChild.textContent = update;
-        }
-      },
-      render: () => {
-        if (!this.el.debug) {
-          return;
-        }
-        // Build snap points
-        // if (
-        //   this.el.container.getElementsByClassName(
-        //     'resizable__debug-snap-point'
-        //   ).length === 0
-        // ) {
-        //   for (let i = 0, m = this.snapPoints.length; i < m; i++) {
-        //     const point = document.createElement('hr');
-        //     point.classList.add('resizable__debug-snap-point');
-        //     // @TODO Custom
-        //     const position = this.direction === 'x' ? 'left' : 'bottom';
-        //     point.style[position] = `${this.snapPoints[i]}px`;
-        //     this.el.container.append(point);
-        //   }
-        // }
-        console.log(this.el.debug?.children, this.el.debug?.childNodes);
-        // First add a pre element to house updates
-        this.el.debug.appendChild(document.createElement('PRE'));
-
-        // Then add a checkbox to toggle debug
-        const toggleDebugElement = document.createElement(
-          'INPUT'
-        ) as HTMLInputElement;
-        toggleDebugElement.type = 'checkbox';
-        toggleDebugElement.checked = true;
-        toggleDebugElement.addEventListener('change', e => {
-          console.log('Do stuff with change', e);
-          this.isDebug = !this.isDebug;
-        });
-
-        this.el.debug.appendChild(toggleDebugElement);
-      },
-    };
-  }
-
   initialiseResize(e: PointerEvent) {
+    if(e.button !== 0) return;
     e.stopPropagation();
     this.data.hasInteracted ||= this.hasInteracted();
+
+    console.log('initialiseResize snapThreshold', this.data.snapThreshold);
 
     if (!this.el.body.classList.contains(Resizable.ACTIVE_BODY_CLASS)) {
       this.el.body.classList.add(Resizable.ACTIVE_BODY_CLASS);
@@ -284,26 +198,13 @@ export class Resizable {
     this.data.expanding = this.data.currentDimension < dimension;
     this.data.currentDimension = dimension;
 
-    // Only calculate percentage if snap points exist and snap is enabled
-    if (this.data.snap && this.snapPoints.length > 0) {
-      for (let i = 0; i < this.snapPoints.length; i++) {
-        if (
-          dimension >= this.snapPoints[i] &&
-          (i === this.snapPoints.length - 1 || dimension < this.snapPoints[i + 1])
-        ) {
-          this.data.currentPercentage = i;
-          break;
-        }
-      }
-    }
-
     const cssDimension = this.direction === 'x' ? 'width' : 'height';
 
     // Apply dimension immediately to the container (not the resizer)
-    if (dimension < this.data.minDimension) {
+    if (dimension - this.data.minDimension <= this.data.snapThreshold) {
       (this.el.container as HTMLElement).style[cssDimension] = `${this.data.minDimension}px`;
       this.onResize?.(this.data.minDimension);
-    } else if (dimension > this.data.maxDimension) {
+    } else if (this.data.maxDimension - dimension <= this.data.snapThreshold) {
       (this.el.container as HTMLElement).style[cssDimension] = `${this.data.maxDimension}px`;
       this.onResize?.(this.data.maxDimension);
     } else {
@@ -313,7 +214,7 @@ export class Resizable {
   }
 
   /**
-   * Method for handling the stop of the resize, and animating to closest|next snap point
+   * Method for handling the stop of the resize.
    */
   stopResize() {
     if (this.el.body.classList.contains(Resizable.ACTIVE_BODY_CLASS)) {
@@ -326,28 +227,6 @@ export class Resizable {
       this.data.prevDimension = parseFloat(
         this.data.currentDimension.toFixed(2)
       );
-      if (this.data.snap) {
-        let snapTo: number = this.data.currentDimension;
-        if (this.data.snap === 'closest') {
-          snapTo = this.snapPoints.reduce((prev, curr) =>
-            Math.abs(curr - this.data.currentDimension) <
-            Math.abs(prev - this.data.currentDimension)
-              ? curr
-              : prev
-          );
-        } else if (this.data.snap === 'next') {
-          const isUp = this.data.currentDimension > this.data.prevDimension;
-          snapTo =
-            this.snapPoints[
-              isUp
-                ? this.data.currentPercentage + 1
-                : this.data.currentPercentage
-            ];
-        }
-        const cssDimension = this.direction === 'x' ? 'width' : 'height';
-        (this.el.container as HTMLElement).style[cssDimension] = `${snapTo}px`;
-        this.data.currentDimension = snapTo;
-      }
     }
     window.removeEventListener('pointermove', this.resize);
   }
@@ -358,6 +237,8 @@ export class Resizable {
     window.removeEventListener('pointermove', this.resize);
     window.removeEventListener('pointerup', this.stopResize);
     this.el.body.removeEventListener('pointerleave', this.stopResize);
+    this.data.hasInteracted = false;
+    this.onResize = undefined;
   }
 }
 

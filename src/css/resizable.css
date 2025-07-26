@@ -18,7 +18,7 @@ body.resize-in-progress {
   }
 
   .resizable__resizer-content {
-    overflow: auto;
+   
     height: 100%;
     width: 100%;
   }
