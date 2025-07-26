@@ -5,6 +5,8 @@ use crate::models::config::{Config, ConfigManager};
 use shared::constants::LEMPIFY_SUDOERS_PATH;
 use tauri::State;
 
+use shared::osascript;
+
 #[tauri::command]
 pub async fn trust_lempify(config_manager: State<'_, ConfigManager>) -> Result<Config, String> {
     let app_path =
@@ -26,42 +28,14 @@ pub async fn trust_lempify(config_manager: State<'_, ConfigManager>) -> Result<C
     fs::write(&temp_file, sudoers_content)
         .map_err(|e| format!("Failed to write temporary file: {}", e))?;
 
-    #[cfg(target_os = "macos")]
-    let output = {
-        let script = format!(
-            "do shell script \"mv {temp_file} {sudoers_path} && chown root:wheel {sudoers_path} && chmod 440 {sudoers_path}\" with administrator privileges",
+    osascript::run(
+        &format!(
+            "mv {temp_file} {sudoers_path} && chown root:wheel {sudoers_path} && chmod 440 {sudoers_path}",
             temp_file = temp_file.to_str().unwrap(),
             sudoers_path = LEMPIFY_SUDOERS_PATH
-        );
-        Command::new("osascript")
-            .args(["-e", &script])
-            .output()
-            .map_err(|e| format!("Failed to execute osascript: {}", e))?
-    };
-
-    #[cfg(target_os = "linux")]
-    let output = {
-        // On Linux, use pkexec
-        Command::new("pkexec")
-            .args([
-                "sh",
-                "-c",
-                &format!(
-                    "mv {temp_file} {sudoers_path} && chown root:root {sudoers_path} && chmod 440 {sudoers_path}",
-                    temp_file = temp_file.to_str().unwrap(),
-                    sudoers_path = LEMPIFY_SUDOERS_PATH
-                ),
-            ])
-            .output()
-            .map_err(|e| format!("Failed to execute pkexec: {}", e))?
-    };
-
-    if !output.status.success() {
-        return Err(format!(
-            "Failed to setup sudoers file: {}",
-            String::from_utf8_lossy(&output.stderr)
-        ));
-    }
+        ),
+        Some("Lempify needs permission to perform Trust Handshake. Please enter your macOS password."),
+    ).map_err(|e| format!("Failed to execute osascript: {}", e))?;
 
     // Try to run a simple sudo command
     let output = Command::new("sudo")
@@ -83,12 +57,10 @@ pub async fn trust_lempify(config_manager: State<'_, ConfigManager>) -> Result<C
 #[tauri::command]
 pub async fn untrust_lempify(config_manager: State<'_, ConfigManager>) -> Result<Config, String> {
     let sudoers_path = LEMPIFY_SUDOERS_PATH;
-    
+
     #[cfg(target_os = "macos")]
     let output = {
-        let script = format!(
-            "do shell script \"rm {sudoers_path}\" with administrator privileges"
-        );
+        let script = format!("do shell script \"rm {sudoers_path}\" with administrator privileges");
         Command::new("osascript")
             .args(["-e", &script])
             .output()
@@ -98,11 +70,7 @@ pub async fn untrust_lempify(config_manager: State<'_, ConfigManager>) -> Result
     #[cfg(target_os = "linux")]
     let output = {
         Command::new("pkexec")
-            .args([
-                "sh",
-                "-c",
-                &format!("rm {sudoers_path}"),
-            ])
+            .args(["sh", "-c", &format!("rm {sudoers_path}")])
             .output()
             .map_err(|e| format!("Failed to execute pkexec: {}", e))?
     };

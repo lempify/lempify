@@ -108,7 +108,7 @@ impl FileSudoCommand {
     pub fn run(self) -> Result<(), String> {
         match self.operation {
             FileOperation::Write => self.run_write(),
-            FileOperation::Remove => self.run_remove(),
+            FileOperation::Remove => self.run_remove(), 
         }
     }
     
@@ -148,30 +148,19 @@ impl FileSudoCommand {
             #[cfg(target_os = "macos")]
             {
                 let script = format!(
-                    "do shell script \"mv {temp_file} {target_path}\" with administrator privileges",
+                    "mv {temp_file} {target_path}",
                     temp_file = temp_path,
                     target_path = target_path_str
                 );
-                crate::osascript::run(
+                osascript::run(
                     &script,
                     Some("Lempify needs permission to write configuration file. Please enter your macOS password."),
                 )?;
             }
 
-            #[cfg(target_os = "linux")]
-            {
-                let output = std::process::Command::new("pkexec")
-                    .args(["sh", "-c", &format!("mv {temp_file} {target_path}", temp_file = temp_path, target_path = target_path_str)])
-                    .output()
-                    .map_err(|e| format!("Failed to execute pkexec: {}", e))?;
-
-                if !output.status.success() {
-                    return Err(format!(
-                        "Failed to write file: {}",
-                        String::from_utf8_lossy(&output.stderr)
-                    ));
-                }
-            }
+            // #[cfg(target_os = "linux")]
+            // {
+            // }
         }
         
         Ok(())
@@ -202,10 +191,10 @@ impl FileSudoCommand {
             #[cfg(target_os = "macos")]
             {
                 let script = format!(
-                    "do shell script \"rm {target_path}\" with administrator privileges",
+                    "rm {target_path}",
                     target_path = target_path_str
                 );
-                crate::osascript::run(
+                osascript::run(
                     &script,
                     Some("Lempify needs permission to remove configuration file. Please enter your macOS password."),
                 )?;
