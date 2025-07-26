@@ -2,8 +2,13 @@
 @import './bg-animation.css';
 @import './animations.css';
 @import './resizable.css';
+@import './dialog.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --container-sidebar-min: 66px;
+}
 
 :root {
   --lempify-primary: rgb(248, 148, 55);

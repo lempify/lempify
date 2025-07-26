@@ -3,11 +3,13 @@ import { useLayoutEffect, useRef } from 'react';
 export default function Dialog({
   children,
   open,
-  onClose,
+  onClose = () => {},
+  className,
 }: {
   children: React.ReactNode;
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
+  className?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
 
@@ -26,10 +28,10 @@ export default function Dialog({
     <dialog
       onClick={handleClose}
       ref={dialog}
-      className='backdrop:bg-gray-100/70 dark:backdrop:bg-gray-900/70'
+      className={className}
     >
       <div
-        className='flex flex-col gap-2 p-4'
+        className='flex flex-col gap-2 p-4 h-full'
         onClick={e => e.stopPropagation()}
       >
         {children}
