@@ -21,6 +21,8 @@ pub struct AppFileSystem {
     pub config_dir: PathBuf,
     /** `~/Library/Application Support/Lempify/site-types` */
     pub site_types_dir: PathBuf,
+    /** `~/Library/Application Support/Lempify/cache/` */
+    pub cache_dir: PathBuf,
 }
 
 impl AppFileSystem {
@@ -65,6 +67,8 @@ impl AppFileSystem {
         } else {
             PathBuf::from("/etc/nginx/ssl")
         };
+
+        let cache_dir = config_dir.join("cache");
         
         Ok(Self {
             app_dir,
@@ -75,6 +79,7 @@ impl AppFileSystem {
             app_stubs_dir,
             config_dir,
             site_types_dir,
+            cache_dir,
         })
     }
 
@@ -117,7 +122,7 @@ impl AppFileSystem {
         Ok(())
     }
 
-    pub fn load_json(&self, filename: &str) -> Result<String, String> {
+    pub fn load_config_json(&self, filename: &str) -> Result<String, String> {
         let config_path = self.config_dir.join(filename);
 
         let config = if !config_path.exists() {
@@ -128,10 +133,6 @@ impl AppFileSystem {
         };
 
         Ok(config)
-    }
-
-    pub fn get_config_dir(&self) -> Result<PathBuf, String> {
-        Ok(self.config_dir.clone())
     }
 
     pub fn create_dir_all(&self, path: &Path) -> Result<(), String> {

@@ -148,7 +148,7 @@ impl Service for PhpService {
             .get_service_socket_dir_no_spaces()
             .join(format!("php-{}.sock", self.version));
         if let Some(socket_dir) = socket_path.parent() {
-            std::fs::create_dir_all(socket_dir).map_err(|e| {
+            self.config.file_system.create_dir_all(socket_dir).map_err(|e| {
                 ServiceError::ServiceError(format!("Failed to create socket directory: {}", e))
             })?;
         }

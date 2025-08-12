@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf};
 
 use crate::helpers::utils::copy_dir_recursive;
 use shared::file_system::AppFileSystem;
-use shared::utils::FileSudoCommand;
+use shared::utils_legacy::FileSudoCommand;
 
 #[derive(Debug)]
 struct Stub {

@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::{constants::HOSTS_PATH, utils::SudoCommand};
+use crate::{constants::HOSTS_PATH, utils_legacy::SudoCommand};
 
 /**
  * List all host entries from the hosts file.

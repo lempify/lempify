@@ -48,7 +48,7 @@ pub struct WordPressPackages {
 pub async fn versions() -> Result<WordPressVersionResponse, String> {
     let app_fs = AppFileSystem::new().map_err(|e| e.to_string())?;
     // Check if the cache is valid.
-    let cache_path = app_fs.config_dir.join("cache").join("wordpress-versions.json");
+    let cache_path = app_fs.cache_dir.join("wordpress-versions.json");
 
     if cache_path.exists() {
         let cache_file = File::open(&cache_path).map_err(|e| e.to_string())?;
@@ -65,12 +65,10 @@ pub async fn versions() -> Result<WordPressVersionResponse, String> {
 
     println!("Updating WP VERSIONS cache");
 
-    // Get the response
     let response = reqwest::get(constants::WP_VERSION_ENDPOINT)
         .await
         .map_err(|e| e.to_string())?;
-
-    // Parse the response using serde
+    
     let versions = response
         .json::<WordPressVersionResponse>()
         .await

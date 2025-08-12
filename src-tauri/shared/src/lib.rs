@@ -1,5 +1,6 @@
 pub mod ssl;
 pub mod brew;
+pub mod utils_legacy;
 pub mod utils;
 pub mod hosts;
 pub mod nginx;
