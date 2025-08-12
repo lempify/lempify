@@ -1,4 +1,3 @@
-use std::fs;
 use tauri::command;
 
 use shared::{brew, file_system::AppFileSystem, hosts::entry_exists, ssl};
@@ -8,10 +7,9 @@ use crate::{helpers::stubs::create_nginx_config_stub, models::service::SiteInfo}
 #[command]
 pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
     let app_fs = AppFileSystem::new()?;
-    let nginx_sites_enabled_dir = app_fs.nginx_sites_enabled_dir;
 
-    if !nginx_sites_enabled_dir.exists() {
-        fs::create_dir_all(&nginx_sites_enabled_dir)
+    if !app_fs.nginx_sites_enabled_dir.exists() {
+        app_fs.create_dir_all(&app_fs.nginx_sites_enabled_dir)
             .map_err(|e| format!("Failed to create nginx config directory: {}", e))?;
     }
 

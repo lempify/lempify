@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use crate::{file_system::AppFileSystem, utils::FileSudoCommand};
+use crate::{file_system::AppFileSystem, utils_legacy::FileSudoCommand};
 
 /// Add Lempify include to the main Nginx config
 pub fn add_lempify_to_conf() -> Result<(), String> {

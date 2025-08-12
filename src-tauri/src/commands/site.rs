@@ -13,7 +13,7 @@ use crate::{
     site_types::{install, uninstall, wordpress},
 };
 
-use shared::{brew, file_system::AppFileSystem, ssl, utils::FileSudoCommand};
+use shared::{brew, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand};
 
 /// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
@@ -28,17 +28,15 @@ pub async fn create_site(
     config_manager: State<'_, ConfigManager>,
     payload: SiteCreatePayload,
 ) -> Result<Site, String> {
+
+    let app_fs = AppFileSystem::new()?;
     
-    let sites_dir = AppFileSystem::new()?.sites_dir;
-
-    // println!("Site Type Config: {:#?}", payload.site_type_config);
-
     let domain = &payload.domain.to_lowercase();
     let (domain_name, domain_tld) = 
         domain.split_once('.')
             .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
         
-    let site_path = sites_dir.join(&domain);
+    let site_path = app_fs.sites_dir.join(&domain);
 
     let site_type = &payload.site_type;
 
@@ -53,7 +51,7 @@ pub async fn create_site(
     }
 
     // Create the site directory
-    fs::create_dir_all(&site_path)
+    app_fs.create_dir_all(&site_path)
         .map_err(|e| format!("Failed to create site directory: {}", e))?;
 
     // Create site object and store in config.json
@@ -93,7 +91,6 @@ pub async fn create_site(
         None
     };
 
-    
     // Install Site Type
     if site_type == "wordpress" {
         // Install WordPress if it doesn't exist.

@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use shared::{brew, file_system::AppFileSystem, osascript, ssl, utils};
+use shared::{brew, file_system::AppFileSystem, osascript, ssl, utils_legacy};
 
 use crate::models::config::ConfigManager;
 
 pub async fn secure_site(domain: &str, config_manager: &ConfigManager) -> Result<HashMap<String, String>, String> {
     // @TODO move to function
-    if !utils::is_bin_installed("mkcert").unwrap_or(false) {
+    if !utils_legacy::is_bin_installed("mkcert").unwrap_or(false) {
         crate::helpers::service_utils::install_via_brew("mkcert")
             .map_err(|e| format!("Failed to install mkcert: {}", e))?;
         let output = std::process::Command::new("mkcert")

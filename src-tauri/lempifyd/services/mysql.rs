@@ -30,6 +30,7 @@ impl MysqlService {
         })
     }
 
+    #[allow(dead_code)]
     fn generate_mysql_config(&self) -> String {
         let socket_path = self.isolation.get_socket_path();
         let log_path = self.isolation.get_log_path();

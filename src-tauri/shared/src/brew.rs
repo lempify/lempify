@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-use crate::utils::is_bin_installed;
+use crate::utils_legacy::is_bin_installed;
 
 pub struct BrewCommand<'a> {
     args: Vec<&'a str>,
