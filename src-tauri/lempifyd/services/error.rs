@@ -25,4 +25,7 @@ pub enum ServiceError {
 
     #[error("Service not running: {0}")]
     NotRunning(String),
+
+    #[error("Service already installed: {0}")]
+    AlreadyInstalled(String),
 } 

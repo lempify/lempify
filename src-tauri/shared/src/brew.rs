@@ -123,6 +123,20 @@ pub fn install_service(service: &str) -> Result<(), String> {
 /**
  * Check if a service is installed
  */
+pub fn is_formulae_installed(bin: &str) -> bool {
+    Command::new("brew")
+        .arg("list")
+        // .arg("--formulae")
+        .output()
+        .map_or(false, |output| {
+            let output_str = String::from_utf8_lossy(&output.stdout);
+            output_str.lines().any(|line| line.contains(bin))
+        })
+}
+
+/**
+ * Check if a service is installed
+ */
 pub fn is_service_installed(bin: &str) -> bool {
     Command::new("brew")
         .arg("services")
