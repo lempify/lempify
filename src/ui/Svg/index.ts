@@ -19,3 +19,7 @@ export { default as SvgPhp } from './SvgPhp';
 export { default as SvgSpinner } from './SvgSpinner';
 export { default as SvgChevron } from './SvgChevron';
 export { default as SvgLock } from './SvgLock';
+
+export { default as SvgSuccess } from './SvgSuccess';
+export { default as SvgWarning } from './SvgWarning';
+export { default as SvgError } from './SvgError';

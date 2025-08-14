@@ -1,17 +1,18 @@
 import { useState } from 'react';
 
-import { Statuses, ServiceType } from '../types';
+import { Statuses, ServiceTypes, ToolTypes } from '../types';
 
 import Dialog from './Dialog';
 import Button from './Button';
 import Loader from './Loader';
-import { SvgNginx, SvgMysql, SvgPhp } from './Svg';
-import { ServiceStatus, useLempifyd } from '../context/LempifydContext';
+import { SvgNginx, SvgMysql, SvgPhp, SvgSystem } from './Svg';
+import { Status, useLempifyd } from '../context/LempifydContext';
 
 const icons = {
   nginx: SvgNginx,
   mysql: SvgMysql,
   php: SvgPhp,
+  default: SvgSystem,
 };
 
 const ServicesStatusIcon = ({
@@ -22,7 +23,7 @@ const ServicesStatusIcon = ({
   running: boolean;
   installed: boolean;
 }) => {
-  const Icon = icons[name as keyof typeof icons];
+  const Icon = icons[name as keyof typeof icons] ?? icons.default;
   return (
     <p className='flex items-center mb-2 gap-2 text-sm text-neutral-700 dark:text-neutral-300'>
       <span
@@ -40,8 +41,8 @@ export default function HeaderServicesItem({
   service,
   emit,
 }: {
-  service: ServiceStatus;
-  emit: (name: ServiceType, action: string) => Promise<void>;
+  service: Status;
+  emit: (name: ServiceTypes | ToolTypes, action: string) => Promise<void>;
 }) {
   const [repairStatus, setStatuses] = useState<Statuses>('idle');
   const { dispatch } = useLempifyd();
@@ -103,11 +104,11 @@ export default function HeaderServicesItem({
       </Dialog>
       <ServicesStatusIcon
         name={service.name}
-        running={service.is_running ?? false}
-        installed={service.is_installed ?? false}
+        running={service.isRunning ?? false}
+        installed={service.isInstalled ?? false}
       />
       <div className='flex gap-[1px]'>
-        {!service.is_installed ? (
+        {!service.isInstalled ? (
           <Button
             className={btnCss}
             onClick={() => emit(service.name, 'install')}
@@ -116,7 +117,7 @@ export default function HeaderServicesItem({
           </Button>
         ) : (
           <>
-            {service.is_installed && !service.is_running && (
+            {service.isInstalled && !service.isRunning && (
               <Button
                 className={btnCss}
                 onClick={() => emit(service.name, 'start')}
@@ -124,7 +125,7 @@ export default function HeaderServicesItem({
                 Start
               </Button>
             )}
-            {service.is_running && (
+            {service.isRunning && (
               <Button
                 className={btnCss}
                 onClick={() => emit(service.name, 'stop')}

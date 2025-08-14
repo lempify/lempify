@@ -41,6 +41,8 @@ pub struct Config {
     pub sites: Vec<Site>,
     #[serde(default = "Config::check_trusted")]
     pub trusted: bool,
+    #[serde(default = "Config::check_installed")]
+    pub installed: bool,
     #[serde(default = "Config::get_version")]
     pub version: String,
     #[serde(default)]
@@ -52,6 +54,7 @@ impl Default for Config {
         Self {
             sites: Vec::new(),
             version: env!("CARGO_PKG_VERSION").to_string(),
+            installed: false,
             trusted: Self::check_trusted(),
             settings: Settings::default(),
         }
@@ -61,6 +64,11 @@ impl Default for Config {
 impl Config {
     fn check_trusted() -> bool {
         Path::new(LEMPIFY_SUDOERS_PATH).exists()
+    }
+    
+    fn check_installed() -> bool {
+        let config = Config::default();
+        config.installed
     }
 
     pub fn refresh_trusted_status(&mut self) {

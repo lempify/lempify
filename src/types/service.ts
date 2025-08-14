@@ -1,7 +1,18 @@
-export type ServiceType = 'php' | 'nginx' | 'mysql';
+import { SERVICES, TOOLS } from '../constants';
+
+export type ServiceTypes = keyof typeof SERVICES;
 
 export type ServiceStatus = {
-  name: ServiceType;
+  name: ServiceTypes;
+  installed: boolean;
+  version?: string;
+  running: boolean;
+};
+
+export type ToolTypes = keyof typeof TOOLS;
+
+export type ToolStatus = {
+  name: ToolTypes;
   installed: boolean;
   version?: string;
   running: boolean;

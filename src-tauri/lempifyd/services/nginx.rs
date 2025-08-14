@@ -1,21 +1,18 @@
 use shared::brew;
 use shared::file_system::AppFileSystem;
-use std::fs;
 
-use crate::models::Service;
+use crate::models::Service as BaseService;
 use crate::services::config::ServiceConfig;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
 
-const NGINX_STUB_PATH: &str = "domain_name-domain_tld.nginx.conf";
-
-pub struct NginxService {
+pub struct Service {
     version: String,
     isolation: ServiceIsolation,
     config: ServiceConfig,
 }
 
-impl NginxService {
+impl Service {
     pub fn new(version: &str) -> Result<Self, ServiceError> {
         let file_system =
             AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
@@ -29,17 +26,6 @@ impl NginxService {
         })
     }
 
-    // Generate NGINX config from stub, filling in variables
-    fn generate_site_config(&self, domain: &str) -> Result<String, ServiceError> {
-        let stub = fs::read_to_string(self.config.file_system.app_stubs_dir.join(NGINX_STUB_PATH))
-            .map_err(|e| ServiceError::ConfigError(format!("Failed to read NGINX stub: {}", e)))?;
-        let config = stub
-            .replace("{{DOMAIN}}", domain)
-            // If you want to replace the PHP socket path, add another .replace() here
-            ;
-        Ok(config)
-    }
-
     // Setup default NGINX configuration
     fn setup_default(&self) -> Result<(), ServiceError> {
         self.isolation.ensure_paths()?;
@@ -48,17 +34,29 @@ impl NginxService {
     }
 }
 
-impl Service for NginxService {
+impl BaseService for Service {
     fn name(&self) -> &str {
         "nginx"
+    }
+
+    fn human_name(&self) -> &str {
+        "NGINX"
+    }
+
+    fn is_required(&self) -> bool {
+        true
+    }
+
+    fn get_type(&self) -> &str {
+        "service"
     }
 
     fn version(&self) -> &str {
         &self.version
     }
 
-    fn isolation(&self) -> &ServiceIsolation {
-        &self.isolation
+    fn isolation(&self) -> Option<&ServiceIsolation> {
+        Some(&self.isolation)
     }
 
     fn is_installed(&self) -> bool {

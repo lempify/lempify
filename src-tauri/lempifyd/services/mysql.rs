@@ -1,18 +1,18 @@
 use shared::brew;
 use shared::file_system::AppFileSystem;
 
-use crate::models::Service;
+use crate::models::Service as BaseService;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
 use crate::services::config::ServiceConfig;
 
-pub struct MysqlService {
+pub struct Service {
     version: String,
     isolation: ServiceIsolation,
     config: ServiceConfig,
 }
 
-impl MysqlService {
+impl Service {
     pub fn new(version: &str) -> Result<Self, ServiceError> {
         let file_system = AppFileSystem::new()
             .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
@@ -118,17 +118,29 @@ max_heap_table_size = 32M
     }
 }
 
-impl Service for MysqlService {
+impl BaseService for Service {
     fn name(&self) -> &str {
         "mysql"
+    }
+
+    fn human_name(&self) -> &str {
+        "MySQL"
+    }
+
+    fn is_required(&self) -> bool {
+        true
+    }
+
+    fn get_type(&self) -> &str {
+        "service"
     }
 
     fn version(&self) -> &str {
         &self.version
     }
 
-    fn isolation(&self) -> &ServiceIsolation {
-        &self.isolation
+    fn isolation(&self) -> Option<&ServiceIsolation> {
+        Some(&self.isolation)
     }
 
     fn is_installed(&self) -> bool {

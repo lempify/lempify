@@ -1,19 +1,20 @@
 use shared::brew;
 use shared::file_system::AppFileSystem;
 
-use crate::models::Service;
+use crate::models::Service as BaseService;
 use crate::services::config::ServiceConfig;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
 
-pub struct PhpService {
+pub struct Service {
     version: String,
     isolation: ServiceIsolation,
     config: ServiceConfig,
+    #[allow(dead_code)]
     supported_versions: Vec<&'static str>,
 }
 
-impl PhpService {
+impl Service {
     pub fn new(version: &str) -> Result<Self, ServiceError> {
         let file_system =
             AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
@@ -76,17 +77,29 @@ pm.max_spare_servers = 3
     }
 }
 
-impl Service for PhpService {
+impl BaseService for Service {
     fn name(&self) -> &str {
         "php"
+    }
+
+    fn human_name(&self) -> &str {
+        "PHP"
+    }
+
+    fn is_required(&self) -> bool {
+        true
+    }
+
+    fn get_type(&self) -> &str {
+        "service"
     }
 
     fn version(&self) -> &str {
         &self.version
     }
 
-    fn isolation(&self) -> &ServiceIsolation {
-        &self.isolation
+    fn isolation(&self) -> Option<&ServiceIsolation> {
+        Some(&self.isolation)
     }
 
     fn is_installed(&self) -> bool {

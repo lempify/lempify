@@ -6,3 +6,4 @@ pub mod lempifyd;
 pub mod sudoers;
 pub mod debug;
 pub mod window;
+// pub mod install;

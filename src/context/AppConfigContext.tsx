@@ -17,6 +17,7 @@ import { Site } from '../types';
 type AppConfig = {
   trusted: boolean;
   sites: Site[];
+  installed: boolean;
   settings?: {
     mysql_host: string;
     mysql_user: string;
@@ -39,6 +40,7 @@ const AppConfigContext = createContext<AppConfigContextType | undefined>(
 const defaultConfig: AppConfig = {
   trusted: false,
   sites: [],
+  installed: false,
   settings: {
     mysql_host: 'localhost',
     mysql_user: 'root',
@@ -85,6 +87,8 @@ export const appConfigReducer = (state: AppConfig, action: any): AppConfig => {
       return action.config;
     case 'set_settings':
       return { ...state, settings: action.config.settings };
+    case 'set_installed':
+      return { ...state, installed: action.installed };
     default:
       return state;
   }

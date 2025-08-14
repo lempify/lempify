@@ -4,13 +4,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum ServiceType {
+pub enum ServiceTypes {
     Php,
     Mysql,
     Nginx,
 }
 
-impl fmt::Display for ServiceType {
+impl fmt::Display for ServiceTypes {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }

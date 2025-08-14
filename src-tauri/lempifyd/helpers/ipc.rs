@@ -22,11 +22,15 @@ pub struct DaemonResponse {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ServiceStatus {
     pub name: String,
     pub is_running: bool,
     pub is_installed: bool,
     pub version: String,
+    pub formulae_type: String,
+    pub is_required: bool,
+    pub human_name: String,
 }
 
 #[derive(Debug)]
@@ -36,6 +40,7 @@ enum ServiceAction {
     Restart,
     IsRunning,
     IsInstalled,
+    Install,
 }
 
 impl ServiceAction {
@@ -46,6 +51,7 @@ impl ServiceAction {
             "restart" => Some(ServiceAction::Restart),
             "is_running" => Some(ServiceAction::IsRunning),
             "is_installed" => Some(ServiceAction::IsInstalled),
+            "install" => Some(ServiceAction::Install),
             _ => None,
         }
     }
@@ -62,6 +68,9 @@ impl ServiceAction {
             ServiceAction::Restart => {
                 service.restart()?;
             },
+            ServiceAction::Install => {
+                service.install()?;
+            },
             ServiceAction::IsRunning | ServiceAction::IsInstalled => {
                 // No action needed for status checks
             },
@@ -72,7 +81,10 @@ impl ServiceAction {
             name: service.name().to_string(),
             is_running: service.is_running(),
             is_installed: service.is_installed(),
-            version: service.version().to_string()
+            version: service.version().to_string(),
+            formulae_type: service.get_type().to_string(),
+            is_required: service.is_required(),
+            human_name: service.human_name().to_string(),
         };
         
         Ok(status)

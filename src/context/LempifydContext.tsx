@@ -13,7 +13,12 @@ import {
 } from 'react';
 
 import { useInvoke } from '../hooks/useInvoke';
-import { InvokeStatus, ServiceType } from '../types/service';
+import {
+  InvokeStatus,
+  ServiceTypes,
+  ToolTypes,
+} from '../types/service';
+import { SERVICES, TOOLS } from '../constants';
 
 type LempifydEvent = {
   name: string;
@@ -26,12 +31,14 @@ type LempifydResponse = {
   result: any;
 };
 
-type LempifydServices = Record<ServiceType, ServiceStatus>;
+type LempifydServices = Record<ServiceTypes, Status>;
+type LempifydTools = Record<ToolTypes, Status>;
 
 type LempifydState = {
   events: Array<LempifydEvent & { timestamp: number }>;
   responses: Array<LempifydResponse & { timestamp: number }>;
   services: LempifydServices;
+  tools: LempifydTools;
   isAllServicesRunning: boolean;
   servicesCount: number;
   runningServicesCount: number;
@@ -49,58 +56,35 @@ type LempifydAction =
   | {
       type: 'SERVICE_ERROR';
       payload: {
-        name: ServiceType;
+        name: ServiceTypes | ToolTypes;
         lastError: string;
       };
     }
   | {
       type: 'SET_PENDING_ACTION';
       payload: {
-        name: ServiceType;
+        name: ServiceTypes | ToolTypes;
         pending: boolean;
       };
     };
 
-export type ServiceStatus = {
-  name: ServiceType;
-  is_running: boolean | null;
-  is_installed: boolean | null;
-  version: string | null;
-  lastError: string;
-  pendingAction: boolean;
-};
-
-const defaultServices = {
-  php: {
-    name: 'php' as ServiceType,
-    is_running: null,
-    is_installed: null,
-    version: null,
-    lastError: '',
-    pendingAction: false,
-  },
-  nginx: {
-    name: 'nginx' as ServiceType,
-    is_running: null,
-    is_installed: null,
-    version: null,
-    lastError: '',
-    pendingAction: false,
-  },
-  mysql: {
-    name: 'mysql' as ServiceType,
-    is_running: null,
-    is_installed: null,
-    version: null,
-    lastError: '',
-    pendingAction: false,
-  },
+export type Status = {
+  name: string;
+  isRequired: boolean;
+  humanName: string;
+  isRunning?: boolean;
+  isInstalled?: boolean;
+  version?: string;
+  lastError?: string;
+  pendingAction?: boolean;
+  formulaeType?: string;
 };
 
 const initialState: LempifydState = {
   events: [],
   responses: [],
-  services: defaultServices,
+  services: { ...SERVICES },
+  tools: { ...TOOLS },
   isAllServicesRunning: false,
   servicesCount: 0,
   runningServicesCount: 0,
@@ -123,47 +107,92 @@ function lempifydReducer(
         ],
       };
     case 'UPDATE_SERVICE_STATUS':
-      const updatedServices = {
-        ...state.services,
-        [action.payload.name]: {
-          ...state.services[action.payload.name as ServiceType],
-          ...action.payload.result,
-        },
-      };
+      let updatedServices = state.services;
+      let updatedTools = state.tools;
+
+      if (action.payload.result.formulaeType === 'service') {
+        updatedServices = {
+          ...state.services,
+          [action.payload.name]: {
+            ...state.services[action.payload.name as ServiceTypes],
+            ...action.payload.result,
+          },
+        };
+      } else if (action.payload.result.formulaeType === 'tool') {
+        updatedTools = {
+          ...state.tools,
+          [action.payload.name]: {
+            ...state.tools[action.payload.name as ToolTypes],
+            ...action.payload.result,
+          },
+        };
+      }
 
       return {
         ...state,
         services: updatedServices,
+        tools: updatedTools,
         isAllServicesRunning: Object.values(updatedServices).every(
-          service => service.is_running
+          service => service?.isRunning ?? false
         ),
         servicesCount: Object.values(updatedServices).length,
         runningServicesCount: Object.values(updatedServices).filter(
-          service => service.is_running
+          service => service?.isRunning ?? false
         ).length,
       };
     case 'SERVICE_ERROR':
-      return {
-        ...state,
-        services: {
-          ...state.services,
-          [action.payload.name]: {
-            ...state.services[action.payload.name],
-            lastError: action.payload.lastError,
+      if (action.payload.name in state.tools) {
+        return {
+          ...state,
+          tools: {
+            ...state.tools,
+            [action.payload.name]: {
+              ...state.tools[action.payload.name as ToolTypes],
+              lastError: action.payload.lastError,
+            },
           },
-        },
-      };
+        };
+      } else if (action.payload.name in state.services) {
+        return {
+          ...state,
+          services: {
+            ...state.services,
+            [action.payload.name]: {
+              ...state.services[action.payload.name as ServiceTypes],
+              lastError: action.payload.lastError,
+            },
+          },
+        };
+      }
+      return state;
     case 'SET_PENDING_ACTION':
-      return {
-        ...state,
-        services: {
-          ...state.services,
-          [action.payload.name]: {
-            ...state.services[action.payload.name],
-            pendingAction: action.payload.pending,
+      const isService = action.payload.name in state.services;
+      const isTool = action.payload.name in state.tools;
+
+      if (isService) {
+        return {
+          ...state,
+          services: {
+            ...state.services,
+            [action.payload.name as ServiceTypes]: {
+              ...state.services[action.payload.name as ServiceTypes],
+              pendingAction: action.payload.pending,
+            },
           },
-        },
-      };
+        };
+      } else if (isTool) {
+        return {
+          ...state,
+          tools: {
+            ...state.tools,
+            [action.payload.name as ToolTypes]: {
+              ...state.tools[action.payload.name as ToolTypes],
+              pendingAction: action.payload.pending,
+            },
+          },
+        };
+      }
+      return state;
     default:
       return state;
   }
@@ -211,7 +240,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
 
           try {
             const payload = JSON.parse(event.payload);
-            let name = payload.name as ServiceType;
+            let name = payload.name as ServiceTypes;
 
             // Remove pending action first
             dispatch({
@@ -232,6 +261,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
               });
               return;
             }
+            console.log({payload});
             dispatch({
               type: 'UPDATE_SERVICE_STATUS',
               payload,
@@ -275,11 +305,11 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
  * @example
  * ```tsx
  * const { emit, state } = useLempifyd();
- * emit("php", "is_installed");
+ * emit("php", "isInstalled");
  * ```
  */
 export function useLempifyd(): {
-  emit: (name: ServiceType, action: string) => Promise<void>;
+  emit: (name: ServiceTypes | ToolTypes, action: string) => Promise<void>;
   state: LempifydState;
   emitStatus: InvokeStatus;
   dispatch: React.Dispatch<LempifydAction>;
@@ -293,7 +323,7 @@ export function useLempifyd(): {
   const { invoke, invokeStatus } = useInvoke();
   const { state, dispatch } = context;
 
-  const emit = async (name: ServiceType, action: string) => {
+  const emit = async (name: ServiceTypes | ToolTypes, action: string) => {
     try {
       dispatch({
         type: 'SET_PENDING_ACTION',
@@ -316,7 +346,7 @@ export function useLempifyd(): {
     emitStatus: invokeStatus,
     dispatch,
     isActionPending: Object.values(state.services).some(
-      service => service.pendingAction
+      service => service?.pendingAction ?? false
     ),
   };
 }
