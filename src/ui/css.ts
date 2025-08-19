@@ -18,9 +18,10 @@ export const pageSection =
   'relative';
 
 export const buttonPrimary = `
-  bg-neutral-700 hover:bg-neutral-900 
+  bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-900
+  border border-neutral-200 dark:border-neutral-900
   
-  text-white hover:text-[var(--lempify-secondary)] dark:hover:text-neutral-300 
+  text-black hover:text-neutral-800 dark:text-neutral-200 dark:hover:text-white
 
   px-4 
   py-2 
@@ -31,5 +32,8 @@ export const buttonPrimary = `
 export const headerGradient =
   'bg-gradient-to-r from-neutral-700 to-neutral-900 dark:from-white dark:to-neutral-300';
 
-export const primaryGradientToLeft =
+  export const primaryGradientToLeft =
   'bg-gradient-to-l from-[var(--lempify-secondary)] to-[var(--lempify-primary)] dark:from-[var(--lempify-secondary)] dark:to-[var(--lempify-primary)]';
+
+  export const monoGradientToLeft =
+  'bg-gradient-to-l from-neutral-900 to-black dark:from-neutral-100 dark:to-white';

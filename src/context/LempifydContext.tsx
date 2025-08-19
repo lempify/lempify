@@ -56,14 +56,14 @@ type LempifydAction =
   | {
       type: 'SERVICE_ERROR';
       payload: {
-        name: ServiceTypes | ToolTypes;
+        name: string;
         lastError: string;
       };
     }
   | {
       type: 'SET_PENDING_ACTION';
       payload: {
-        name: ServiceTypes | ToolTypes;
+        name: string;
         pending: boolean;
       };
     };
@@ -78,6 +78,7 @@ export type Status = {
   lastError?: string;
   pendingAction?: boolean;
   formulaeType?: string;
+  url?: string;
 };
 
 const initialState: LempifydState = {
@@ -261,7 +262,6 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
               });
               return;
             }
-            console.log({payload});
             dispatch({
               type: 'UPDATE_SERVICE_STATUS',
               payload,
@@ -309,7 +309,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
  * ```
  */
 export function useLempifyd(): {
-  emit: (name: ServiceTypes | ToolTypes, action: string) => Promise<void>;
+  emit: (name: string, action: string) => Promise<void>;
   state: LempifydState;
   emitStatus: InvokeStatus;
   dispatch: React.Dispatch<LempifydAction>;
@@ -323,7 +323,7 @@ export function useLempifyd(): {
   const { invoke, invokeStatus } = useInvoke();
   const { state, dispatch } = context;
 
-  const emit = async (name: ServiceTypes | ToolTypes, action: string) => {
+  const emit = async (name: string, action: string) => {
     try {
       dispatch({
         type: 'SET_PENDING_ACTION',

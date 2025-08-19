@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import SvgTriangle from './Svg/SvgTriangle';
 
 export default function Details({
   children,

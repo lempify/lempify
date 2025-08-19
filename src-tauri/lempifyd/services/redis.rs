@@ -21,6 +21,17 @@ impl BaseService for Service {
         "Redis"
     }
 
+    fn url(&self) -> &str {
+        #[cfg(target_os = "macos")]
+        {
+            "https://formulae.brew.sh/formula/redis"
+        }
+        #[cfg(target_os = "linux")]
+        {
+            "https://redis.io/software/"
+        }
+    }
+
     fn get_type(&self) -> &str {
         "service"
     }

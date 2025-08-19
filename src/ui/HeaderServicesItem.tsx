@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Statuses, ServiceTypes, ToolTypes } from '../types';
+import { Statuses } from '../types';
 
 import Dialog from './Dialog';
 import Button from './Button';
@@ -42,7 +42,7 @@ export default function HeaderServicesItem({
   emit,
 }: {
   service: Status;
-  emit: (name: ServiceTypes | ToolTypes, action: string) => Promise<void>;
+  emit: (name: string, action: string) => Promise<void>;
 }) {
   const [repairStatus, setStatuses] = useState<Statuses>('idle');
   const { dispatch } = useLempifyd();

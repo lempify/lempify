@@ -8,12 +8,14 @@ pub trait Service {
     fn human_name(&self) -> &str {
         self.name()
     }
+    fn url(&self) -> &str;
     fn command(&self) -> &str {
         self.name()
     }
     fn version(&self) -> &str {
         ""
     }
+    #[allow(unused)]
     fn isolation(&self) -> Option<&ServiceIsolation> {
         None
     }
@@ -22,13 +24,15 @@ pub trait Service {
     }
     fn get_type(&self) -> &str;
     fn is_installed(&self) -> bool {
-        brew::is_service_installed(self.command())
+        if self.get_type() == "service" {
+            brew::is_service_installed(self.command())
+        } else {
+            brew::is_formulae_installed(self.name())
+        }
     }
-
     fn is_running(&self) -> bool {
         brew::is_service_running(self.command())
     }
-
     fn start(&self) -> Result<bool, ServiceError> {
         if !self.is_installed() {
             return Err(ServiceError::NotInstalled(format!("{}", self.name())));

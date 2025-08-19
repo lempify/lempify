@@ -31,6 +31,7 @@ pub struct ServiceStatus {
     pub formulae_type: String,
     pub is_required: bool,
     pub human_name: String,
+    pub url: String,
 }
 
 #[derive(Debug)]
@@ -85,6 +86,7 @@ impl ServiceAction {
             formulae_type: service.get_type().to_string(),
             is_required: service.is_required(),
             human_name: service.human_name().to_string(),
+            url: service.url().to_string(),
         };
         
         Ok(status)

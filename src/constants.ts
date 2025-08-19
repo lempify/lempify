@@ -34,6 +34,11 @@ export const TOOLS = {
     isRequired: true,
     humanName: 'Composer',
   },
+  mkcert: {
+    name: 'mkcert',
+    isRequired: true,
+    humanName: 'mkcert',
+  },
   mailpit: {
     name: 'mailpit',
     isRequired: false,

@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
-import { buttonPrimary, monoGradientToLeft, primaryGradientToLeft } from './css';
+import { buttonPrimary, monoGradientToLeft } from './css';
 
-export default function InstallWelcome() {
+export default function InstallTrust() {
   const navigate = useNavigate();
   return (
     <div className='grid grid-rows-[1fr_auto] gap-4 min-h-full'>
@@ -11,7 +11,7 @@ export default function InstallWelcome() {
           <h1
             className={`relative text-6xl font-bold ${monoGradientToLeft} text-transparent bg-clip-text inline-flex`}
           >
-            {'Welcome'}
+            {'Trust'}
           </h1>
         </header>
        
@@ -25,10 +25,10 @@ export default function InstallWelcome() {
         <Button
           className={`text-sm ${buttonPrimary}`}
           onClick={() => {
-            navigate('/install/services');
+            navigate('/install/tools');
           }}
         >
-          {'>'}
+          {'<'}
         </Button>
       </div>
     </div>
