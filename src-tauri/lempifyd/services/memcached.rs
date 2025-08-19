@@ -21,6 +21,17 @@ impl BaseService for Service {
         "Memcached"
     }
 
+    fn url(&self) -> &str {
+        #[cfg(target_os = "macos")]
+        {
+            "https://formulae.brew.sh/formula/memcached"
+        }
+        #[cfg(target_os = "linux")]
+        {
+            "https://memcached.org/"
+        }
+    }
+
     fn get_type(&self) -> &str {
         "service"
     }

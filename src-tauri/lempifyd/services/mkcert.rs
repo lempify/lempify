@@ -1,5 +1,10 @@
 use shared::brew;
 
+/**
+ * @see `./src-tauri/src/helpers/ssl.rs` for usage.
+ * @TODO: Use this service in mkcert code.
+ */
+
 use crate::{models::Service as BaseService, services::error::ServiceError};
 
 pub struct Service {
@@ -16,21 +21,25 @@ impl Service {
 
 impl BaseService for Service {
     fn name(&self) -> &str {
-        "composer"
+        "mkcert"
+    }
+
+    fn is_required(&self) -> bool {
+        true
     }
 
     fn human_name(&self) -> &str {
-        "Composer"
+        "mkcert"
     }
 
     fn url(&self) -> &str {
         #[cfg(target_os = "macos")]
         {
-            "https://formulae.brew.sh/formula/composer"
+            "https://formulae.brew.sh/formula/mkcert"
         }
         #[cfg(target_os = "linux")]
         {
-            "https://getcomposer.org/"
+            "https://github.com/FiloSottile/mkcert"
         }
     }
 
@@ -40,10 +49,6 @@ impl BaseService for Service {
 
     fn is_running(&self) -> bool {
         self.is_installed()
-    }
-    
-    fn is_required(&self) -> bool {
-        true
     }
 
     fn get_type(&self) -> &str {

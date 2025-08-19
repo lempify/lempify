@@ -14,7 +14,7 @@ import { useInvoke } from '../hooks/useInvoke';
 // Constants
 import siteCreateFields from '../utils/site-create-fields';
 import Loader from './Loader';
-import { buttonPrimary, cornerTopRight, pageSection } from './css';
+import { buttonPrimary } from './css';
 import { useAppConfig } from '../context/AppConfigContext';
 import { Site } from '../types';
 import { DEFAULT_SITE_TYPE } from '../constants';

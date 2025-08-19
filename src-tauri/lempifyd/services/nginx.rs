@@ -43,6 +43,17 @@ impl BaseService for Service {
         "NGINX"
     }
 
+    fn url(&self) -> &str {
+        #[cfg(target_os = "macos")]
+        {
+            "https://formulae.brew.sh/formula/nginx"
+        }
+        #[cfg(target_os = "linux")]
+        {
+            "https://nginx.org/"
+        }
+    }
+
     fn is_required(&self) -> bool {
         true
     }

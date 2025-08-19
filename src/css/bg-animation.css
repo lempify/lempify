@@ -5,7 +5,7 @@
   background:
     var(--noise-svg),
     /* Grid lines */
-      linear-gradient(rgba(210, 210, 210, 0.9) 1px, transparent 1px),
+    linear-gradient(rgba(210, 210, 210, 0.9) 1px, transparent 1px),
     linear-gradient(90deg, rgba(210, 210, 210, 0.9) 1px, transparent 1px);
   background-size:
     200px 200px,

@@ -127,6 +127,17 @@ impl BaseService for Service {
         "MySQL"
     }
 
+    fn url(&self) -> &str {
+        #[cfg(target_os = "macos")]
+        {
+            "https://formulae.brew.sh/formula/mysql"
+        }
+        #[cfg(target_os = "linux")]
+        {
+            "https://dev.mysql.com/"
+        }
+    }
+
     fn is_required(&self) -> bool {
         true
     }

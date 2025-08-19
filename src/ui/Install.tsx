@@ -1,147 +1,140 @@
+import { useEffect } from 'react';
+
+import { useAppConfig } from '../context/AppConfigContext';
+import { useLempifyd } from '../context/LempifydContext';
 import { SERVICES, TOOLS } from '../constants';
-import { Status, useLempifyd } from '../context/LempifydContext';
-import Loader from './Loader';
-import { SvgError, SvgSuccess, SvgWarning } from './Svg';
+import {
+  NavLink,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from 'react-router-dom';
+import InstallDependencies from './InstallDependencies';
+import Background from './Background';
+import Brand from './Brand';
+import InstallWelcome from './InstallWelcome';
+import { cornerTopRight } from './css';
+import InstallTrust from './InstallTrust';
+import { useA11y } from '../context/A11yContext';
 
-const ICON_MAP = {
-  success: <SvgSuccess className='text-green-500' size={16} />,
-  error: <SvgError className='text-red-500' size={16} />,
-  warning: <SvgWarning className='text-yellow-500' size={16} />
-} as const;
+const NAV_LINK_DOT_CLASS =
+  'before:content-["•"] before:text-neutral-400 before:mr-2';
+const NAV_LINK_CLASS = `${NAV_LINK_DOT_CLASS} p-2 block text-neutral-600 dark:text-neutral-400 opacity-60`;
+const NAV_LINK_ACTIVE_CLASS = 'opacity-100';
 
-const BASE_CONTAINER_CLASS = 'bg-white p-4 rounded-md shadow-md relative border border-gray-300';
+export default function Install({ children }: { children: React.ReactNode }) {
+  const { config } = useAppConfig();
+  const { emit, state } = useLempifyd();
+  const { prefersReducedMotion } = useA11y();
 
-const getStatusConfig = (formulae: any) => {
-  
-  if (!formulae.isInstalled) {
-    return {
-      statusText: 'Not installed',
-      containerClassName: `${BASE_CONTAINER_CLASS} ${formulae.isRequired ? 'border-red-500' : 'border-yellow-500'}`,
-      iconComponent: formulae.isRequired ? ICON_MAP.error : ICON_MAP.warning
-    };
+  useEffect(() => {
+    async function emitServices() {
+      // Services
+      emit('php', 'is_running');
+      emit('nginx', 'is_running');
+      emit('mysql', 'is_running');
+      // Optional services
+      emit('redis', 'is_running');
+      emit('memcached', 'is_running');
+      // Tools
+      emit('composer', 'is_running');
+      emit('mkcert', 'is_running');
+      // Optional tools
+      emit('wp-cli', 'is_running');
+      emit('mailpit', 'is_running');
+    }
+    emitServices();
+  }, []);
+
+  if (config.installed) {
+    return children;
   }
-  
-  if (!formulae.isRunning) {
-    return {
-      statusText: 'Installed, but not running',
-      containerClassName: `${BASE_CONTAINER_CLASS} border-green-500 border-red-500`,
-      iconComponent: ICON_MAP.error
-    };
-  }
-  
-  return {
-    statusText: formulae.formulaeType === 'service' ? 'Installed and running' : 'Installed',
-    containerClassName: `${BASE_CONTAINER_CLASS} border-green-500`,
-    iconComponent: ICON_MAP.success
-  };
-};
-
-function Card({ formulae }: { formulae: Status }) {
-  const { statusText, containerClassName, iconComponent } = getStatusConfig(formulae);
 
   return (
-    <div className={`${containerClassName}`}>
-      <h3>
-        <span className='font-bold'>{formulae.humanName}</span>{' '}
-        {formulae.version && <sup>v{formulae.version}</sup>}
-      </h3>
-
-      {formulae.pendingAction ? (
-        <p className='text-xs text-gray-500'>Checking...</p>
-      ) : (
-        <p className='flex items-center gap-2 text-xs'>
-          {iconComponent}
-          {statusText}
-        </p>
-      )}
-      <Loader isVisible={formulae?.pendingAction ?? true} size={16} />
-    </div>
-  );
-}
-
-/**
- * Install:
- * - Welcome
- * - Required services
- * - Optional services
- */
-export default function Install() {
-  const {
-    state /* : { isAllServicesRunning, servicesCount, runningServicesCount } */,
-    dispatch,
-  } = useLempifyd();
-
-  const stateTools = { ...TOOLS, ...state.tools };
-  const stateServices = {
-    ...SERVICES,
-    ...state.services,
-  };
-
-  const { false: optionalTools = [], true: requiredTools = [] } =
-    Object.groupBy<any, any>(
-      Object.values(stateTools),
-      (tool: any) => tool.isRequired
-    );
-  const { false: optionalServices = [], true: requiredServices = [] } =
-    Object.groupBy<any, any>(
-      Object.values(stateServices),
-      (service: any) => service.isRequired
-    );
-
-  return (
-    <div className='w-screen h-screen flex items-center justify-center flex-col bg-gray-100 overflow-y-auto'>
-      <div className='w-full md:w-2/3 lg:w-1/2 bg-white p-10 rounded-md shadow-md'>
-        <h1 className='text-center text-8xl font-bold mb-10'>Install</h1>
-
-        <>
-          <h2 className='text-2xl font-bold mb-4'>Services</h2>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-10'>
-            <div>
-              <h3>Required</h3>
-              <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
-                {requiredServices.map((service: any) => (
-                  <Card key={service.name} formulae={service} />
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3>Optional</h3>
-              <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
-                {optionalServices.map((service: any) => (
-                  <Card key={service.name} formulae={service} />
-                ))}
-              </div>
-            </div>
+    <div className='bg-neutral-100 dark:bg-neutral-900 w-screen h-screen flex items-center justify-center flex-col bg-neutral-100 overflow-y-auto'>
+      {!prefersReducedMotion && <Background />}
+      <div
+        className={`relative w-[calc(100vw-4rem)] h-[calc(100vh-4rem)] lg:w-2/3 lg:h-[60vh] lg:min-h-[60vh] ${cornerTopRight} grid grid-cols-[200px_1fr] border border-neutral-300 dark:border-neutral-700`}
+      >
+        <Router>
+          <aside className='bg-white/40 dark:bg-black/40 text-neutral-600 dark:text-white overflow-y-auto p-4 grid grid-rows-[1fr_auto] border-r border-neutral-300 dark:border-neutral-700 backdrop-blur-[1px]'>
+            <Brand />
+            <ul>
+              <li className='mb-2'>
+                <NavLink
+                  className={({ isActive }) =>
+                    `${NAV_LINK_CLASS} ${isActive ? NAV_LINK_ACTIVE_CLASS : ''}`
+                  }
+                  to='/'
+                >
+                  Welcome
+                </NavLink>
+              </li>
+              <li className='mb-2'>
+                <NavLink
+                  className={({ isActive }) =>
+                    `${NAV_LINK_CLASS} ${isActive ? NAV_LINK_ACTIVE_CLASS : ''}`
+                  }
+                  to='/install/services'
+                >
+                  Install Services
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  className={({ isActive }) =>
+                    `${NAV_LINK_CLASS} ${isActive ? NAV_LINK_ACTIVE_CLASS : ''}`
+                  }
+                  to='/install/tools'
+                >
+                  Install Tools
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  className={({ isActive }) =>
+                    `${NAV_LINK_CLASS} ${isActive ? NAV_LINK_ACTIVE_CLASS : ''}`
+                  }
+                  to='/install/trust'
+                >
+                  Trust
+                </NavLink>
+              </li>
+            </ul>
+          </aside>
+          <div className='p-4 overflow-y-auto bg-neutral-100/60 dark:bg-neutral-900/60 backdrop-blur-[1px]'>
+            <Routes>
+              <Route path='/' element={<InstallWelcome />} />
+              <Route
+                path='/install/services'
+                element={
+                  <InstallDependencies
+                    title='Services'
+                    nextStepRoute='tools'
+                    prevStepRoute=''
+                    dependencies={{ ...SERVICES, ...state.services }}
+                  />
+                }
+              />
+              <Route
+                path='/install/tools'
+                element={
+                  <InstallDependencies
+                    title='Tools'
+                    nextStepRoute='trust'
+                    prevStepRoute='services'
+                    dependencies={{ ...TOOLS, ...state.tools }}
+                  />
+                }
+              />
+              <Route path='/install/trust' element={<InstallTrust />} />
+            </Routes>
           </div>
-
-          <h2 className='text-2xl font-bold mb-4'>Tools</h2>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div>
-              <h3>Required</h3>
-              <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
-                {requiredTools.map((tool: any) => (
-                  <Card key={tool.name} formulae={tool} />
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3>Optional</h3>
-              <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
-                {optionalTools.map((tool: any) => (
-                  <Card key={tool.name} formulae={tool} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </>
+        </Router>
       </div>
-
-      <div className='grid grid-cols-2 gap-4'>
-        <pre>
-          {JSON.stringify({ requiredServices, optionalServices }, null, 2)}
-        </pre>
-        <pre>{JSON.stringify({ requiredTools, optionalTools }, null, 2)}</pre>
-      </div>
+      <button className='absolute bottom-2 right-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 text-xs'>
+        Skip Install {'>'}
+      </button>
     </div>
   );
 }

@@ -23,6 +23,17 @@ impl BaseService for Service {
         "WP-CLI"
     }
 
+    fn url(&self) -> &str {
+        #[cfg(target_os = "macos")]
+        {
+            "https://formulae.brew.sh/formula/wp-cli"
+        }
+        #[cfg(target_os = "linux")]
+        {
+            "https://wp-cli.org/"
+        }
+    }
+
     fn is_installed(&self) -> bool {
         brew::is_formulae_installed(self.name())
     }

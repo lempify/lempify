@@ -21,6 +21,17 @@ impl BaseService for Service {
         "Mailpit"
     }
 
+    fn url(&self) -> &str {
+        #[cfg(target_os = "macos")]
+        {
+            "https://formulae.brew.sh/formula/mailpit"
+        }
+        #[cfg(target_os = "linux")]
+        {
+            "https://mailpit.axllent.org/"
+        }
+    }
+
     fn get_type(&self) -> &str {
         "tool"
     }

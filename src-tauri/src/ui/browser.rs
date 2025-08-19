@@ -3,13 +3,13 @@ use std::fs::OpenOptions;
 use std::io::Write;
 
 pub fn log_to_file(message: &str) {
-    if let Ok(mut file) = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("/tmp/lempify.log") 
-    {
-        let _ = writeln!(file, "[{}] {}", chrono::Utc::now(), message);
-    }
+    // if let Ok(mut file) = OpenOptions::new()
+    //     .create(true)
+    //     .append(true)
+    //     .open("/tmp/lempify.log") 
+    // {
+    //     let _ = writeln!(file, "[{}] {}", chrono::Utc::now(), message);
+    // }
 }
 
 pub fn open_devtools(app: &App) {

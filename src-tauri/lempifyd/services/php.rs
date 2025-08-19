@@ -86,6 +86,17 @@ impl BaseService for Service {
         "PHP"
     }
 
+    fn url(&self) -> &str {
+        #[cfg(target_os = "macos")]
+        {
+            "https://formulae.brew.sh/formula/php"
+        }
+        #[cfg(target_os = "linux")]
+        {
+            "https://www.php.net/"
+        }
+    }
+
     fn is_required(&self) -> bool {
         true
     }

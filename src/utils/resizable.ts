@@ -232,7 +232,6 @@ export class Resizable {
   }
 
   destroy() {
-    console.log('destroy');
     this.el.body.classList.remove(Resizable.ACTIVE_BODY_CLASS);
     window.removeEventListener('pointermove', this.resize);
     window.removeEventListener('pointerup', this.stopResize);
@@ -241,6 +240,3 @@ export class Resizable {
     this.onResize = undefined;
   }
 }
-
-// const [resizerContainer] = document.getElementsByClassName(Resizable.CLASS_PREFIX);
-// new Resizable(resizerContainer);
