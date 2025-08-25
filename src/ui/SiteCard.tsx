@@ -16,6 +16,7 @@ import { useInvoke } from '../hooks/useInvoke';
 import { openInBrowser } from '../utils/tauri';
 import { useAppConfig } from '../context/AppConfigContext';
 import { SvgLock } from './Svg';
+import { ask } from '@tauri-apps/plugin-dialog';
 
 /**
  * Handle events closure for the SitesSite component
@@ -36,6 +37,13 @@ function handleEvents(
 ) {
   return {
     async deleteSite() {
+      const answer = await ask('This action cannot be undone. Are you sure?', {
+        title: 'Delete site',
+        kind: 'error',
+      });
+      if (!answer) {
+        return;
+      }
       try {
         const { data } = await invoke('delete_site', { domain });
         if (data) {
