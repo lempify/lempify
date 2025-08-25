@@ -6,7 +6,7 @@ More details coming soon...
 
 ### Todo:
 - [ ] Port "_... in use_" recovery.
-- [ ] Install step.
+- [ ] Add Create Site UI to + CTA
 
 ### Screenshot:
 ![Lempify](screenshot.jpg)
