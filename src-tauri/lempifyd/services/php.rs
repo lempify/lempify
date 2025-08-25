@@ -172,9 +172,12 @@ impl BaseService for Service {
             .get_service_socket_dir_no_spaces()
             .join(format!("php-{}.sock", self.version));
         if let Some(socket_dir) = socket_path.parent() {
-            self.config.file_system.create_dir_all(socket_dir).map_err(|e| {
-                ServiceError::ServiceError(format!("Failed to create socket directory: {}", e))
-            })?;
+            self.config
+                .file_system
+                .create_dir_all(socket_dir)
+                .map_err(|e| {
+                    ServiceError::ServiceError(format!("Failed to create socket directory: {}", e))
+                })?;
         }
 
         // Remove any existing socket file

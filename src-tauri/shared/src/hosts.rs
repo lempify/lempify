@@ -13,8 +13,7 @@ use crate::{constants::HOSTS_PATH, utils_legacy::SudoCommand};
  */
 pub fn list_entries() -> Result<Vec<String>, String> {
     let contents =
-        fs::read_to_string(HOSTS_PATH)
-            .map_err(|e| format!("Failed to read hosts file: {}", e))?;
+        fs::read_to_string(HOSTS_PATH).map_err(|e| format!("Failed to read hosts file: {}", e))?;
 
     Ok(contents
         .lines()
@@ -96,8 +95,7 @@ pub fn remove_entry(domain: &str) -> Result<(), String> {
     let new_contents = filtered.join("\n");
 
     let temp_file = std::env::temp_dir().join("lempify_hosts_remove");
-    fs::write(&temp_file, new_contents)
-        .map_err(|e| format!("Failed to write temp file: {}", e))?;
+    fs::write(&temp_file, new_contents).map_err(|e| format!("Failed to write temp file: {}", e))?;
 
     let temp_file_str = temp_file.to_str().unwrap();
     let temp_file_path = temp_file_str.to_string();

@@ -75,5 +75,4 @@ pub trait Service {
 
         Ok(true)
     }
-
 }

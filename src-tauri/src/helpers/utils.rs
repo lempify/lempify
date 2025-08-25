@@ -25,11 +25,11 @@ fn extract_version(input: &str) -> Option<String> {
 /**
  * This function is used to copy a directory recursively.
  * It will copy the directory and all its subdirectories and files to the destination path.
- * 
+ *
  * @param src - The source path
  * @param dest - The destination path
  * @returns A Result with an error message if the operation fails
- * 
+ *
  * @example
  * ```
  * let src = PathBuf::from("/path/to/source");
@@ -66,11 +66,11 @@ pub fn copy_dir_recursive(src: &PathBuf, dest: &PathBuf) -> Result<(), String> {
 /**
  * This function is used to copy a zip entry to a path.
  * It will copy the zip entry to the destination path.
- * 
+ *
  * @param file - The zip file entry to copy
  * @param outpath - The destination path
  * @returns A Result with an error message if the operation fails
- * 
+ *
  * @example
  * ```
  * let file = zip::read::ZipFile::new(file);
@@ -100,13 +100,13 @@ pub fn copy_zip_entry_to_path<R: io::Read + io::Seek>(
 /**
  * This function is used to get a MySQL connection.
  * It will return a PooledConn if the connection is successful.
- * 
+ *
  * @param mysql_host - The MySQL host
  * @param mysql_user - The MySQL user
  * @param mysql_password - The MySQL password
  * @param mysql_port - The MySQL port
  * @returns A Result with an error message if the connection fails
- * 
+ *
  * @example
  * ```
  * let mysql_host = "localhost";
@@ -116,7 +116,7 @@ pub fn copy_zip_entry_to_path<R: io::Read + io::Seek>(
  * let result = get_mysql_connection(mysql_host, mysql_user, mysql_password, mysql_port);
  * ```
  */
- pub fn get_mysql_connection(
+pub fn get_mysql_connection(
     mysql_host: String,
     mysql_user: String,
     mysql_password: String,

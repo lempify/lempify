@@ -1,10 +1,9 @@
+use std::process::Command;
 /**
  * SSL functions
  * @module ssl
  */
-
 use std::{collections::HashMap, fs};
-use std::process::Command;
 
 use crate::{file_system::AppFileSystem, nginx};
 
@@ -34,14 +33,23 @@ pub fn generate_certs(domain: &str) -> Result<HashMap<String, String>, String> {
             .map_err(|e| format!("Failed to generate certs for {}: {}", domain, e))?;
 
         if !status.success() {
-            return Err(format!("Failed to generate certs for {}: {}", domain, status));
+            return Err(format!(
+                "Failed to generate certs for {}: {}",
+                domain, status
+            ));
         }
     }
     // println!("\tgenerate_certs: Done!");
 
     Ok(HashMap::from([
-        ("cert_path".to_string(), cert_path.to_string_lossy().to_string()),
-        ("key_path".to_string(), key_path.to_string_lossy().to_string()),
+        (
+            "cert_path".to_string(),
+            cert_path.to_string_lossy().to_string(),
+        ),
+        (
+            "key_path".to_string(),
+            key_path.to_string_lossy().to_string(),
+        ),
     ]))
 }
 
@@ -74,12 +82,10 @@ pub fn delete_certs(domain: &str) -> Result<(), String> {
     let cert_path = certs_dir.join(format!("{domain}.pem"));
     let key_path = certs_dir.join(format!("{domain}-key.pem"));
     if cert_path.exists() {
-        fs::remove_file(&cert_path)
-            .map_err(|e| format!("Failed to delete cert: {}", e))?;
+        fs::remove_file(&cert_path).map_err(|e| format!("Failed to delete cert: {}", e))?;
     }
     if key_path.exists() {
-        fs::remove_file(&key_path)
-            .map_err(|e| format!("Failed to delete key: {}", e))?;
+        fs::remove_file(&key_path).map_err(|e| format!("Failed to delete key: {}", e))?;
     }
     Ok(())
 }

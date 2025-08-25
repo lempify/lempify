@@ -3,7 +3,7 @@ use shared::brew;
 use crate::{models::Service as BaseService, services::error::ServiceError};
 
 pub struct Service {
-    version: String
+    version: String,
 }
 
 impl Service {
@@ -41,7 +41,7 @@ impl BaseService for Service {
     fn is_running(&self) -> bool {
         self.is_installed()
     }
-    
+
     fn is_required(&self) -> bool {
         true
     }

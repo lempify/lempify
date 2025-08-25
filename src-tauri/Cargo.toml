@@ -30,6 +30,7 @@ reqwest = { version = "0.12.20", features = ["json"] }
 chrono = "0.4"
 zip = "4.0.0"
 mysql = "*"
+tauri-plugin-dialog = "2"
 
 [workspace]
 members = [

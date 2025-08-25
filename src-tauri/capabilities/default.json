@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "opener:default",
@@ -27,6 +29,7 @@
     "core:event:default",
     "core:window:allow-create",
     "core:window:allow-set-size",
-    "core:window:allow-set-position"
+    "core:window:allow-set-position",
+    "dialog:default"
   ]
 }

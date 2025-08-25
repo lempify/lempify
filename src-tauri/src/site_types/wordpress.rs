@@ -68,7 +68,7 @@ pub async fn versions() -> Result<WordPressVersionResponse, String> {
     let response = reqwest::get(constants::WP_VERSION_ENDPOINT)
         .await
         .map_err(|e| e.to_string())?;
-    
+
     let versions = response
         .json::<WordPressVersionResponse>()
         .await

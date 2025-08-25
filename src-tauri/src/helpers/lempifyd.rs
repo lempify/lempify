@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::io::{Write, BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::UnixStream;
 
 use tauri::App;
@@ -36,7 +36,7 @@ pub fn send(cmd: &DaemonCommand) -> Result<Option<DaemonResponse>, String> {
     // Read response from daemon
     let mut reader = BufReader::new(&stream);
     let mut response_line = String::new();
-    
+
     if let Ok(_) = reader.read_line(&mut response_line) {
         if let Ok(response) = serde_json::from_str::<DaemonResponse>(&response_line.trim()) {
             return Ok(Some(response));

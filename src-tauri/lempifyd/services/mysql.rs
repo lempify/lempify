@@ -2,9 +2,9 @@ use shared::brew;
 use shared::file_system::AppFileSystem;
 
 use crate::models::Service as BaseService;
+use crate::services::config::ServiceConfig;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
-use crate::services::config::ServiceConfig;
 
 pub struct Service {
     version: String,
@@ -14,14 +14,10 @@ pub struct Service {
 
 impl Service {
     pub fn new(version: &str) -> Result<Self, ServiceError> {
-        let file_system = AppFileSystem::new()
-            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+        let file_system =
+            AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
         let isolation = ServiceIsolation::new("mysql")?;
-        let config = ServiceConfig::new(
-            file_system,
-            "mysql".to_string(),
-            version.to_string(),
-        )?;
+        let config = ServiceConfig::new(file_system, "mysql".to_string(), version.to_string())?;
 
         Ok(Self {
             version: version.to_string(),
@@ -35,7 +31,7 @@ impl Service {
         let socket_path = self.isolation.get_socket_path();
         let log_path = self.isolation.get_log_path();
         let data_path = self.isolation.get_config_path().join("data");
-        
+
         format!(
             r#"[mysqld]
 # Basic Settings
@@ -105,13 +101,20 @@ max_heap_table_size = 32M
 
     fn initialize_database(&self) -> Result<(), ServiceError> {
         let data_path = self.isolation.get_config_path().join("data");
-        
+
         // Only initialize if data directory is empty
-        if data_path.read_dir().map_err(|e| ServiceError::FileSystemError(e.to_string()))?.count() == 0 {
+        if data_path
+            .read_dir()
+            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?
+            .count()
+            == 0
+        {
             self.isolation
                 .brew_command(&["mysql_install_db", "--datadir", data_path.to_str().unwrap()])
                 .run()
-                .map_err(|e| ServiceError::ServiceError(format!("Failed to initialize database: {}", e)))?;
+                .map_err(|e| {
+                    ServiceError::ServiceError(format!("Failed to initialize database: {}", e))
+                })?;
         }
 
         Ok(())
@@ -174,7 +177,7 @@ impl BaseService for Service {
 
         // Set up initial configuration after install
         self.setup_config()?;
-        
+
         // Initialize the database
         self.initialize_database()?;
 
@@ -183,11 +186,17 @@ impl BaseService for Service {
 
     fn start(&self) -> Result<bool, ServiceError> {
         if !self.is_installed() {
-            return Err(ServiceError::NotInstalled(format!("MySQL {}", self.version)));
+            return Err(ServiceError::NotInstalled(format!(
+                "MySQL {}",
+                self.version
+            )));
         }
 
         if self.is_running() {
-            return Err(ServiceError::AlreadyRunning(format!("MySQL {}", self.version)));
+            return Err(ServiceError::AlreadyRunning(format!(
+                "MySQL {}",
+                self.version
+            )));
         }
 
         // Ensure configuration is up to date before starting
@@ -216,7 +225,10 @@ impl BaseService for Service {
 
     fn restart(&self) -> Result<bool, ServiceError> {
         if !self.is_installed() {
-            return Err(ServiceError::NotInstalled(format!("MySQL {}", self.version)));
+            return Err(ServiceError::NotInstalled(format!(
+                "MySQL {}",
+                self.version
+            )));
         }
 
         // Ensure configuration is up to date before restarting

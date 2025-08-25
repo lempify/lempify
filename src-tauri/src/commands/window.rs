@@ -13,11 +13,11 @@ pub async fn open_site_window(
     };
 
     let window_label = format!("site-{}", domain.replace(".", "-"));
-    
+
     WebviewWindowBuilder::new(
         &app_handle,
         window_label,
-        WebviewUrl::External(url.parse().map_err(|e| format!("Invalid URL: {}", e))?)
+        WebviewUrl::External(url.parse().map_err(|e| format!("Invalid URL: {}", e))?),
     )
     .title(format!("{} - Lempify", domain))
     .inner_size(1200.0, 800.0)
@@ -28,7 +28,7 @@ pub async fn open_site_window(
 
     Ok(())
 }
-/* 
+/*
 #[tauri::command]
 pub async fn open_site_window_with_screenshot(
     app_handle: tauri::AppHandle,
@@ -42,7 +42,7 @@ pub async fn open_site_window_with_screenshot(
     };
 
     let window_label = format!("site-{}", domain.replace(".", "-"));
-    
+
     let window = WebviewWindowBuilder::new(
         &app_handle,
         window_label,
@@ -60,12 +60,12 @@ pub async fn open_site_window_with_screenshot(
 
     // Take screenshot using the correct API
     let screenshot = window.capture().map_err(|e| format!("Failed to take screenshot: {}", e))?;
-    
+
     // Save screenshot
     let output_path = format!("/tmp/lempify/screenshots/{}.png", domain);
     std::fs::create_dir_all("/tmp/lempify/screenshots")
         .map_err(|e| format!("Failed to create screenshots directory: {}", e))?;
-    
+
     std::fs::write(&output_path, screenshot)
         .map_err(|e| format!("Failed to save screenshot: {}", e))?;
 

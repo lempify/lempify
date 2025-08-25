@@ -9,7 +9,8 @@ pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
     let app_fs = AppFileSystem::new()?;
 
     if !app_fs.nginx_sites_enabled_dir.exists() {
-        app_fs.create_dir_all(&app_fs.nginx_sites_enabled_dir)
+        app_fs
+            .create_dir_all(&app_fs.nginx_sites_enabled_dir)
             .map_err(|e| format!("Failed to create nginx config directory: {}", e))?;
     }
 

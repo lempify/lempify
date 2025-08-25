@@ -1,6 +1,6 @@
-use shared::file_system::AppFileSystem;
 use serde::{Deserialize, Serialize};
 use shared::constants::LEMPIFY_SUDOERS_PATH;
+use shared::file_system::AppFileSystem;
 use std::fs;
 use std::path::Path;
 use tauri::State;
@@ -65,7 +65,7 @@ impl Config {
     fn check_trusted() -> bool {
         Path::new(LEMPIFY_SUDOERS_PATH).exists()
     }
-    
+
     fn check_installed() -> bool {
         let config = Config::default();
         config.installed
@@ -306,19 +306,23 @@ impl ConfigManager {
             }
             config.sites.push(site.clone());
             Ok(())
-        }).await
+        })
+        .await
     }
 
     pub async fn get_site(&self, domain: &str) -> Option<Site> {
         self.with_config_read(|config| {
             Ok(config.sites.iter().find(|s| s.domain == domain).cloned())
-        }).await.ok().flatten()
+        })
+        .await
+        .ok()
+        .flatten()
     }
 
     pub async fn get_all_sites(&self) -> Vec<Site> {
-        self.with_config_read(|config| {
-            Ok(config.sites.clone())
-        }).await.unwrap_or_default()
+        self.with_config_read(|config| Ok(config.sites.clone()))
+            .await
+            .unwrap_or_default()
     }
 
     pub async fn update_site(&self, domain: &str, updated_site: Site) -> Result<(), String> {
@@ -329,7 +333,8 @@ impl ConfigManager {
             } else {
                 Err(format!("Site with domain '{}' not found", domain))
             }
-        }).await
+        })
+        .await
     }
 
     pub async fn delete_site(&self, domain: &str) -> Result<Site, String> {
@@ -340,40 +345,44 @@ impl ConfigManager {
             } else {
                 Err(format!("Site with domain '{}' not found", domain))
             }
-        }).await
+        })
+        .await
     }
 
     pub async fn get_config(&self) -> Config {
-        self.with_config_read(|config| {
-            Ok(config.clone())
-        }).await.unwrap_or_default()
+        self.with_config_read(|config| Ok(config.clone()))
+            .await
+            .unwrap_or_default()
     }
 
     pub async fn refresh_trusted_status(&self) -> Result<bool, String> {
         self.with_config(|config| {
             config.refresh_trusted_status();
             Ok(config.trusted)
-        }).await
+        })
+        .await
     }
 
     pub async fn is_trusted(&self) -> bool {
-        self.with_config_read(|config| {
-            Ok(config.trusted)
-        }).await.unwrap_or(false)
+        self.with_config_read(|config| Ok(config.trusted))
+            .await
+            .unwrap_or(false)
     }
 
     pub async fn set_trusted(&self, trusted: bool) -> Result<(), String> {
         self.with_config(|config| {
             config.trusted = trusted;
             Ok(())
-        }).await
+        })
+        .await
     }
 
     pub async fn set_installed(&self, installed: bool) -> Result<(), String> {
         self.with_config(|config| {
             config.installed = installed;
             Ok(())
-        }).await
+        })
+        .await
     }
 }
 

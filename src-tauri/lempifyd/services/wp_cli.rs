@@ -3,7 +3,7 @@ use shared::brew;
 use crate::{models::Service as BaseService, services::error::ServiceError};
 
 pub struct Service {
-    version: String
+    version: String,
 }
 
 impl Service {
