@@ -1,9 +1,9 @@
-pub mod ssl;
 pub mod brew;
-pub mod utils_legacy;
-pub mod utils;
+pub mod constants;
+pub mod file_system;
 pub mod hosts;
 pub mod nginx;
-pub mod constants;
 pub mod osascript;
-pub mod file_system;
+pub mod ssl;
+pub mod utils;
+pub mod utils_legacy;

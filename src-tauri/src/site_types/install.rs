@@ -213,7 +213,7 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
             let mut perms = fs::metadata(&wp_content_dir)
                 .map_err(|e| format!("Failed to get wp-content directory metadata: {}", e))?
                 .permissions();
-            
+
             // Set permissions to 755 (rwxr-xr-x) for wp-content directory
             // This allows the web server to read and write to the directory
             perms.set_readonly(false);
@@ -222,7 +222,7 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
                 use std::os::unix::fs::PermissionsExt;
                 perms.set_mode(0o755);
             }
-            
+
             fs::set_permissions(&wp_content_dir, perms)
                 .map_err(|e| format!("Failed to set wp-content directory permissions: {}", e))?;
             println!("wp-content directory permissions set successfully");

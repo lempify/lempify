@@ -28,4 +28,4 @@ pub enum ServiceError {
 
     #[error("Service already installed: {0}")]
     AlreadyInstalled(String),
-} 
+}

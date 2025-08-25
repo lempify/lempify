@@ -4,11 +4,10 @@ use shared::brew;
  * @see `./src-tauri/src/helpers/ssl.rs` for usage.
  * @TODO: Use this service in mkcert code.
  */
-
 use crate::{models::Service as BaseService, services::error::ServiceError};
 
 pub struct Service {
-    version: String
+    version: String,
 }
 
 impl Service {

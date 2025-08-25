@@ -1,7 +1,7 @@
-use std::path::PathBuf;
-use shared::file_system::AppFileSystem;
 use crate::services::error::ServiceError;
 use shared::brew::BrewCommand;
+use shared::file_system::AppFileSystem;
+use std::path::PathBuf;
 use users::{get_current_uid, get_user_by_uid};
 
 pub struct ServiceIsolation {
@@ -23,8 +23,11 @@ impl ServiceIsolation {
     pub fn get_socket_path(&self) -> PathBuf {
         let uid = get_current_uid();
         let user = get_user_by_uid(uid).expect("Failed to get current user");
-        PathBuf::from(format!("/tmp/lempify/{}/sockets", user.name().to_string_lossy()))
-            .join(format!("{}.sock", self.service_name))
+        PathBuf::from(format!(
+            "/tmp/lempify/{}/sockets",
+            user.name().to_string_lossy()
+        ))
+        .join(format!("{}.sock", self.service_name))
     }
 
     /// Get runtime config path (temporary, for active service configs)
@@ -32,8 +35,11 @@ impl ServiceIsolation {
     pub fn get_config_path(&self) -> PathBuf {
         let uid = get_current_uid();
         let user = get_user_by_uid(uid).expect("Failed to get current user");
-        PathBuf::from(format!("/tmp/lempify/{}/config", user.name().to_string_lossy()))
-            .join(format!("{}.conf", self.service_name))
+        PathBuf::from(format!(
+            "/tmp/lempify/{}/config",
+            user.name().to_string_lossy()
+        ))
+        .join(format!("{}.conf", self.service_name))
     }
 
     /// Get runtime log path (temporary, for active service logs)
@@ -41,14 +47,18 @@ impl ServiceIsolation {
     pub fn get_log_path(&self) -> PathBuf {
         let uid = get_current_uid();
         let user = get_user_by_uid(uid).expect("Failed to get current user");
-        PathBuf::from(format!("/tmp/lempify/{}/logs", user.name().to_string_lossy()))
-            .join(format!("{}.log", self.service_name))
+        PathBuf::from(format!(
+            "/tmp/lempify/{}/logs",
+            user.name().to_string_lossy()
+        ))
+        .join(format!("{}.log", self.service_name))
     }
 
     /// Get persistent service config directory (for stored configurations)
     /// Used by PHP and other services for persistent config files
     pub fn get_service_config_dir(&self) -> PathBuf {
-        self.file_system.config_dir
+        self.file_system
+            .config_dir
             .join("services")
             .join(&self.service_name)
     }
@@ -56,7 +66,8 @@ impl ServiceIsolation {
     /// Get persistent service socket directory (for stored socket files)
     /// Used by PHP for version-specific socket paths
     pub fn get_service_socket_dir(&self) -> PathBuf {
-        self.file_system.config_dir
+        self.file_system
+            .config_dir
             .join("services")
             .join(&self.service_name)
             .join("sockets")
@@ -74,7 +85,8 @@ impl ServiceIsolation {
     /// Get persistent service log directory (for stored log files)
     /// Used by services for persistent log storage
     pub fn get_service_log_dir(&self) -> PathBuf {
-        self.file_system.config_dir
+        self.file_system
+            .config_dir
             .join("services")
             .join(&self.service_name)
             .join("logs")
@@ -102,4 +114,4 @@ impl ServiceIsolation {
     pub fn brew_command<'a>(&self, args: &[&'a str]) -> BrewCommand<'a> {
         BrewCommand::new(args)
     }
-} 
+}

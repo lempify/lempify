@@ -56,27 +56,30 @@ impl ServiceAction {
             _ => None,
         }
     }
-    
-    fn execute(&self, service: &dyn crate::models::Service) -> Result<ServiceStatus, Box<dyn std::error::Error>> {
+
+    fn execute(
+        &self,
+        service: &dyn crate::models::Service,
+    ) -> Result<ServiceStatus, Box<dyn std::error::Error>> {
         // Execute the action first
         match self {
             ServiceAction::Start => {
                 service.start()?;
-            },
+            }
             ServiceAction::Stop => {
                 service.stop()?;
-            },
+            }
             ServiceAction::Restart => {
                 service.restart()?;
-            },
+            }
             ServiceAction::Install => {
                 service.install()?;
-            },
+            }
             ServiceAction::IsRunning | ServiceAction::IsInstalled => {
                 // No action needed for status checks
-            },
+            }
         }
-        
+
         // Get fresh status after action execution
         let status = ServiceStatus {
             name: service.name().to_string(),
@@ -88,7 +91,7 @@ impl ServiceAction {
             human_name: service.human_name().to_string(),
             url: service.url().to_string(),
         };
-        
+
         Ok(status)
     }
 }
@@ -138,7 +141,8 @@ fn handle_client(mut stream: UnixStream) {
                             Ok(status) => DaemonResponse {
                                 name: cmd_name.to_string(),
                                 action: cmd_action.to_string(),
-                                result: serde_json::to_value(&status).unwrap_or_else(|_| serde_json::json!(null)),
+                                result: serde_json::to_value(&status)
+                                    .unwrap_or_else(|_| serde_json::json!(null)),
                             },
                             Err(e) => DaemonResponse {
                                 name: cmd_name.to_string(),

@@ -4,7 +4,8 @@ use tauri::{command, State};
 use crate::{
     helpers::{
         hosts,
-        ssl::secure_site, stubs::{create_nginx_config_stub, create_site_type_stub},
+        ssl::secure_site,
+        stubs::{create_nginx_config_stub, create_site_type_stub},
     },
     models::{
         config::{ConfigManager, Site, SiteBuilder, SiteConfig, SiteServices},
@@ -28,14 +29,13 @@ pub async fn create_site(
     config_manager: State<'_, ConfigManager>,
     payload: SiteCreatePayload,
 ) -> Result<Site, String> {
-
     let app_fs = AppFileSystem::new()?;
-    
+
     let domain = &payload.domain.to_lowercase();
     let (domain_name, domain_tld) = 
         domain.split_once('.')
             .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
-        
+
     let site_path = app_fs.sites_dir.join(&domain);
 
     let site_type = &payload.site_type;
@@ -51,7 +51,8 @@ pub async fn create_site(
     }
 
     // Create the site directory
-    app_fs.create_dir_all(&site_path)
+    app_fs
+        .create_dir_all(&site_path)
         .map_err(|e| format!("Failed to create site directory: {}", e))?;
 
     // Create site object and store in config.json
@@ -60,7 +61,7 @@ pub async fn create_site(
         mysql: "8.0".to_string(),
         nginx: "1.25".to_string(),
     };
-    
+
     // Generate isolated PHP socket path for lempifyd
     let php_socket = format!(
         "unix:/tmp/lempify/services/php/sockets/php-{}.sock",
@@ -77,10 +78,7 @@ pub async fn create_site(
         secure_site(&domain, &config_manager).await?;
     }
     let ssl_key = if payload.ssl {
-        Some(format!(
-            "/opt/homebrew/etc/nginx/ssl/{}-key.pem",
-            domain
-        ))
+        Some(format!("/opt/homebrew/etc/nginx/ssl/{}-key.pem", domain))
     } else {
         None
     };
@@ -100,7 +98,10 @@ pub async fn create_site(
                 version.to_string()
             }
             Err(e) => {
-                println!("Warning: Failed to fetch WordPress versions, installing latest: {}", e); 
+                println!(
+                    "Warning: Failed to fetch WordPress versions, installing latest: {}",
+                    e
+                );
                 "latest".to_string()
             }
         };
@@ -113,7 +114,6 @@ pub async fn create_site(
     }
     // Install WordPress dependencies.
     install::site(&site_type, &domain_name, &domain_tld).await?;
-    
 
     let site_config = SiteConfig {
         ssl: payload.ssl,
@@ -150,24 +150,27 @@ pub async fn delete_site(
 ) -> Result<Vec<Site>, String> {
     let sites_dir = AppFileSystem::new()?.sites_dir;
     let nginx_sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
-    let site_conf_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain)); 
+    let site_conf_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain));
 
     let domain_name = domain.split('.').next().unwrap();
     let domain_tld = domain.split('.').nth(1).unwrap();
 
     remove_file_with_sudo(&site_conf_path)?;
 
-    let site_config = config_manager.get_site(&domain).await.ok_or("Site not found")?;
+    let site_config = config_manager
+        .get_site(&domain)
+        .await
+        .ok_or("Site not found")?;
 
     let site_type: &str = &site_config.site_type;
-    
+
     let site_path = sites_dir.join(&domain);
-    
+
     if site_path.exists() {
         fs::remove_dir_all(&site_path)
-        .map_err(|e| format!("Failed to delete site folder: {}", e))?;
+            .map_err(|e| format!("Failed to delete site folder: {}", e))?;
     }
-    
+
     ssl::delete_certs(&domain)?;
 
     hosts::remove_entry(&domain)?;

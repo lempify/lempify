@@ -26,11 +26,11 @@ impl Stub {
         let app_fs = AppFileSystem::new()?;
         let src_stub_path = app_fs.app_stubs_dir.join(&self.stub_dir_name);
         let mut stub_contents = Vec::new();
-        for entry in
-            fs::read_dir(&src_stub_path)
-                .map_err(|e| format!("Failed to read stub: {} / {}", e, src_stub_path.display()))?
+        for entry in fs::read_dir(&src_stub_path)
+            .map_err(|e| format!("Failed to read stub: {} / {}", e, src_stub_path.display()))?
         {
-            let entry = entry.map_err(|e| format!("Failed to read stub: {} / {}", e, src_stub_path.display()))?; // TODO: Handle this error
+            let entry = entry
+                .map_err(|e| format!("Failed to read stub: {} / {}", e, src_stub_path.display()))?; // TODO: Handle this error
             stub_contents.push(entry.path().to_string_lossy().to_string());
         }
         Ok(stub_contents)
@@ -132,10 +132,11 @@ pub fn create_nginx_config_stub(domain: &str, php_socket: Option<&str>) -> Resul
 
     let config_contents = fs::read_to_string(&stub_template)
         .map_err(|e| format!("Failed to read stub: {} / {}", e, stub_template.display()))?;
-    
-    let config_contents = config_contents
-        .replace("{{DOMAIN}}", domain)
-        .replace("{{PHP_SOCKET}}", php_socket.unwrap_or("unix:/opt/homebrew/var/run/php/php-fpm.sock"));
+
+    let config_contents = config_contents.replace("{{DOMAIN}}", domain).replace(
+        "{{PHP_SOCKET}}",
+        php_socket.unwrap_or("unix:/opt/homebrew/var/run/php/php-fpm.sock"),
+    );
 
     FileSudoCommand::write(config_contents.to_string(), dest_path.to_path_buf()).run()?;
 
