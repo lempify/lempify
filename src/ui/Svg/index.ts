@@ -23,3 +23,6 @@ export { default as SvgLock } from './SvgLock';
 export { default as SvgSuccess } from './SvgSuccess';
 export { default as SvgWarning } from './SvgWarning';
 export { default as SvgError } from './SvgError';
+
+export { default as SvgHelp } from './SvgHelp';
+export { default as SvgTool } from './SvgTool';

@@ -60,7 +60,8 @@ const HeaderServices = () => {
             >
               <SvgTriangle
                 size={16}
-                className={`transition-transform duration-200 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
+                direction='up'
+                className={`motion-safe:transition-transform motion-safe:duration-200 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
               />
             </span>
           </>
@@ -71,7 +72,7 @@ const HeaderServices = () => {
         ref={servicesRef}
       >
         <ul
-          className={`grid grid-cols-3 bg-neutral-100 dark:bg-neutral-900 border-b border-l border-neutral-300 dark:border-neutral-700 divide-x-1 divide-neutral-200 dark:divide-neutral-700 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-[calc(100%+1px)]'}`}
+          className={`grid grid-cols-3 bg-neutral-100 dark:bg-neutral-900 border-b border-l border-neutral-300 dark:border-neutral-700 divide-x-1 divide-neutral-200 dark:divide-neutral-700 motion-safe:transition-transform motion-safe:duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-[calc(100%+1px)]'}`}
         >
           {state.services &&
             Object.entries(state.services).map(([serviceKey, service]) => (

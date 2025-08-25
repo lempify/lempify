@@ -100,6 +100,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       }}
       summary={open => (
         <Heading
+          split
           size='h2'
           className='flex-1 select-none'
           title={`${open ? 'Creating' : 'Create'} New Site`}

@@ -75,7 +75,7 @@ export type Status = {
   isRunning?: boolean;
   isInstalled?: boolean;
   version?: string;
-  lastError?: string;
+  lastError: string;
   pendingAction?: boolean;
   formulaeType?: string;
   url?: string;

@@ -15,7 +15,7 @@ const sliderCss =
   'absolute ' +
   'h-5 w-[var(--btn-width)] ' +
   'bg-white rounded-full shadow ' +
-  'transition-transform duration-300';
+  'motion-safe:transition-transform motion-safe:duration-300';
 
 const containerCss = `
   relative 

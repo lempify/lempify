@@ -20,7 +20,9 @@ export default function Button({
             ? 'text-xs px-1.5 py-0.5'
             : size === 'md'
               ? 'text-sm px-3 py-2'
-              : 'text-base px-4 py-3'
+              : size === 'lg'
+                ? 'text-lg px-4 py-3'
+                : 'text-xs px-2 py-1' // default
       } ${className}`}
       onClick={onClick}
       {...{ disabled }}

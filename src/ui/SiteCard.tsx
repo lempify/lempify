@@ -134,7 +134,7 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
           <div className='flex-shrink-0 mt-1'>
             {/* SSL cert generator */}
             <div
-              className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'text-green-300' : 'text-[var(--lempify-red)]'}`}
+              className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'text-green-500 dark:text-green-300' : 'text-[var(--lempify-red)]'}`}
               role='status'
               aria-live='polite'
             >

@@ -1,7 +1,9 @@
-use tauri::command;
+use tauri::{command, State};
+
+use crate::models::config::ConfigManager;
 
 #[command]
-pub fn is_installed() -> Result<bool, String> {
-    
-    Ok(true)
+pub async fn set_installed(config_manager: State<'_, ConfigManager>) -> Result<(), String> {
+    config_manager.set_installed(true).await?;
+    Ok(())
 }
