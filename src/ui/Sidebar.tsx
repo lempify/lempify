@@ -40,7 +40,7 @@ const ACTIVE_CSS = `
   dark:text-neutral-100
   
   [&>i]:text-[var(--lempify-primary)]
-  [&>i]:animate-slide-out-in
+  [&>i]:motion-safe:animate-slide-out-in
   `;
 
 const LINKS = [

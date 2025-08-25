@@ -5,6 +5,8 @@ import { buttonPrimary, monoGradientToLeft } from './css';
 import Loader from './Loader';
 import { SvgError, SvgSpinner, SvgSuccess, SvgWarning } from './Svg';
 import SvgLink from './Svg/SvgLink';
+import Heading from './Heading';
+import Tooltip from './Tooltip';
 
 const ICON_MAP = {
   success: <SvgSuccess className='text-green-500 dimension-4' size={16} />,
@@ -62,23 +64,31 @@ function Card({ formulae }: { formulae: Status }) {
         (statusType === 'not-installed' || statusType === 'not-running') && (
           <div className='text-xs text-gray-500 absolute inset-0 flex items-center justify-center group-hover:opacity-100 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-900/50 opacity-0 motion-safe:transition-opacity motion-safe:duration-300'>
             {statusType === 'not-installed' && (
-              <Button
-                size='sm'
-                className={`${buttonPrimary}`}
-                onClick={() => emit(formulae.name, 'install')}
-              >
-                Install
-              </Button>
+                <Button
+                  size='sm'
+                  className={`${buttonPrimary}`}
+                  onClick={() => emit(formulae.name, 'install')}
+                >
+                  Install
+                </Button>
             )}
             {statusType === 'not-running' && (
-              <Button
-                size='sm'
-                className={`${buttonPrimary}`}
-                onClick={() => emit(formulae.name, 'start')}
-              >
-                Start
-              </Button>
+                <Button
+                  size='sm'
+                  className={`${buttonPrimary}`}
+                  onClick={() => emit(formulae.name, 'start')}
+                >
+                  Start
+                </Button>
             )}
+            <a
+              className={`${buttonPrimary} rounded-full ml-2`}
+              href={formulae.url}
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              <SvgLink size={16} />
+            </a>
           </div>
         )}
       {formulae.pendingAction ? (
@@ -127,9 +137,7 @@ function InstallStatus({
 
   return (
     <div className='my-4'>
-      <h3 className='text-lg text-neutral-800 dark:text-neutral-200 mb-4'>
-        Install Status:
-      </h3>
+      <Heading size='h3' className='mb-4' title='Install Status:' />
       <ul className='flex gap-2 text-xs text-neutral-600 dark:text-neutral-400'>
         {pendingCount > 0 && (
           <li className='flex items-center gap-2 relative'>
@@ -165,76 +173,69 @@ function InstallStatus({
  */
 export default function InstallDependencies({
   title,
-  nextStepRoute,
   dependencies,
-  prevStepRoute,
 }: {
   title: string;
-  nextStepRoute: 'services' | 'tools' | 'trust';
   dependencies: any;
-  prevStepRoute: '' | 'services' | 'tools' | 'trust';
 }) {
-  const navigate = useNavigate();
   const { false: optionalDependencies = [], true: requiredDependencies = [] } =
     Object.groupBy<any, any>(
       Object.values(dependencies),
       (tool: any) => tool.isRequired
     );
 
-  function installAll() {
-    // requiredDependencies.forEach((dependency: any) => {
-    //   invoke('install', dependency.name);
-    // });
-    // optionalDependencies.forEach((dependency: any) => {
-    //   invoke('install', dependency.name);
-    // });
-  }
-
-  function prevStep() {
-    navigate(`${prevStepRoute === '' ? '/' : `/install/${prevStepRoute}`}`);
-  }
-
-  function nextStep() {
-    navigate(`/install/${nextStepRoute}`);
-  }
+  const dependenciesValid = requiredDependencies.every(
+    dependency => dependency.isInstalled && dependency.isRunning
+  );
 
   return (
-    <div className='grid grid-rows-[1fr_auto] gap-4 min-h-full'>
+    <div className='grid grid-rows-[1fr_auto] gap-4'>
       <div>
-        <header className='text-right mb-10'>
-          <h1
-            className={`relative text-6xl font-bold ${monoGradientToLeft} text-transparent bg-clip-text inline-flex`}
-          >
-            {title}
-          </h1>
-        </header>
-        <InstallStatus
-          optionalDependencies={optionalDependencies}
-          requiredDependencies={requiredDependencies}
+        <Heading
+          size='h2'
+          className='mb-10'
+          title={title}
+          split
+          align='right'
         />
+        {!dependenciesValid && (
+          <InstallStatus
+            optionalDependencies={optionalDependencies}
+            requiredDependencies={requiredDependencies}
+          />
+        )}
         <hr className='my-10 border-neutral-300 dark:border-neutral-700' />
         <ul className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-10'>
           {[
             {
-              title: 'Required.',
+              title: 'Required',
               dependencies: requiredDependencies,
+              tooltipText:
+                'These are dependencies that are required for Lempify to function properly.',
             },
             {
-              title: 'Optional.',
+              title: 'Optional',
               dependencies: optionalDependencies,
+              tooltipText:
+                'These are optional dependencies that are not required for Lempify to function properly, but are recommended.',
             },
           ].map(
             ({
               title,
               dependencies,
+              tooltipText,
             }: {
               title: string;
               dependencies: any[];
+              tooltipText: string;
             }) => (
               <li key={title}>
-                <h3 className='text-lg text-neutral-800 dark:text-neutral-200 mb-4'>
-                  {title}
-                </h3>
+                <Heading
+                  size='h3'
+                  className='mb-4'
+                  title={title}
+                  helpText={tooltipText}
+                />
                 <ul className='grid grid-cols-1 2xl:grid-cols-2 gap-4'>
                   {dependencies.map((dependency: any) => (
                     <Card key={dependency.name} formulae={dependency} />
@@ -244,20 +245,6 @@ export default function InstallDependencies({
             )
           )}
         </ul>
-      </div>
-      <div className='text-right sticky bottom-0'>
-        <Button className={`text-sm ${buttonPrimary}`} onClick={installAll}>
-          Install Required
-        </Button>{' '}
-        <Button className={`text-sm ${buttonPrimary}`} onClick={installAll}>
-          Install All
-        </Button>{' '}
-        <Button className={`text-sm ${buttonPrimary}`} onClick={prevStep}>
-          {'<'}
-        </Button>
-        <Button className={`text-sm ${buttonPrimary}`} onClick={nextStep}>
-          {'>'}
-        </Button>
       </div>
     </div>
   );

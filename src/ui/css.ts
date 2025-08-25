@@ -18,7 +18,7 @@ export const pageSection =
   'relative';
 
 export const buttonPrimary = `
-  bg-white hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-900
+  bg-white hover:not-disabled:bg-neutral-200 dark:bg-neutral-800 dark:not-disabled:hover:bg-neutral-900
   border border-neutral-200 dark:border-neutral-900
   
   text-black hover:text-neutral-800 dark:text-neutral-200 dark:hover:text-white
@@ -32,8 +32,10 @@ export const buttonPrimary = `
 export const headerGradient =
   'bg-gradient-to-r from-neutral-700 to-neutral-900 dark:from-white dark:to-neutral-300';
 
-  export const primaryGradientToLeft =
+export const primaryGradientToLeft =
   'bg-gradient-to-l from-[var(--lempify-secondary)] to-[var(--lempify-primary)] dark:from-[var(--lempify-secondary)] dark:to-[var(--lempify-primary)]';
 
-  export const monoGradientToLeft =
+export const monoGradientToLeft =
   'bg-gradient-to-l from-neutral-900 to-black dark:from-neutral-100 dark:to-white';
+
+export const glowLine = `before:content-[""] before:absolute before:bottom-0 before:left-0 before:w-full before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-neutral-400 dark:before:via-neutral-500 before:to-transparent`;

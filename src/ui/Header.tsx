@@ -52,7 +52,7 @@ export default function Header() {
           <span className='text-xs'>
             {trusted ? 'Click to untrust' : 'Click to trust'}
           </span>
-          <span className='overflow-hidden pointer-events-none absolute left-[16px] right-0 h-full bg-neutral-100 dark:bg-neutral-900 group-hover:translate-x-full transition-transform duration-300 ease-out'></span>
+          <span className='overflow-hidden pointer-events-none absolute left-[16px] right-0 h-full bg-neutral-100 dark:bg-neutral-900 group-hover:translate-x-full motion-safe:transition-transform motion-safe:duration-300 ease-out'></span>
         </button>
       </div>
 

@@ -17,7 +17,7 @@ import { Site } from '../types';
 type AppConfig = {
   trusted: boolean;
   sites: Site[];
-  installed: boolean;
+  installed: boolean | null;
   settings?: {
     mysql_host: string;
     mysql_user: string;
@@ -29,6 +29,7 @@ type AppConfig = {
 type AppConfigContextType = {
   config: AppConfig;
   dispatch: React.Dispatch<any>;
+  setLoading: (loading: boolean) => void;
   loading: boolean;
   error: string | null;
 };
@@ -40,7 +41,7 @@ const AppConfigContext = createContext<AppConfigContextType | undefined>(
 const defaultConfig: AppConfig = {
   trusted: false,
   sites: [],
-  installed: false,
+  installed: null,
   settings: {
     mysql_host: 'localhost',
     mysql_user: 'root',
@@ -71,7 +72,7 @@ export const AppConfigProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AppConfigContext.Provider value={{ config, dispatch, loading, error }}>
+    <AppConfigContext.Provider value={{ config, dispatch, setLoading, loading, error }}>
       {children}
     </AppConfigContext.Provider>
   );

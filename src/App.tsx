@@ -23,20 +23,15 @@ import Background from './ui/Background';
 import { AppConfigProvider } from './context/AppConfigContext';
 import { LempifydProvider } from './context/LempifydContext';
 import { useA11y } from './context/A11yContext';
-import { useEffect } from 'react';
 
 const App = () => {
   const { prefersReducedMotion } = useA11y();
 
-  useEffect(() => {
-    console.log('prefersReducedMotion', prefersReducedMotion);
-  }, [prefersReducedMotion]);
-
   return (
     <AppConfigProvider>
       <LempifydProvider>
-        <Install>
-          <Router>
+        <Router>
+          <Install>
             <div className='h-screen grid grid-cols-[auto_1fr] grid-rows-[65px_1fr]'>
               {/* Header - sticky */}
               <Header />
@@ -59,8 +54,8 @@ const App = () => {
                 </div>
               </main>
             </div>
-          </Router>
-        </Install>
+          </Install>
+        </Router>
       </LempifydProvider>
     </AppConfigProvider>
   );

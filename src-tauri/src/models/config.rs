@@ -368,6 +368,13 @@ impl ConfigManager {
             Ok(())
         }).await
     }
+
+    pub async fn set_installed(&self, installed: bool) -> Result<(), String> {
+        self.with_config(|config| {
+            config.installed = installed;
+            Ok(())
+        }).await
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

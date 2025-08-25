@@ -26,7 +26,7 @@ const Sites = () => {
       </div>
       <div className={`${pageSection} ${cornerBottomLeft} @container`}>
         <header className='flex items-center gap-2 mb-8'>
-          <Heading size='h2' title='Existing Sites' />
+          <Heading size='h2' title='Existing Sites' split />
         </header>
         {config.sites.length ? (
           <ul className='grid grid-cols-1 @md:grid-cols-1 @lg:grid-cols-2 @2xl:grid-cols-3'>
