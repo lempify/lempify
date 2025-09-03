@@ -8,16 +8,22 @@
 /**
  * Internal dependencies
  */
-import HeaderServices from './HeaderServices';
-import DarkModeToggle from './DarkModeToggle';
 import { useInvoke } from '../hooks/useInvoke';
 import { useAppConfig } from '../context/AppConfigContext';
-import { SvgShield } from './Svg';
+import { useHistory } from '../hooks/useHistory';
+
+import Button from './Button';
+import HeaderServices from './HeaderServices';
+import DarkModeToggle from './DarkModeToggle';
+import { SvgChevron, SvgShield } from './Svg';
+import { buttonPrimaryXs } from './css';
 
 export default function Header() {
   const { invoke } = useInvoke();
   const { config, dispatch } = useAppConfig();
   const { trusted } = config;
+
+  const { canGoBack, canGoForward, goBack, goForward } = useHistory();
 
   async function handleTrust() {
     await invoke(trusted ? 'untrust_lempify' : 'trust_lempify');
@@ -25,7 +31,7 @@ export default function Header() {
   }
 
   return (
-    <header className='grid grid-cols-3 items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 col-span-2 sticky top-0 z-2'>
+    <header className='grid grid-cols-[auto_1fr_auto_auto] items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 col-span-2 sticky top-0 z-2'>
       <div className='flex items-center'>
         <div className='p-4 text-xl font-bold'>
           <span className='text-[var(--lempify-primary)]'>LEMP</span>
@@ -61,6 +67,24 @@ export default function Header() {
       </div>
       <div className='p-5 ml-auto'>
         <HeaderServices />
+      </div>
+      <div className='p-5 grid grid-cols-2 gap-2'>
+        <Button
+          disabled={!canGoBack}
+          size='sm'
+          className={`${buttonPrimaryXs} ${canGoBack ? '' : 'opacity-50'}`}
+          onClick={goBack}
+        >
+          <SvgChevron direction='left' size={12} />
+        </Button>{'  '}
+        <Button
+          disabled={!canGoForward}
+          size='sm'
+          className={`${buttonPrimaryXs} ${canGoForward ? '' : 'opacity-50'}`}
+          onClick={goForward}
+        >
+          <SvgChevron direction='right' size={12} />
+        </Button>
       </div>
     </header>
   );
