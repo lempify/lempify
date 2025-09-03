@@ -1,10 +1,12 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import Button from './Button';
+import { buttonPrimary } from './css';
 
 export default function Dialog({
   children,
   open,
   onClose = () => {},
-  className,
+  className = '',
 }: {
   children: React.ReactNode;
   open: boolean;
@@ -19,6 +21,17 @@ export default function Dialog({
     }
   }, [dialog.current, open]);
 
+  useEffect(() => {
+    if (dialog.current) {
+      dialog.current.addEventListener('close', onClose);
+    }
+    return () => {
+      if (dialog.current) {
+        dialog.current.removeEventListener('close', onClose);
+      }
+    };
+  }, []);
+
   function handleClose() {
     onClose();
     dialog.current?.close();
@@ -26,16 +39,24 @@ export default function Dialog({
 
   return (
     <dialog
-      onClick={handleClose}
       ref={dialog}
-      className={className}
+      onClick={handleClose}
+      className={`lempify-dialog ${className}`}
     >
       <div
-        className='flex flex-col gap-2 p-4 h-full'
+        className='flex flex-col gap-2 p-4 absolute bg-neutral-100 dark:bg-neutral-900 lg:w-2/3 lg:h-2/3 lg:left-1/2 lg:-translate-x-1/2 lg:top-1/2 lg:-translate-y-1/2 inset-4 lg:inset-0'
         onClick={e => e.stopPropagation()}
       >
         {children}
-        <button onClick={handleClose}>Close</button>
+        <div className='flex justify-end'>
+          <Button
+            onClick={handleClose}
+            size='sm'
+            className={buttonPrimary + ' inline-flex'}
+          >
+            Close
+          </Button>
+        </div>
       </div>
     </dialog>
   );

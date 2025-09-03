@@ -3,6 +3,7 @@
  */
 import { useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
+import { ask } from '@tauri-apps/plugin-dialog';
 
 /**
  * Internal imports
@@ -16,7 +17,6 @@ import { useInvoke } from '../hooks/useInvoke';
 import { openInBrowser } from '../utils/tauri';
 import { useAppConfig } from '../context/AppConfigContext';
 import { SvgLock } from './Svg';
-import { ask } from '@tauri-apps/plugin-dialog';
 
 /**
  * Handle events closure for the SitesSite component
@@ -131,7 +131,6 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
 
   return (
     <div className={`relative group`}>
-      <div className='p-4'>
         <header className={`flex gap-2`}>
           <h3 className='flex-1 text-lg relative italic text-neutral-600 dark:text-neutral-400 truncate group-hover:whitespace-normal group-hover:break-all'>
             <NavLink to={`/sites/${site.domain}`}>
@@ -179,7 +178,6 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
             Delete
           </button>
         </div>
-      </div>
       <Loader isVisible={invokeStatus === 'pending'} size={20} />
     </div>
   );

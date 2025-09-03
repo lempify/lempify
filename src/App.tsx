@@ -18,11 +18,13 @@ import Install from './ui/Install';
 import Site404 from './ui/Site404';
 import Page404 from './ui/Page404';
 import Settings from './ui/Settings';
+import Dashboard from './ui/Dashboard';
 import Background from './ui/Background';
 
 import { AppConfigProvider } from './context/AppConfigContext';
 import { LempifydProvider } from './context/LempifydContext';
 import { useA11y } from './context/A11yContext';
+import Dependencies from './ui/Dependencies';
 
 const App = () => {
   const { prefersReducedMotion } = useA11y();
@@ -42,13 +44,14 @@ const App = () => {
                 {!prefersReducedMotion && <Background />}
                 <div className='p-10 relative'>
                   <Routes>
-                    <Route path='/' element={<></>} />
+                    <Route path='/' element={<Dashboard />} />
                     <Route path='/sites' element={<Sites />} />
 
                     <Route path='/sites/:domain' element={<Site />} />
                     <Route path='/sites/*' element={<Site404 />} />
 
                     <Route path='/settings' element={<Settings />} />
+                    <Route path='/dependencies' element={<Dependencies />} />
                     <Route path='*' element={<Page404 />} />
                   </Routes>
                 </div>

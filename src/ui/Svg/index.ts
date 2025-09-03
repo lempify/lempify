@@ -11,10 +11,21 @@ export { default as SvgRefresh } from './SvgRefresh';
 export { default as SvgSun } from './SvgSun';
 export { default as SvgMoon } from './SvgMoon';
 export { default as SvgSystem } from './SvgSystem';
+export { default as SvgTriangle } from './SvgTriangle';
 
 export { default as SvgMysql } from './SvgMysql';
 export { default as SvgNginx } from './SvgNginx';
 export { default as SvgPhp } from './SvgPhp';
+export { default as SvgMemcached } from './SvgMemcached';
+export { default as SvgRedis } from './SvgRedis';
+export { default as SvgComposer } from './SvgComposer';
+export { default as SvgWpCli } from './SvgWpCli';
+export { default as SvgMailpit } from './SvgMailpit';
+// export { default as SvgMkcert } from './SvgMkcert';
+// export { default as SvgWpcli } from './SvgWpcli';
+// export { default as SvgMailpit } from './SvgMailpit';
+// export { default as SvgMemcached } from './SvgMemcached';
+
 
 export { default as SvgSpinner } from './SvgSpinner';
 export { default as SvgChevron } from './SvgChevron';

@@ -10,6 +10,7 @@ import useSiteManager from '../hooks/useSiteManager';
 import { useAppConfig } from '../context/AppConfigContext';
 
 import { cornerBottomLeft, cornerTopRight, pageSection } from './css';
+import { Grid, GridItem } from './Grid';
 
 const Sites = () => {
   const { loading, error, refresh } = useSiteManager();
@@ -29,26 +30,15 @@ const Sites = () => {
           <Heading size='h2' title='Existing Sites' split />
         </header>
         {config.sites.length ? (
-          <ul className='grid grid-cols-1 @md:grid-cols-1 @lg:grid-cols-2 @2xl:grid-cols-3'>
-            <>
-              {config.sites.map(site => (
-                <li
-                  key={site.name}
-                  className={`border-t border-r border-neutral-300 dark:border-neutral-700 [&:nth-child(3n)]:border-r-0`}
-                >
-                  <SiteCard refresh={refresh} site={site} />
-                </li>
-              ))}
-            </>
-            {Array.from({ length: 3 - (config.sites.length % 3) }).map(
-              (_, index) => (
-                <li
-                  key={index}
-                  className='border-t border-r border-neutral-300 dark:border-neutral-700 [&:nth-child(3n)]:border-r-0'
-                />
-              )
-            )}
-          </ul>
+          <Grid childrenLength={config.sites.length}>
+            {config.sites.map(site => (
+              <GridItem
+                key={site.name}
+              >
+                <SiteCard refresh={refresh} site={site} />
+              </GridItem>
+            ))}
+          </Grid>
         ) : (
           <p className='text-neutral-700 dark:text-neutral-300'>
             No sites found!{' '}
