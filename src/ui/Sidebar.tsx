@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
-import Resizable from './Resizable';
-import SvgChevron from './Svg/SvgChevron';
-import PanelSiteCreate from './PanelSiteCreate';
-import { SvgCog, SvgDashboard, SvgPlus, SvgSites } from './Svg';
-
 import { useAppConfig } from '../context/AppConfigContext';
 
-import { getPreferences, setPreferences } from '../utils/storage';
 import Dialog from './Dialog';
+import Resizable from './Resizable';
+import SvgChevron from './Svg/SvgChevron';
+import DialogSiteCreate from './DialogSiteCreate';
+import { SvgCog, SvgDashboard, SvgPlus, SvgSites } from './Svg';
+
+import { getPreferences, setPreferences } from '../utils/storage';
 
 const STANDARD_CSS = `
   rounded-md 
@@ -162,11 +162,10 @@ export default function Sidebar() {
         </aside>
       </Resizable>
       <Dialog
-        className='lempify-dialog'
         open={isSiteCreateOpen}
         onClose={() => setIsSiteCreateOpen(false)}
       >
-        <PanelSiteCreate />
+        <DialogSiteCreate />
       </Dialog>
     </>
   );

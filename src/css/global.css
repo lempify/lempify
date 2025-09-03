@@ -8,6 +8,7 @@
 
 @theme {
   --container-sidebar-min: 66px;
+  --text-tiny: 0.725rem;
 }
 
 :root {

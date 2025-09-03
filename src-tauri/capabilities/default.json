@@ -30,6 +30,7 @@
     "core:window:allow-create",
     "core:window:allow-set-size",
     "core:window:allow-set-position",
-    "dialog:default"
+    "dialog:allow-ask",
+    "dialog:allow-message"
   ]
 }

@@ -40,7 +40,7 @@ const getStatusConfig = (formulae: any) => {
 
   return {
     statusText:
-      formulae.formulaeType === 'service'
+      formulae.dependencyType === 'service'
         ? 'Installed and running'
         : 'Installed',
     containerClassName: /* `hover:border-green-500 before:bg-green-400` */ '',

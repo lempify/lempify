@@ -77,13 +77,14 @@ function NavigationButtons({ currentStep }: { currentStep: number }) {
 
 export default function Install({ children }: { children: React.ReactNode }) {
   const { config, dispatch } = useAppConfig();
-  const { invoke } = useInvoke();
+  const { invoke, invokeStatus } = useInvoke();
   const { emit, state } = useLempifyd();
   const { prefersReducedMotion } = useA11y();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
-  
+  const [isInstalled, setIsInstalled] = useState(false);
+
   useEffect(() => {
     async function emitServices() {
       // Services
@@ -121,7 +122,7 @@ export default function Install({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (config.installed) {
+  if (config.installed || isInstalled) {
     return children;
   }
 
@@ -211,11 +212,11 @@ export default function Install({ children }: { children: React.ReactNode }) {
         onClick={() => {
           invoke('set_installed').then(() => {
             dispatch({ type: 'set_installed', installed: true });
-            navigate('/');
+            navigate('/', { replace: true });
           });
         }}
       >
-        Skip Install {'>'}
+        {invokeStatus === 'pending' ? 'Skipping Install...' : 'Skip Install >'}
       </Button>
     </div>
   );

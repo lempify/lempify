@@ -5,39 +5,56 @@ import { Statuses } from '../types';
 import Dialog from './Dialog';
 import Button from './Button';
 import Loader from './Loader';
-import { SvgNginx, SvgMysql, SvgPhp, SvgSystem } from './Svg';
+import { SvgNginx, SvgMysql, SvgPhp, SvgComposer, SvgTool, SvgTriangle, SvgRedis, SvgMemcached, SvgWpCli, SvgMailpit } from './Svg';
 import { Status, useLempifyd } from '../context/LempifydContext';
+import { buttonPrimaryXs } from './css';
+import SvgLink from './Svg/SvgLink';
 
 const icons = {
   nginx: SvgNginx,
   mysql: SvgMysql,
   php: SvgPhp,
-  default: SvgSystem,
+  composer: SvgComposer,
+  redis: SvgRedis,
+  memcached: SvgMemcached,
+  'wp-cli': SvgWpCli,
+  mailpit: SvgMailpit,
+  defaultService: SvgTriangle,
+  defaultTool: SvgTool,
 };
 
 const ServicesStatusIcon = ({
   name,
+  url,
   running,
+  humanName,
+  type,
 }: {
   name: string;
+  url?: string;
   running: boolean;
   installed: boolean;
+  humanName: string;
+  type?: string;
 }) => {
-  const Icon = icons[name as keyof typeof icons] ?? icons.default;
+  const Icon = icons[name as keyof typeof icons] ?? (type === 'tool' ? icons.defaultTool : icons.defaultService);
   return (
     <p className='flex items-center mb-2 gap-2 text-sm text-neutral-700 dark:text-neutral-300'>
       <span
         className={`size-2 rounded-full ${running ? 'bg-green-500' : 'bg-red-500'}`}
       />
-      <span>{name}</span>
+      <span>{humanName}</span>
+      {url && <a href={url} target='_blank' rel='noopener noreferrer'>
+        <SvgLink size={16} />
+      </a>}
       <span className='ml-auto size-6 flex items-center justify-center'>
-        <Icon />
+        <Icon direction='up' />
       </span>
     </p>
   );
 };
 
-export default function HeaderServicesItem({
+export default function DependenciesItem({
   service,
   emit,
 }: {
@@ -78,17 +95,8 @@ export default function HeaderServicesItem({
     });
   }
 
-  const btnCss = `
-    text-neutral-700 dark:text-neutral-300 
-    bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700
-    border border-neutral-300 dark:border-neutral-600 dark:hover:border-neutral-600
-    
-    rounded-lg 
-    
-    text-xs 
-    
-    px-1 py-0.5 
-  `;
+  const isService = service.dependencyType === 'service';
+  const isTool = service.dependencyType === 'tool';
 
   return (
     <li className='relative p-2'>
@@ -104,22 +112,26 @@ export default function HeaderServicesItem({
       </Dialog>
       <ServicesStatusIcon
         name={service.name}
+        url={service.url}
         running={service.isRunning ?? false}
         installed={service.isInstalled ?? false}
+        humanName={service.humanName}
+        type={service.dependencyType}
       />
+      
       <div className='flex gap-[1px]'>
         {!service.isInstalled ? (
           <Button
-            className={btnCss}
+            className={buttonPrimaryXs}
             onClick={() => emit(service.name, 'install')}
           >
             Install
           </Button>
         ) : (
-          <>
+          isService && <>
             {service.isInstalled && !service.isRunning && (
               <Button
-                className={btnCss}
+                className={buttonPrimaryXs}
                 onClick={() => emit(service.name, 'start')}
               >
                 Start
@@ -127,14 +139,14 @@ export default function HeaderServicesItem({
             )}
             {service.isRunning && (
               <Button
-                className={btnCss}
+                className={buttonPrimaryXs}
                 onClick={() => emit(service.name, 'stop')}
               >
                 Stop
               </Button>
             )}
             <Button
-              className={btnCss}
+              className={buttonPrimaryXs}
               onClick={handleRepair}
               disabled={repairStatus === 'pending'}
             >
@@ -144,7 +156,7 @@ export default function HeaderServicesItem({
               {renderRepairLabel()}
             </Button>
             <Button
-              className={btnCss}
+              className={buttonPrimaryXs}
               onClick={() => emit(service.name, 'restart')}
             >
               Restart Service

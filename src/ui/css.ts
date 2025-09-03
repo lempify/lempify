@@ -28,6 +28,17 @@ export const buttonPrimary = `
   rounded 
   disabled:opacity-50
 `;
+export const buttonPrimaryXs = `
+  text-neutral-700 dark:text-neutral-300 
+  bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700
+  border border-neutral-300 dark:border-neutral-600 dark:hover:border-neutral-600
+  
+  rounded
+  
+  text-xs 
+  
+  px-1 py-0.5 
+`;
 
 export const headerGradient =
   'bg-gradient-to-r from-neutral-700 to-neutral-900 dark:from-white dark:to-neutral-300';

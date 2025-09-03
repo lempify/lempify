@@ -15,6 +15,8 @@ export type Site = {
     php: string;
     mysql: string;
     nginx: string;
+    redis: string;
+    memcached: string;
   };
   site_type: string;
   language: string;
