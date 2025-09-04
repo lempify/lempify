@@ -2,8 +2,6 @@ const gridCss = `
 grid 
 grid-cols-1 
 
-@md:grid-cols-1 
-
 @lg:grid-cols-2 
 
 @2xl:grid-cols-3
@@ -12,16 +10,19 @@ grid-cols-1
 const gridItemCss = `
     p-4
 
-    border-t border-r border-neutral-300 dark:border-neutral-700 
+    border-t border-r-0 border-neutral-300 dark:border-neutral-700 
+
+    @lg:border-r 
+    @lg:@max-2xl:[&:nth-child(2n)]:border-r-0
     
-    @sm:@max-lg:border-r-0 
-    @lg:@max-2xl:[&:nth-child(2n)]:border-r-0 
     @2xl:[&:nth-child(3n)]:border-r-0
+
+    relative 
 `;
 
 export function Grid({
   children,
-  className,
+  className = '',
   maxCols = 3,
   childrenLength = 0,
 }: {
@@ -36,7 +37,9 @@ export function Grid({
         <>
           {children}
           {Array.from({ length: maxCols - (childrenLength % maxCols) }).map(
-            (_, index) => <GridItem key={index} />
+            (_, index) => (
+              <GridItem key={index} />
+            )
           )}
         </>
       </ul>
@@ -46,16 +49,10 @@ export function Grid({
 
 export function GridItem({
   children,
-  className,
+  className = '',
 }: {
   children?: React.ReactNode;
   className?: string;
 }) {
-  return (
-    <div
-      className={`${gridItemCss} ${className}`}
-    >
-      {children}
-    </div>
-  );
+  return <li className={`${gridItemCss} ${className}`}>{children}</li>;
 }
