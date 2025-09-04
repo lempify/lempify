@@ -21,11 +21,6 @@ export { default as SvgRedis } from './SvgRedis';
 export { default as SvgComposer } from './SvgComposer';
 export { default as SvgWpCli } from './SvgWpCli';
 export { default as SvgMailpit } from './SvgMailpit';
-// export { default as SvgMkcert } from './SvgMkcert';
-// export { default as SvgWpcli } from './SvgWpcli';
-// export { default as SvgMailpit } from './SvgMailpit';
-// export { default as SvgMemcached } from './SvgMemcached';
-
 
 export { default as SvgSpinner } from './SvgSpinner';
 export { default as SvgChevron } from './SvgChevron';
