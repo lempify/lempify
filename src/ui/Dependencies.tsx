@@ -9,20 +9,9 @@ export default function Dashboard() {
   const {
     emit,
     state: {
-      events,
       services,
       tools,
-      runningServicesCount,
-      runningToolsCount,
-      requiredServicesCount,
-      requiredToolsCount,
-      servicesCount,
-      toolsCount,
-      isServicesValid,
-      isToolsValid,
-      requiredServices,
     },
-    isActionPending,
   } = useLempifyd();
 
   const servicesArray = Object.entries(services);
@@ -38,7 +27,11 @@ export default function Dashboard() {
           {servicesArray.map(([name, service]) => {
             return (
               <GridItem key={name}>
-                <DependenciesItem service={service} emit={emit} />
+                <DependenciesItem
+                  className={`${service.isRequired ? 'border-red-500' : 'border-yellow-500'}`}
+                  dependency={service}
+                  emit={emit}
+                />
               </GridItem>
             );
           })}
@@ -46,13 +39,21 @@ export default function Dashboard() {
       </div>
       <div className={`${pageSection} ${cornerBottomLeft}`}>
         <header className='mb-8'>
-          <Heading size='h2' title='Tools' subheading='Your development tools' />
+          <Heading
+            size='h2'
+            title='Tools'
+            subheading='Your development tools'
+          />
         </header>
         <Grid childrenLength={toolsArray.length}>
-          {toolsArray.map(([name, service]) => {
+          {toolsArray.map(([name, tool]) => {
             return (
               <GridItem key={name}>
-                <DependenciesItem service={service} emit={emit} />
+                <DependenciesItem
+                  className={`${tool.isRequired ? 'border-red-500' : 'border-yellow-500'}`}
+                  dependency={tool}
+                  emit={emit}
+                />
               </GridItem>
             );
           })}
