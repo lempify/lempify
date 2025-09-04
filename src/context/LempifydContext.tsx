@@ -13,11 +13,7 @@ import {
 } from 'react';
 
 import { useInvoke } from '../hooks/useInvoke';
-import {
-  InvokeStatus,
-  ServiceTypes,
-  ToolTypes,
-} from '../types/service';
+import { InvokeStatus, ServiceTypes, ToolTypes } from '../types/service';
 import { SERVICES, TOOLS } from '../constants';
 
 type LempifydEvent = {
@@ -38,10 +34,14 @@ type LempifydState = {
   events: Array<LempifydEvent & { timestamp: number }>;
   responses: Array<LempifydResponse & { timestamp: number }>;
   services: LempifydServices;
+  requiredServices: Array<Status>;
   tools: LempifydTools;
+  requiredTools: Array<Status>;
   isAllServicesRunning: boolean;
   servicesCount: number;
   runningServicesCount: number;
+  isServicesValid: boolean;
+  isToolsValid: boolean;
 };
 
 type LempifydAction =
@@ -77,7 +77,7 @@ export type Status = {
   version?: string;
   lastError: string;
   pendingAction?: boolean;
-  formulaeType?: string;
+  dependencyType?: string;
   url?: string;
 };
 
@@ -88,7 +88,11 @@ const initialState: LempifydState = {
   tools: { ...TOOLS },
   isAllServicesRunning: false,
   servicesCount: 0,
+  requiredServices: [],
+  requiredTools: [],
   runningServicesCount: 0,
+  isServicesValid: false,
+  isToolsValid: false,
 };
 
 function lempifydReducer(
@@ -111,7 +115,7 @@ function lempifydReducer(
       let updatedServices = state.services;
       let updatedTools = state.tools;
 
-      if (action.payload.result.formulaeType === 'service') {
+      if (action.payload.result.dependencyType === 'service') {
         updatedServices = {
           ...state.services,
           [action.payload.name]: {
@@ -119,7 +123,7 @@ function lempifydReducer(
             ...action.payload.result,
           },
         };
-      } else if (action.payload.result.formulaeType === 'tool') {
+      } else if (action.payload.result.dependencyType === 'tool') {
         updatedTools = {
           ...state.tools,
           [action.payload.name]: {
@@ -129,17 +133,34 @@ function lempifydReducer(
         };
       }
 
+      const tools = Object.values(updatedTools);
+      const services = Object.values(updatedServices);
+
+      const requiredServices = services.filter(
+        service => service?.isRequired ?? false
+      );
+      const requiredTools = tools.filter(tool => tool?.isRequired ?? false);
+
       return {
         ...state,
         services: updatedServices,
         tools: updatedTools,
-        isAllServicesRunning: Object.values(updatedServices).every(
+        isAllServicesRunning: services.every(
           service => service?.isRunning ?? false
         ),
-        servicesCount: Object.values(updatedServices).length,
-        runningServicesCount: Object.values(updatedServices).filter(
+        servicesCount: services.length,
+        requiredServices,
+        requiredTools,
+        runningServicesCount: services.filter(
           service => service?.isRunning ?? false
         ).length,
+        isServicesValid: requiredServices.every(
+          service =>
+            (service?.isRequired ?? false) && (service?.isRunning ?? false)
+        ),
+        isToolsValid: requiredTools.every(
+          tool => (tool?.isRequired ?? false) && (tool?.isRunning ?? false)
+        ),
       };
     case 'SERVICE_ERROR':
       if (action.payload.name in state.tools) {
