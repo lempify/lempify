@@ -18,4 +18,5 @@ export type Field = {
   wrapperClassName: string;
   inputAttributes: Record<string, any>;
   inputRef: React.RefObject<HTMLInputElement | null> | null;
+  fieldPrefix: string;
 }>;

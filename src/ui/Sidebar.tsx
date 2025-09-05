@@ -7,7 +7,7 @@ import Dialog from './Dialog';
 import Resizable from './Resizable';
 import SvgChevron from './Svg/SvgChevron';
 import DialogSiteCreate from './DialogSiteCreate';
-import { SvgCog, SvgDashboard, SvgPlus, SvgSites } from './Svg';
+import { SvgCog, SvgDashboard, SvgPlus, SvgSites, SvgDependencies } from './Svg';
 
 import { getPreferences, setPreferences } from '../utils/storage';
 
@@ -32,6 +32,8 @@ const INACTIVE_CSS = `
 const ACTIVE_CSS = `
   bg-white 
   dark:bg-black
+
+  inset-shadow-2xs
   
   hover:bg-white 
   dark:hover:bg-black
@@ -59,6 +61,11 @@ const LINKS = [
     label: 'Settings',
     icon: <SvgCog />,
   },
+  {
+    to: '/dependencies',
+    label: 'Dependencies',
+    icon: <SvgDependencies />,
+  },
 ];
 
 export default function Sidebar() {
@@ -85,7 +92,7 @@ export default function Sidebar() {
   return (
     <>
       <Resizable>
-        <aside className='@container/sidebar grid grid-rows-[1fr_auto] sticky top-0 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white overflow-x-auto'>
+        <aside className='@container/sidebar grid grid-rows-[1fr_auto] sticky top-0 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white'>
           <nav className='flex flex-col p-2 text-sm overflow-y-auto'>
             <ul>
               {LINKS.map(link => (
@@ -136,7 +143,7 @@ export default function Sidebar() {
                             }
                           >
                             {/* Active */}
-                            <span className='hidden group-hover:block absolute'>
+                            <span className='hidden group-hover:block absolute bg-neutral-50 dark:bg-neutral-950'>
                               {site.name}
                             </span>
                             <span className='group-hover:invisible'>
