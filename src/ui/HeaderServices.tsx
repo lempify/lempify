@@ -94,7 +94,7 @@ const HeaderServices = () => {
                 />
               ))}
           </ul>
-          <div className='bg-neutral-100 dark:bg-neutral-900 text-right'>
+          <div className='bg-neutral-100 dark:bg-neutral-900 text-right p-1'>
             <Button
               size='xs'
               onClick={() => navigate('/dependencies')}

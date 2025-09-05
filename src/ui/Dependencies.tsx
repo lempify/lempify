@@ -18,10 +18,10 @@ export default function Dashboard() {
   const toolsArray = Object.entries(tools);
 
   return (
-    <Page title={'Dependencies'} description={'Manage all services and tools'}>
+    <Page title={'Dependencies'} description={'Dependencies are services and tools required for your web applications to function properly.'}>
       <div className={`${pageSection} ${cornerTopRight}`}>
         <header className='mb-8'>
-          <Heading size='h2' title='Services' subheading='Your web services' />
+          <Heading size='h2' title='Services' subheading='Services are the backbone of your web applications.' />
         </header>
         <Grid childrenLength={servicesArray.length}>
           {servicesArray.map(([name, service]) => {
@@ -42,7 +42,7 @@ export default function Dashboard() {
           <Heading
             size='h2'
             title='Tools'
-            subheading='Your development tools'
+            subheading='Tools help automate and streamline your site creation process.'
           />
         </header>
         <Grid childrenLength={toolsArray.length}>

@@ -27,7 +27,7 @@ type Payload = {
   site_type: string;
   site_type_config: Record<string, any>;
 };
-export function FormSiteCreate({ onRefresh }: { onRefresh: () => void }) {
+export function FormSiteCreate({ fieldPrefix = '', onRefresh }: { fieldPrefix: string, onRefresh: () => void }) {
   const { invoke, invokeStatus } = useInvoke();
   const [formValues, setFormValues] = useState<Record<string, any>>({
     ...defaultPayload,
@@ -81,6 +81,7 @@ export function FormSiteCreate({ onRefresh }: { onRefresh: () => void }) {
             <div className={field.wrapperClassName ?? ''} key={field.name}>
               <FormFields
                 {...field}
+                fieldPrefix={fieldPrefix || ''}
                 inputRef={index === 0 ? inputRef : null}
                 key={field.name}
                 value={formValues[field.name]}

@@ -30,7 +30,7 @@ const icons = {
   defaultTool: SvgTool,
 };
 
-const BUTTON_CLASSNAME = `mr-4 ${buttonWithArrow}`;
+const BUTTON_CLASSNAME = `mr-4 ${buttonWithArrow} hover:before:translate-x-1 before:transition-transform before:duration-200 before:ease-in-out`;
 
 function DependenciesHeader({
   name,
@@ -57,7 +57,7 @@ function DependenciesHeader({
       <span>{humanName}</span>
       {url && (
         <a href={url} target='_blank' rel='noopener noreferrer'>
-          <SvgLink size={16} />
+          <SvgLink className='hover:text-black dark:hover:text-white' size={16} />
         </a>
       )}
       <span className='ml-auto size-6 flex items-center justify-center'>
@@ -133,7 +133,7 @@ export default function DependenciesItem({
         type={dependency.dependencyType}
       />
 
-      <ul className='flex flex-cols text-neutral-600 dark:text-neutral-400 text-xs'>
+      <ul className='flex flex-cols text-neutral-600 dark:text-neutral-400 text-xs mt-2 empty:mt-0'>
         {!dependency.isInstalled ? (
           <Button
             className={BUTTON_CLASSNAME}

@@ -113,6 +113,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
             <div className={field.wrapperClassName ?? ''} key={field.name}>
               <FormFields
                 {...field}
+                fieldPrefix='sites'
                 inputRef={index === 0 ? inputRef : null}
                 key={field.name}
                 value={formValues[field.name]}
