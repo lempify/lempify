@@ -69,6 +69,7 @@ fn main() -> Result<()> {
             commands::sites::list_sites,
             commands::site::create_site,
             commands::site::delete_site,
+            commands::site::ping_site,
             commands::nginx::generate_nginx_config,
             commands::ssl::add_ssl,
             commands::lempifyd::lempifyd,

@@ -27,6 +27,7 @@ pub struct Site {
     pub name: String,
     pub domain: String,
     pub ssl: bool,
+    pub online: bool,
     pub services: SiteServices,
     pub site_type: String,
     pub language: String,
@@ -88,6 +89,7 @@ pub struct SiteBuilder {
     name: Option<String>,
     domain: Option<String>,
     ssl: bool,
+    online: bool,
     services: Option<SiteServices>,
     site_type: String,
     language: String,
@@ -102,6 +104,7 @@ impl Default for SiteBuilder {
             name: None,
             domain: None,
             ssl: false,
+            online: false,
             services: None,
             site_type: "vanilla".to_string(),
             language: "php".to_string(),
@@ -129,6 +132,11 @@ impl SiteBuilder {
 
     pub fn ssl(mut self, ssl: bool) -> Self {
         self.ssl = ssl;
+        self
+    }
+
+    pub fn online(mut self, online: bool) -> Self {
+        self.online = online;
         self
     }
 
@@ -198,6 +206,7 @@ impl SiteBuilder {
             domain,
             ssl: self.ssl,
             services,
+            online: self.online,
             site_type: self.site_type,
             language: self.language,
             database: self.database,

@@ -322,6 +322,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
 /**
  * useLempifyd is a hook that is used to emit events to the lempifyd daemon and to listen for events from the lempifyd daemon.
  * It is used to manage the state of the lempifyd daemon.
+ *
  * @returns {Object} - An object containing the state, dispatch, requests, and getLatestResponse functions.
  * @example
  * ```tsx
@@ -344,7 +345,7 @@ export function useLempifyd(): {
   const { invoke, invokeStatus } = useInvoke();
   const { state, dispatch } = context;
 
-  const emit = async (name: string, action: string) => {
+  const emit = async (name: string, action: string, args: Record<string, unknown> = {}) => {
     try {
       dispatch({
         type: 'SET_PENDING_ACTION',
@@ -356,6 +357,7 @@ export function useLempifyd(): {
       await invoke('lempifyd', {
         name,
         action,
+        args,
       });
     } catch (error) {
       console.error('[lempifyd] Error emitting event:', error);

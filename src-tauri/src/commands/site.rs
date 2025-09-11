@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, process::Command};
 use tauri::{command, State};
 
 use crate::{
@@ -191,4 +191,27 @@ pub async fn delete_site(
     let sites = config_manager.get_all_sites().await;
 
     Ok(sites)
+}
+
+#[command]
+pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String) -> Result<bool, String> {
+    // Ping the site using curl
+    let output = Command::new("curl")
+        .arg("-sf")
+        .arg(format!("https://{}", domain))
+        .output()
+        .map_err(|e| format!("Failed to ping site: {}", e))?;
+
+    // update site online status
+    let site = config_manager.get_site(&domain).await.ok_or("Site not found")?;
+    config_manager.update_site(&domain, Site {
+        online: output.status.success(),
+        ..site
+    }).await?;
+
+    if output.status.success() {
+        return Ok(true);
+    } else {
+        return Ok(false);
+    }
 }
