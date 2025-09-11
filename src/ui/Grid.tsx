@@ -36,7 +36,7 @@ export function Grid({
       <ul className={gridCss}>
         <>
           {children}
-          {Array.from({ length: maxCols - (childrenLength % maxCols) }).map(
+          {childrenLength % maxCols > 0 && Array.from({ length: maxCols - (childrenLength % maxCols) }).map(
             (_, index) => (
               <GridItem key={index} />
             )

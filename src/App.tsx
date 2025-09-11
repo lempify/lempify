@@ -34,13 +34,13 @@ const App = () => {
       <LempifydProvider>
         <Router>
           <Install>
-            <div className='h-screen grid grid-cols-[auto_1fr] grid-rows-[65px_1fr]'>
+            <div className='grid grid-cols-[auto_1fr] grid-rows-[var(--lempify-header-height)_1fr]'>
               {/* Header - sticky */}
               <Header />
-              {/* Sidebar - sticky */}
+              {/* Sidebar - sticky, spans both rows */}
               <Sidebar />
               {/* Main content */}
-              <main className='overflow-y-auto bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)]'>
+              <main className='bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)]'>
                 {!prefersReducedMotion && <Background />}
                 <div className='p-10 relative'>
                   <Routes>

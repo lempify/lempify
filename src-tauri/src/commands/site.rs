@@ -31,6 +31,8 @@ pub async fn create_site(
 ) -> Result<Site, String> {
     let app_fs = AppFileSystem::new()?;
 
+    println!("Creating site: {:?}", payload);
+
     let domain = &payload.domain.to_lowercase();
     let (domain_name, domain_tld) = 
         domain.split_once('.')
@@ -111,6 +113,8 @@ pub async fn create_site(
     } else if site_type == "vanilla" {
         // Install Vanilla dependencies.
         create_site_type_stub(&site_type, &domain, "")?;
+    } else {
+        return Err(format!("Invalid site type: {}", site_type));
     }
     // Install WordPress dependencies.
     install::site(&site_type, &domain_name, &domain_tld).await?;
@@ -124,7 +128,7 @@ pub async fn create_site(
     };
 
     let site = SiteBuilder::new()
-        .name(domain)
+        .name(payload.site_name)
         .domain(format!("{}.{}", domain_name, domain_tld))
         .ssl(payload.ssl)
         .services(site_services)

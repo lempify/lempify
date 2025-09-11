@@ -1,12 +1,23 @@
 import { SvgSpinner } from './Svg';
 
-export default function Loader({ isVisible = false, size = 50 }: { isVisible?: boolean, size?: number }) {
+export default function Loader({
+  isVisible = false,
+  size = 50,
+  className = '',
+}: {
+  isVisible?: boolean;
+  size?: number;
+  className?: string;
+}) {
   return isVisible ? (
-    <div className='
+    <div
+      className={`
       absolute top-0 left-0 w-full h-full 
       bg-white/30 dark:bg-black/30 
       shadow-inner-lg shadow-white/10 dark:shadow-black/10
-     '>
+      ${className}
+     `}
+    >
       <div
         className={`absolute top-[50%] right-[50%] translate-x-[50%] translate-y-[-50%]`}
       >
