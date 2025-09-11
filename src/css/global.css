@@ -24,6 +24,8 @@
 
   --lempify-bg: var(--lempify-bg-light);
   --lempify-text: var(--lempify-text-light);
+
+  --lempify-header-height: 65px;
 }
 
 .dark {

@@ -4,7 +4,11 @@ import SvgResize from './Svg/SvgResize';
 import { Resizable as ResizableApi } from '../utils/resizable';
 import { getPreferences, setPreferences } from '../utils/storage';
 
-export default function Resizable({ children }: PropsWithChildren) {
+export default function Resizable({
+  children,
+  className = '',
+  tag,
+}: PropsWithChildren<{ className?: string; tag?: string }>) {
   const el = {
     container: useRef<HTMLDivElement>(null),
     resizer: useRef<HTMLDivElement>(null),
@@ -20,18 +24,21 @@ export default function Resizable({ children }: PropsWithChildren) {
       resizable.current = new ResizableApi(el.container.current, {
         elementResizer: el.resizer.current,
         elementHandle: el.handle.current,
-        onResize: (dimension) => setPreferences({
-          ...getPreferences(),
-          sidebarWidth: dimension,
-        }),
+        onResize: dimension =>
+          setPreferences({
+            ...getPreferences(),
+            sidebarWidth: dimension,
+          }),
       });
       return () => resizable.current?.destroy();
     }
   }, [el.container, el.resizer, el.handle]);
 
+  const Elem = tag ?? ('div' as React.ElementType);
+
   return (
-    <div
-      className='resizable relative z-1 min-w-[56px]'
+    <Elem
+      className={`resizable relative z-1 min-w-[56px] h-full ${className}`}
       ref={el.container}
       style={
         {
@@ -49,9 +56,12 @@ export default function Resizable({ children }: PropsWithChildren) {
           className='resizable__resizer-handle text-neutral-900 dark:text-neutral-100 -right-[5px] before:bg-neutral-300 dark:before:bg-neutral-700 hover:before:bg-neutral-400 dark:hover:before:bg-neutral-600 group'
           ref={el.handle}
         >
-          <SvgResize size={[10, 20]} className='bg-neutral-200 dark:bg-neutral-800 rounded-full p-0' />
+          <SvgResize
+            size={[10, 20]}
+            className='bg-neutral-200 dark:bg-neutral-800 rounded-full p-0'
+          />
         </div>
       </div>
-    </div>
+    </Elem>
   );
 }

@@ -1,16 +1,21 @@
+import { buttonWithArrow } from './css';
 import SvgLink from './Svg/SvgLink';
 
 export default function Anchor({
   children,
   className,
+  isExternal = false,
+  variant = 'default',
   ...props
-}: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+}: React.AnchorHTMLAttributes<HTMLAnchorElement> & { isExternal?: boolean, variant?: 'default' | 'arrow' | 'link' }) {
   return (
     <a
-      className={`${className} flex items-center gap-2 cursor-pointer w-fit`}
+      className={`${className} ${variant === 'arrow' ? buttonWithArrow : ''} cursor-pointer w-fit`}
       {...props}
+      target={isExternal ? '_blank' : undefined}
+      rel={isExternal ? 'noopener noreferrer' : undefined}
     >
-      <SvgLink className='flex-shrink-0' />
+      {variant === 'link' && <SvgLink className='flex-shrink-0' />}
       {children}
     </a>
   );

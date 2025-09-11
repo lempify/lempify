@@ -7,7 +7,7 @@ export default function Page({
   children,
 }: {
   title: string;
-  description: string | (() => React.ReactNode);
+  description?: string | (() => React.ReactNode);
   children: React.ReactNode;
 }) {
   return (

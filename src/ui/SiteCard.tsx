@@ -130,54 +130,54 @@ function SiteCard({ site, refresh }: { site: Site; refresh: () => void }) {
   }
 
   return (
-    <div className={`relative group`}>
-        <header className={`flex gap-2`}>
-          <h3 className='flex-1 text-lg relative italic text-neutral-600 dark:text-neutral-400 truncate group-hover:whitespace-normal group-hover:break-all'>
-            <NavLink to={`/sites/${site.domain}`}>
-              <span className='hidden group-hover:inline'>{domain}</span>
-              <span className='group-hover:hidden'>{domain}</span>
-            </NavLink>
-          </h3>
-          <div className='flex-shrink-0 mt-1'>
-            {/* SSL cert generator */}
-            <div
-              className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'text-green-500 dark:text-green-300' : 'text-[var(--lempify-red)]'}`}
-              role='status'
-              aria-live='polite'
-            >
-              {is_ssl ? (
-                <>
-                  <span aria-label='SSL certificate is active' role='img'>
-                    <SvgLock size={16} />
-                  </span>
-                  <span className='sr-only'>SSL certificate is active</span>
-                </>
-              ) : (
-                <button
-                  onClick={handleEvent().addSsl}
-                  className='text-red-800 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded'
-                  aria-label={`Add SSL certificate for ${domain}`}
-                >
-                  Add SSL
-                </button>
-              )}
-            </div>
-          </div>
-        </header>
-        <div className='mt-3 flex gap-2'>
-          <button
-            onClick={() => openInBrowser(domain, is_ssl)}
-            className={btnClassName}
+    <div className={`group`}>
+      <header className={`flex gap-2`}>
+        <h3 className='flex-1 text-lg relative italic text-neutral-600 dark:text-neutral-400 truncate group-hover:whitespace-normal group-hover:break-all'>
+          <NavLink to={`/sites/${site.domain}`}>
+            <span className='hidden group-hover:inline'>{domain}</span>
+            <span className='group-hover:hidden'>{domain}</span>
+          </NavLink>
+        </h3>
+        <div className='flex-shrink-0 mt-1'>
+          {/* SSL cert generator */}
+          <div
+            className={`text-xs px-2 py-0.5 rounded-full ${is_ssl ? 'text-green-500 dark:text-green-300' : 'text-[var(--lempify-red)]'}`}
+            role='status'
+            aria-live='polite'
           >
-            Open
-          </button>
-          <button onClick={openInTauriWindow} className={btnClassName}>
-            Preview
-          </button>
-          <button onClick={handleEvent().deleteSite} className={btnClassName}>
-            Delete
-          </button>
+            {is_ssl ? (
+              <>
+                <span aria-label='SSL certificate is active' role='img'>
+                  <SvgLock size={16} />
+                </span>
+                <span className='sr-only'>SSL certificate is active</span>
+              </>
+            ) : (
+              <button
+                onClick={handleEvent().addSsl}
+                className='text-red-800 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded'
+                aria-label={`Add SSL certificate for ${domain}`}
+              >
+                Add SSL
+              </button>
+            )}
+          </div>
         </div>
+      </header>
+      <div className='mt-3 flex gap-2'>
+        <button
+          onClick={() => openInBrowser(domain, is_ssl)}
+          className={btnClassName}
+        >
+          Open
+        </button>
+        <button onClick={openInTauriWindow} className={btnClassName}>
+          Preview
+        </button>
+        <button onClick={handleEvent().deleteSite} className={btnClassName}>
+          Delete
+        </button>
+      </div>
       <Loader isVisible={invokeStatus === 'pending'} size={20} />
     </div>
   );

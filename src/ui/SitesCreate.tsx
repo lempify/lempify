@@ -56,6 +56,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       ssl: formValues.ssl,
       site_type: formValues.site_type,
       site_type_config: {},
+      // tld: formValues.tld,
     };
 
     for (const [key, value] of Object.entries(formValues)) {

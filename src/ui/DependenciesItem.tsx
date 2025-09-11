@@ -30,7 +30,7 @@ const icons = {
   defaultTool: SvgTool,
 };
 
-const BUTTON_CLASSNAME = `mr-4 ${buttonWithArrow} hover:before:translate-x-1 before:transition-transform before:duration-200 before:ease-in-out`;
+const BUTTON_CLASSNAME = `mr-4 ${buttonWithArrow}`;
 
 function DependenciesHeader({
   name,

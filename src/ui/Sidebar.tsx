@@ -7,7 +7,13 @@ import Dialog from './Dialog';
 import Resizable from './Resizable';
 import SvgChevron from './Svg/SvgChevron';
 import DialogSiteCreate from './DialogSiteCreate';
-import { SvgCog, SvgDashboard, SvgPlus, SvgSites, SvgDependencies } from './Svg';
+import {
+  SvgCog,
+  SvgDashboard,
+  SvgPlus,
+  SvgSites,
+  SvgDependencies,
+} from './Svg';
 
 import { getPreferences, setPreferences } from '../utils/storage';
 
@@ -90,90 +96,95 @@ export default function Sidebar() {
   }, [isExpanded]);
 
   return (
-    <>
-      <Resizable>
-        <aside className='@container/sidebar grid grid-rows-[1fr_auto] sticky top-0 h-full bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white'>
-          <nav className='flex flex-col p-2 text-sm overflow-y-auto'>
-            <ul>
-              {LINKS.map(link => (
-                <li key={link.to} className='mb-2 last:mb-0'>
-                  <div className='flex items-center'>
-                    <NavLink
-                      to={link.to}
-                      className={({ isActive }) =>
-                        `@sidebar-min:flex-1 ${STANDARD_CSS} ${isActive ? `${ACTIVE_CSS}` : INACTIVE_CSS}`
-                      }
-                    >
-                      <i className='flex-shrink-0'>{link.icon}</i>
-                      <span className='flex-1 @max-sidebar-min:hidden'>
-                        {link.label}
-                        {link.label === 'Sites' && config.sites.length ? (
-                          <sup className='text-neutral-500 dark:text-neutral-400'>
-                            {` (${config.sites.length})`}
-                          </sup>
-                        ) : (
-                          ''
-                        )}
-                      </span>
-                    </NavLink>
-                    {link.label === 'Sites' && (
-                      <button
-                        className={`${isActive(link.to) ? 'bg-white dark:bg-black' : ''} rounded-md p-3 ml-2 flex-shrink-0 text-neutral-500 dark:text-neutral-400 @max-sidebar-min:hidden`}
-                        onClick={() => setIsExpanded(!isExpanded)}
+    <div className='row-span-2'>
+      <div className='sticky top-[var(--lempify-header-height)] z-1 h-[calc(100vh-var(--lempify-header-height))]'>
+        <Resizable
+          tag='aside'
+          className='@container/sidebar bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white'
+        >
+          <div className='grid grid-rows-[1fr_auto] h-full'>
+            <nav className='flex flex-col p-2 text-sm overflow-x-hidden'>
+              <ul>
+                {LINKS.map(link => (
+                  <li key={link.to} className='mb-2 last:mb-0'>
+                    <div className='flex items-center'>
+                      <NavLink
+                        to={link.to}
+                        className={({ isActive }) =>
+                          `@sidebar-min:flex-1 ${STANDARD_CSS} ${isActive ? `${ACTIVE_CSS}` : INACTIVE_CSS}`
+                        }
                       >
-                        {isExpanded ? (
-                          <SvgChevron direction='up' size={16} />
-                        ) : (
-                          <SvgChevron direction='down' size={16} />
-                        )}
-                      </button>
-                    )}
-                  </div>
-                  {link.label === 'Sites' && isExpanded && (
-                    <ul className='mx-2 text-sm mt-2 @max-sidebar-min:hidden'>
-                      {config.sites.map(site => (
-                        <li
-                          key={site.name}
-                          className='border-b border-neutral-300 dark:border-neutral-700'
+                        <i className='flex-shrink-0'>{link.icon}</i>
+                        <span className='flex-1 @max-sidebar-min:hidden truncate'>
+                          {link.label}
+                          {link.label === 'Sites' && config.sites.length ? (
+                            <sup className='text-neutral-500 dark:text-neutral-400'>
+                              {` (${config.sites.length})`}
+                            </sup>
+                          ) : (
+                            ''
+                          )}
+                        </span>
+                      </NavLink>
+                      {link.label === 'Sites' && (
+                        <button
+                          className={`${isActive(link.to) ? 'bg-white dark:bg-black' : ''} rounded-md p-3 ml-2 flex-shrink-0 text-neutral-500 dark:text-neutral-400 @max-sidebar-min:hidden`}
+                          onClick={() => setIsExpanded(!isExpanded)}
                         >
-                          <NavLink
-                            to={`/sites/${site.domain}`}
-                            className={({ isActive }) =>
-                              `p-2 block truncate group hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-950 ${isActive ? `bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100` : 'text-neutral-600 dark:text-neutral-400'}`
-                            }
+                          {isExpanded ? (
+                            <SvgChevron direction='up' size={16} />
+                          ) : (
+                            <SvgChevron direction='down' size={16} />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    {link.label === 'Sites' && isExpanded && (
+                      <ul className='mx-2 text-sm mt-2 @max-sidebar-min:hidden'>
+                        {config.sites.map(site => (
+                          <li
+                            key={site.name}
+                            className='border-b border-neutral-300 dark:border-neutral-700'
                           >
-                            {/* Active */}
-                            <span className='hidden group-hover:block absolute bg-neutral-50 dark:bg-neutral-950'>
-                              {site.name}
-                            </span>
-                            <span className='group-hover:invisible'>
-                              {site.name}
-                            </span>
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <div className='flex items-end justify-center'>
-            <button
-              className='opacity-80 p-5 transition-opacity hover:opacity-100 rounded-full bg-white dark:bg-black p-2 text-sm mb-[10%]'
-              onClick={() => setIsSiteCreateOpen(true)}
-            >
-              <SvgPlus size={20} />
-            </button>
+                            <NavLink
+                              to={`/sites/${site.domain}`}
+                              className={({ isActive }) =>
+                                `p-2 block truncate group hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-950 ${isActive ? `bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100` : 'text-neutral-600 dark:text-neutral-400'}`
+                              }
+                            >
+                              {/* Active */}
+                              <span className='hidden group-hover:block absolute bg-neutral-50 dark:bg-neutral-950'>
+                                {site.domain}
+                              </span>
+                              <span className='group-hover:invisible'>
+                                {site.domain}
+                              </span>
+                            </NavLink>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className='flex items-end justify-center overflow-x-hidden'>
+              <button
+                className='opacity-80 p-5 transition-opacity hover:opacity-100 rounded-full bg-white dark:bg-black p-2 text-sm mb-[10%]'
+                onClick={() => setIsSiteCreateOpen(true)}
+              >
+                <SvgPlus size={20} />
+              </button>
+            </div>
           </div>
-        </aside>
-      </Resizable>
+        </Resizable>
+      </div>
       <Dialog
         open={isSiteCreateOpen}
         onClose={() => setIsSiteCreateOpen(false)}
       >
         <DialogSiteCreate />
       </Dialog>
-    </>
+    </div>
   );
 }

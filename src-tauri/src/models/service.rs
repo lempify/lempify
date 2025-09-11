@@ -27,7 +27,9 @@ pub struct ServiceStatus {
 #[derive(Debug, Deserialize)]
 pub struct SiteCreatePayload {
     pub domain: String,
+    // pub tld: String,
     pub site_type: String,
+    pub site_name: String,
     pub ssl: bool,
 }
 

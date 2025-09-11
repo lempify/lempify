@@ -5,44 +5,54 @@ import { useAppConfig } from '../context/AppConfigContext';
 import Page from './Page';
 
 import { parseSiteUrl } from '../utils/parse';
+import Anchor from './Anchor';
+import Button from './Button';
 
 export default function Site() {
-  const { domain } = useParams();
+  const params = useParams();
   const location = useLocation();
   const { config } = useAppConfig();
 
-  const site = config.sites.find(site => site.domain === domain);
+  const site = config.sites.find(site => site.domain === params.domain);
 
   if (!site) {
     return null;
   }
 
   const siteFields = Object.entries(site);
+  const siteUrl = parseSiteUrl(site.domain, site.ssl);
 
   return (
     <Page
       title={site.name}
       description={() => (
-        <a
-          href={parseSiteUrl(site.domain, site.ssl)}
-          target='_blank'
-          rel='noopener noreferrer'
+        <Anchor
+          href={siteUrl}
           className='text-sm hover:underline'
+          isExternal
+          variant='arrow'
         >
-          {site.domain}
-        </a>
+          {site.domain}{' '}
+          <Button onClick={() => {}}>Delete site</Button>
+        </Anchor>
       )}
     >
-      <ul>
+      <ul className='grid grid-cols-2'>
         {siteFields.map(([key, value]) => (
-          <li key={key}>
+          <li key={key} className='flex flex-col gap-2'>
             {typeof value === 'object' ? (
               <>
-                {key}: <pre>{JSON.stringify(value, null, 2)}</pre>
+                <span className='text-sm text-neutral-500 dark:text-neutral-400'>
+                  {key}:
+                </span>{' '}
+                <pre className='overflow-x-auto'>{JSON.stringify(value, null, 2)}</pre>
               </>
             ) : (
               <>
-                {key}: {value}
+                <span className='text-sm text-neutral-500 dark:text-neutral-400'>
+                  {key}:
+                </span>{' '}
+                {value}
               </>
             )}
           </li>

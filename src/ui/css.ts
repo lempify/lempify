@@ -40,7 +40,7 @@ export const buttonPrimaryXs = `
   px-1 py-0.5 
 `;
 
-export const buttonWithArrow = 'hover:text-black dark:hover:text-white before:content-["﹥"] before:mr-1 before:relative before:inline-flex before:text-[90%]';
+export const buttonWithArrow = 'hover:text-black dark:hover:text-white before:content-["﹥"] before:mr-1 before:relative before:inline-flex before:text-[90%]  hover:before:translate-x-1 before:transition-transform before:duration-200 before:ease-in-out';
 
 export const headerGradient =
   'bg-gradient-to-r from-neutral-700 to-neutral-900 dark:from-white dark:to-neutral-300';

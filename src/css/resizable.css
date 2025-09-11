@@ -13,7 +13,7 @@ body.resize-in-progress {
 
   .resizable__resizer {
     height: 100%;
-    width: 100%;
+    max-width: 100%;
     position: relative;
   }
 
