@@ -72,7 +72,9 @@ export const AppConfigProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AppConfigContext.Provider value={{ config, dispatch, setLoading, loading, error }}>
+    <AppConfigContext.Provider
+      value={{ config, dispatch, setLoading, loading, error }}
+    >
       {children}
     </AppConfigContext.Provider>
   );
@@ -84,6 +86,13 @@ export const appConfigReducer = (state: AppConfig, action: any): AppConfig => {
       return { ...state, trusted: action.trusted };
     case 'set_sites':
       return { ...state, sites: action.sites };
+    case 'update_site':
+      return {
+        ...state,
+        sites: state.sites.map(site =>
+          site.domain === action.site.domain ? action.site : site
+        ),
+      };
     case 'set_config':
       return action.config;
     case 'set_settings':
