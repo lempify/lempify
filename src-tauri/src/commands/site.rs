@@ -1,4 +1,4 @@
-use std::{fs, process::Command};
+use std::{fs, process::Command, time::SystemTime};
 use tauri::{command, State};
 
 use crate::{
@@ -204,6 +204,7 @@ pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String)
 
     // update site online status
     let site = config_manager.get_site(&domain).await.ok_or("Site not found")?;
+    let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs();
     config_manager.update_site(&domain, Site {
         online: output.status.success(),
         ..site

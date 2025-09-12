@@ -27,20 +27,42 @@ export default function Site() {
 
   useEffect(() => {
     if (!site) return;
+    const {domain} = site;
     setInvokedAction('ping_site');
-    invoke<boolean>('ping_site', {
-      domain: site.domain,
-    })
-      .then(({ data }) => {
-        setOnline(data ?? false);
-        dispatch({
-          type: 'update_site',
-          site: { ...site, online: data ?? false },
-        });
-      })
-      .finally(() => {
-        setInvokedAction(null);
+    async function pingSite() {
+      const request = await fetch(`https://${domain}`);
+      console.log({request});
+      setOnline(request.ok);
+      dispatch({
+        type: 'update_site',
+        site: { ...site, online: request.ok },
       });
+    }
+    // async function pingSite() {
+    //   const { data } = await invoke<boolean>('ping_site', {
+    //     // @ts-ignore
+    //     domain: site.domain,
+    //   });
+    //   setOnline(data ?? false);
+    //   dispatch({
+    //     type: 'update_site',
+    //     site: { ...site, online: data ?? false },
+    //   });
+    // }
+    pingSite();
+    // invoke<boolean>('ping_site', {
+    //   domain: site.domain,
+    // })
+    //   .then(({ data }) => {
+    //     setOnline(data ?? false);
+    //     dispatch({
+    //       type: 'update_site',
+    //       site: { ...site, online: data ?? false },
+    //     });
+    //   })
+    //   .finally(() => {
+    //     setInvokedAction(null);
+    //   });
   }, [site?.domain]);
 
   if (!site) {
