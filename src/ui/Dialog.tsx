@@ -16,21 +16,32 @@ export default function Dialog({
   const dialog = useRef<HTMLDialogElement>(null);
 
   useLayoutEffect(() => {
-    if (dialog.current && open) {
-      dialog.current.showModal();
+    if (dialog.current) {
+      dialog.current[open ? 'showModal' : 'close']();
     }
   }, [dialog.current, open]);
 
   useEffect(() => {
     if (dialog.current) {
       dialog.current.addEventListener('close', onClose);
+      dialog.current.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       if (dialog.current) {
         dialog.current.removeEventListener('close', onClose);
+        dialog.current.removeEventListener('keydown', handleKeyDown);
       }
     };
-  }, []);
+  }, [dialog.current]);
+
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      console.log('Escape key pressed');
+      e.stopPropagation();
+      e.preventDefault();
+      handleClose();
+    }
+  }
 
   function handleClose() {
     onClose();

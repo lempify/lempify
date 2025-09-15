@@ -7,10 +7,16 @@ export type SiteInfo = {
   is_ssl: boolean;
 };
 
+export type PingData = {
+  online: boolean;
+  timestamp: number;
+};
+
 export type Site = {
   name: string;
   domain: string;
   ssl: boolean;
+  ping: PingData | null;
   services: {
     php: string;
     mysql: string;

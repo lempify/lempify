@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ask } from '@tauri-apps/plugin-dialog';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAppConfig } from '../context/AppConfigContext';
 
 import { parseSiteUrl } from '../utils/parse';
+import { PingData } from '../types/site';
 
 import { useInvoke } from '../hooks/useInvoke';
 
@@ -13,12 +14,17 @@ import Anchor from './Anchor';
 import Button from './Button';
 import Loader from './Loader';
 
+const LAST_PING_INTERVAL = 6000000; // 10 minutes
+
+function formatTimestamp(timestamp: number) {
+  return new Date(timestamp * 1000).toLocaleString();
+}
+
 export default function Site() {
   const { invoke, invokeStatus } = useInvoke();
   const { dispatch } = useAppConfig();
-  const [online, setOnline] = useState(false);
+  const [pingData, setPingData] = useState<PingData | null>(null);
   const params = useParams();
-  const location = useLocation();
   const { config } = useAppConfig();
   const navigate = useNavigate();
   const [invokedAction, setInvokedAction] = useState<string | null>(null);
@@ -27,42 +33,42 @@ export default function Site() {
 
   useEffect(() => {
     if (!site) return;
-    const {domain} = site;
-    setInvokedAction('ping_site');
-    async function pingSite() {
-      const request = await fetch(`https://${domain}`);
-      console.log({request});
-      setOnline(request.ok);
-      dispatch({
-        type: 'update_site',
-        site: { ...site, online: request.ok },
+    const { domain, ping: lastPing } = site ?? {};
+    const timeNow = Date.now();
+
+    async function pingSite(ping: PingData) {
+      // if (timeNow - (lastPing?.timestamp ?? 0) <= LAST_PING_INTERVAL) {
+      // 10 minutes
+      // return;
+      // }
+
+      setInvokedAction('ping_site');
+
+      // Set initial ping data from site
+      if (ping) {
+        setPingData(ping);
+      }
+
+      const { data } = await invoke<PingData>('ping_site', {
+        domain,
+      });
+      if (data) {
+        setPingData(data);
+        dispatch({
+          type: 'update_site',
+          site: { ...site, ping: data },
+        });
+      }
+    }
+
+    if (
+      lastPing &&
+      timeNow - (lastPing?.timestamp ?? 0) > LAST_PING_INTERVAL
+    ) {
+      pingSite(lastPing).finally(() => {
+        setInvokedAction(null);
       });
     }
-    // async function pingSite() {
-    //   const { data } = await invoke<boolean>('ping_site', {
-    //     // @ts-ignore
-    //     domain: site.domain,
-    //   });
-    //   setOnline(data ?? false);
-    //   dispatch({
-    //     type: 'update_site',
-    //     site: { ...site, online: data ?? false },
-    //   });
-    // }
-    pingSite();
-    // invoke<boolean>('ping_site', {
-    //   domain: site.domain,
-    // })
-    //   .then(({ data }) => {
-    //     setOnline(data ?? false);
-    //     dispatch({
-    //       type: 'update_site',
-    //       site: { ...site, online: data ?? false },
-    //     });
-    //   })
-    //   .finally(() => {
-    //     setInvokedAction(null);
-    //   });
   }, [site?.domain]);
 
   if (!site) {
@@ -74,7 +80,7 @@ export default function Site() {
 
   const onlineIndicator = (
     <span
-      className={`size-2 inline-flex rounded-full ${invokeStatus === 'pending' ? 'bg-yellow-500 animate-pulse' : online ? 'bg-green-500' : 'bg-red-500'}`}
+      className={`size-2 inline-flex rounded-full ${invokeStatus === 'pending' ? 'bg-yellow-500 animate-pulse' : pingData?.online ? 'bg-green-500' : 'bg-red-500'}`}
     />
   );
 

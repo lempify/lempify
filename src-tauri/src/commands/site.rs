@@ -8,7 +8,7 @@ use crate::{
         stubs::{create_nginx_config_stub, create_site_type_stub},
     },
     models::{
-        config::{ConfigManager, Site, SiteBuilder, SiteConfig, SiteServices},
+        config::{ConfigManager, Site, SiteBuilder, SiteConfig, SiteServices, PingData},
         service::SiteCreatePayload,
     },
     site_types::{install, uninstall, wordpress},
@@ -131,9 +131,12 @@ pub async fn create_site(
         .name(payload.site_name)
         .domain(format!("{}.{}", domain_name, domain_tld))
         .ssl(payload.ssl)
+        .created(SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis())
         .services(site_services)
         .site_type(&payload.site_type)
+        // @TODO: make this dynamic
         .language("php")
+        // @TODO: make this dynamic
         .database("mysql")
         .site_config(site_config)
         .path(site_path.to_string_lossy().to_string())
@@ -194,7 +197,7 @@ pub async fn delete_site(
 }
 
 #[command]
-pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String) -> Result<bool, String> {
+pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String) -> Result<PingData, String> {
     // Ping the site using curl
     let output = Command::new("curl")
         .arg("-sf")
@@ -202,17 +205,22 @@ pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String)
         .output()
         .map_err(|e| format!("Failed to ping site: {}", e))?;
 
-    // update site online status
-    let site = config_manager.get_site(&domain).await.ok_or("Site not found")?;
-    let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs();
-    config_manager.update_site(&domain, Site {
-        online: output.status.success(),
-        ..site
-    }).await?;
+    // Create ping data with timestamp
+    let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis();
+    let online = output.status.success();
+    let ping_data = PingData {
+        online,
+        timestamp,
+    };
 
-    if output.status.success() {
-        return Ok(true);
-    } else {
-        return Ok(false);
-    }
+    // Update site ping data
+    let mut site = config_manager.get_site(&domain).await.ok_or("Site not found")?;
+    site.ping = Some(PingData {
+        online,
+        timestamp,
+    });
+    
+    config_manager.update_site(&domain, site).await?;
+
+    Ok(ping_data)
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAppConfig } from '../context/AppConfigContext';
 
@@ -88,6 +88,8 @@ export default function Sidebar() {
     location.pathname === to ||
     (location.pathname.startsWith(to) && to === '/sites');
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     setPreferences({
       ...getPreferences(),
@@ -143,7 +145,7 @@ export default function Sidebar() {
                       <ul className='mx-2 text-sm mt-2 @max-sidebar-min:hidden'>
                         {config.sites.map(site => (
                           <li
-                            key={site.name}
+                            key={site.name || site.domain}
                             className='border-b border-neutral-300 dark:border-neutral-700'
                           >
                             <NavLink
@@ -183,7 +185,12 @@ export default function Sidebar() {
         open={isSiteCreateOpen}
         onClose={() => setIsSiteCreateOpen(false)}
       >
-        <DialogSiteCreate />
+        <DialogSiteCreate
+          onSubmit={domain => {
+            setIsSiteCreateOpen(false);
+            navigate(`/sites/${domain}`);
+          }}
+        />
       </Dialog>
     </div>
   );
