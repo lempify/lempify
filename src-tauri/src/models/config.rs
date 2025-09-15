@@ -7,6 +7,12 @@ use tauri::State;
 use tokio::sync::RwLock;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PingData {
+    pub online: bool,
+    pub timestamp: u128,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SiteServices {
     pub php: String,
     pub mysql: String,
@@ -27,7 +33,8 @@ pub struct Site {
     pub name: String,
     pub domain: String,
     pub ssl: bool,
-    pub online: bool,
+    pub ping: Option<PingData>,
+    pub created: u128,
     pub services: SiteServices,
     pub site_type: String,
     pub language: String,
@@ -88,8 +95,9 @@ impl Config {
 pub struct SiteBuilder {
     name: Option<String>,
     domain: Option<String>,
+    created: u128,
     ssl: bool,
-    online: bool,
+    ping: Option<PingData>,
     services: Option<SiteServices>,
     site_type: String,
     language: String,
@@ -103,8 +111,9 @@ impl Default for SiteBuilder {
         Self {
             name: None,
             domain: None,
+            created: 0,
             ssl: false,
-            online: false,
+            ping: None,
             services: None,
             site_type: "vanilla".to_string(),
             language: "php".to_string(),
@@ -130,13 +139,18 @@ impl SiteBuilder {
         self
     }
 
+    pub fn created(mut self, created: u128) -> Self {
+        self.created = created;
+        self
+    }
+
     pub fn ssl(mut self, ssl: bool) -> Self {
         self.ssl = ssl;
         self
     }
 
-    pub fn online(mut self, online: bool) -> Self {
-        self.online = online;
+    pub fn ping(mut self, ping: Option<PingData>) -> Self {
+        self.ping = ping;
         self
     }
 
@@ -205,8 +219,9 @@ impl SiteBuilder {
             name,
             domain,
             ssl: self.ssl,
+            created: self.created,
             services,
-            online: self.online,
+            ping: self.ping,
             site_type: self.site_type,
             language: self.language,
             database: self.database,

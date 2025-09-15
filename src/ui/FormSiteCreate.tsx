@@ -1,14 +1,16 @@
-import { Site } from '../types';
+import { FormEvent, useRef, useState } from 'react';
+
 import { buttonPrimary } from './css';
+
+import { Site } from '../types';
 import FormFields from './FormFields';
+import Loader from './Loader';
+
 import { useInvoke } from '../hooks/useInvoke';
-import { useState } from 'react';
 import { useAppConfig } from '../context/AppConfigContext';
-import { useRef } from 'react';
-import { FormEvent } from 'react';
 import { DEFAULT_SITE_TYPE } from '../constants';
 import siteCreateFields from '../utils/site-create-fields';
-import Loader from './Loader';
+
 /**
  * Constants
  */
@@ -27,13 +29,25 @@ type Payload = {
   site_type: string;
   site_type_config: Record<string, any>;
 };
-export function FormSiteCreate({ fieldPrefix = '', onRefresh }: { fieldPrefix: string, onRefresh: () => void }) {
+export function FormSiteCreate({
+  fieldPrefix = '',
+  onRefresh,
+  onSubmit,
+}: {
+  fieldPrefix: string;
+  onRefresh: () => void;
+  onSubmit: (domain: string) => void;
+}) {
   const { invoke, invokeStatus } = useInvoke();
   const [formValues, setFormValues] = useState<Record<string, any>>({
     ...defaultPayload,
   });
   const { config, dispatch } = useAppConfig();
   const inputRef = useRef<HTMLInputElement>(null);
+  /**
+   * Handle form submission
+   * @param e
+   */
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -56,6 +70,8 @@ export function FormSiteCreate({ fieldPrefix = '', onRefresh }: { fieldPrefix: s
       }
     }
 
+    let domain = '';
+
     try {
       const { data, error } = await invoke<Site>('create_site', {
         payload,
@@ -64,12 +80,14 @@ export function FormSiteCreate({ fieldPrefix = '', onRefresh }: { fieldPrefix: s
         console.error('Failed to create site:', error);
       }
       if (data?.domain === formValues.domain) {
+        domain = data?.domain ?? '';
         setFormValues({ ...defaultPayload });
         dispatch({ type: 'set_sites', sites: [...config.sites, data] });
       }
     } catch (err) {
       console.error('Failed to create site:', err);
     } finally {
+      onSubmit(domain);
       onRefresh();
     }
   }

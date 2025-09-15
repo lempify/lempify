@@ -7,7 +7,7 @@ export default function Button({
   isRounded = false,
 }: {
   children: React.ReactNode;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   className?: string;
   size?: '' | 'sm' | 'xs' | 'md' | 'lg';
   disabled?: boolean;
