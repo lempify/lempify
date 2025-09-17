@@ -47,7 +47,6 @@ const FormFields = (props: Field) => {
 
   return (
     <Fragment>
-      {fieldPrefix}
       {label && labelPosition === 'top' && (
         <label htmlFor={name} className='text-xl text-neutral-700 dark:text-neutral-300 block mb-2 cursor-pointer'>
           {label}
