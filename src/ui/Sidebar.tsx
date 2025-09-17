@@ -143,7 +143,7 @@ export default function Sidebar() {
                     </div>
                     {link.label === 'Sites' && isExpanded && (
                       <ul className='mx-2 text-sm mt-2 @max-sidebar-min:hidden'>
-                        {config.sites.map(site => (
+                        {[...config.sites].reverse().map(site => (
                           <li
                             key={site.name || site.domain}
                             className='border-b border-neutral-300 dark:border-neutral-700'

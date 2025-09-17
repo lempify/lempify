@@ -31,7 +31,7 @@ const Sites = () => {
         </header>
         {config.sites.length ? (
           <Grid childrenLength={config.sites.length}>
-            {config.sites.map(site => (
+            {[...config.sites].reverse().map(site => (
               <GridItem
                 key={site.name || site.domain}
               >

@@ -37,11 +37,6 @@ export default function Site() {
     const timeNow = Date.now();
 
     async function pingSite(ping: PingData) {
-      // if (timeNow - (lastPing?.timestamp ?? 0) <= LAST_PING_INTERVAL) {
-      // 10 minutes
-      // return;
-      // }
-
       setInvokedAction('ping_site');
 
       // Set initial ping data from site
@@ -113,20 +108,19 @@ export default function Site() {
 
   return (
     <Page
-      title={site.name}
+      title={site.name || site.domain}
       description={() => (
-        <>
+        <span className='text-sm hover:underline'>
           {onlineIndicator}
           <Anchor
             href={siteUrl}
-            className='text-sm hover:underline'
             isExternal
             variant='arrow'
-          >
+          > 
             {site.domain}
           </Anchor>{' '}
           <Button onClick={handleDeleteSite}>Delete site</Button>
-        </>
+        </span>
       )}
     >
       <ul className='grid grid-cols-2'>
