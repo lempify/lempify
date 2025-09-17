@@ -1,10 +1,8 @@
 /* CSS specific to the background animation */
 .grid-background {
-  --noise-svg: url('data:image/svg+xml,<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="10.5" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.1"/></svg>');
   --grid-size: 80px;
   background:
-    var(--noise-svg),
-    /* Grid lines */
+    var(--lempify-noise-svg),
     linear-gradient(rgba(210, 210, 210, 0.9) 1px, transparent 1px),
     linear-gradient(90deg, rgba(210, 210, 210, 0.9) 1px, transparent 1px);
   background-size:
@@ -18,9 +16,8 @@
 
 .dark .grid-background {
   background:
-    var(--noise-svg),
-    /* Grid lines */
-      linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    var(--lempify-noise-svg),
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size:
     200px 200px,
