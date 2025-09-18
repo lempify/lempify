@@ -4,6 +4,13 @@
 
 Is a LEMP stack generation & local development tool.
 
+# Dev
+
+* Install and configure this [list of prerequisites](https://v2.tauri.app/start/prerequisites/), specifically ones pertaining to desktop apps.
+* [Install PNPM](https://pnpm.io/installation).
+* From the project root install dependencies `pnpm install`.
+* Run `pnpm lempify:dev` to build and test Lempify.
+
 ### Todo:
 
 \* = v2
