@@ -61,10 +61,9 @@ type LempifydAction =
       };
     }
   | {
-      type: 'SET_PENDING_ACTION';
-      payload: {
+      type: 'UPDATE_DEPENDENCY_KEYS';
+      payload: Partial<Status> & {
         name: string;
-        pending: boolean;
       };
     };
 
@@ -99,6 +98,14 @@ function lempifydReducer(
   state: LempifydState,
   action: LempifydAction
 ): LempifydState {
+  let updatedServices = state.services;
+  let updatedTools = state.tools;
+
+  const isService = action.payload.name in state.services;
+  const isTool = action.payload.name in state.tools;
+
+  const { name, ...update } = action.payload;
+
   switch (action.type) {
     case 'ADD_EVENT':
       return {
@@ -111,10 +118,46 @@ function lempifydReducer(
           },
         ],
       };
-    case 'UPDATE_SERVICE_STATUS':
-      let updatedServices = state.services;
-      let updatedTools = state.tools;
+    case 'UPDATE_DEPENDENCY_KEYS':
+      let updatedState = state;
 
+      if (isService) {
+        const newServices = {
+          ...state.services,
+          [name]: {
+            ...state.services[name as ServiceTypes],
+            ...update,
+          },
+        };
+        updatedState = {
+          ...state,
+          services: newServices,
+          requiredServices: Object.values(newServices).filter(
+            service => service?.isRequired ?? false
+          ),
+        };
+      }
+
+      if (isTool) {
+        const newTools = {
+          ...state.tools,
+          [name]: {
+            ...state.tools[name as ToolTypes],
+            ...update,
+          },
+        };
+        updatedState = {
+          ...state,
+          tools: newTools,
+          requiredTools: Object.values(newTools).filter(
+            tool => tool?.isRequired ?? false
+          ),
+        };
+      }
+
+      return updatedState;
+
+    case 'UPDATE_SERVICE_STATUS':
       if (action.payload.result.dependencyType === 'service') {
         updatedServices = {
           ...state.services,
@@ -187,7 +230,7 @@ function lempifydReducer(
         };
       }
       return state;
-    case 'SET_PENDING_ACTION':
+    /* case 'SET_PENDING_ACTION':
       const isService = action.payload.name in state.services;
       const isTool = action.payload.name in state.tools;
 
@@ -214,7 +257,7 @@ function lempifydReducer(
           },
         };
       }
-      return state;
+      return state; */
     default:
       return state;
   }
@@ -265,11 +308,18 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
             let name = payload.name as ServiceTypes;
 
             // Remove pending action first
+            // dispatch({
+            //   type: 'SET_PENDING_ACTION',
+            //   payload: {
+            //     name,
+            //     pending: false,
+            //   },
+            // });
             dispatch({
-              type: 'SET_PENDING_ACTION',
+              type: 'UPDATE_DEPENDENCY_KEYS',
               payload: {
                 name,
-                pending: false,
+                pendingAction: false,
               },
             });
 
@@ -345,13 +395,17 @@ export function useLempifyd(): {
   const { invoke, invokeStatus } = useInvoke();
   const { state, dispatch } = context;
 
-  const emit = async (name: string, action: string, args: Record<string, unknown> = {}) => {
+  const emit = async (
+    name: string,
+    action: string,
+    args: Record<string, unknown> = {}
+  ) => {
     try {
       dispatch({
-        type: 'SET_PENDING_ACTION',
+        type: 'UPDATE_DEPENDENCY_KEYS',
         payload: {
           name,
-          pending: true,
+          pendingAction: true,
         },
       });
       await invoke('lempifyd', {

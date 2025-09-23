@@ -5,14 +5,10 @@ export default function Dashboard() {
     emit,
     state: {
       events,
-      services,
+      requiredServices,
       tools,
       runningServicesCount,
-      runningToolsCount,
-      requiredServicesCount,
-      requiredToolsCount,
       servicesCount,
-      toolsCount,
       isServicesValid,
       isToolsValid,
     },
@@ -22,15 +18,10 @@ export default function Dashboard() {
     <pre>
       {JSON.stringify(
         {
-        //   events,
-        //   services,
-        //   tools,
+          requiredServices,
+          tools,
           runningServicesCount,
-          runningToolsCount,
-          requiredServicesCount,
-          requiredToolsCount,
           servicesCount,
-          toolsCount,
           isServicesValid,
           isToolsValid,
         },

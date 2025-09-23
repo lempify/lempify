@@ -12,8 +12,14 @@ pub trait Service {
     fn command(&self) -> &str {
         self.name()
     }
+    fn dependencies(&self) -> Vec<&str> {
+        vec![]
+    }
     fn version(&self) -> &str {
         ""
+    }
+    fn post_install(&self) -> Result<(), ServiceError> {
+        Ok(())
     }
     #[allow(unused)]
     fn isolation(&self) -> Option<&ServiceIsolation> {
@@ -71,8 +77,29 @@ pub trait Service {
             return Err(ServiceError::AlreadyInstalled(format!("{}", self.name())));
         }
 
-        let _ = brew::install_service(self.command());
+        for dependency in [self.dependencies(), vec![self.command()]].concat() {
+            if brew::is_service_installed(dependency) {
+                continue;
+            }
 
+            let is_installed = brew::install_service(dependency);
+            if !is_installed.is_ok() {
+                return Err(ServiceError::ServiceError(format!("Failed to install dependency: {}", dependency)));
+            }
+            println!("Installed dependency: {}", dependency);
+        }
+
+        let _ = brew::install_service(self.command());
+        self.post_install()?;
+        Ok(true)
+    }
+
+    fn uninstall(&self) -> Result<bool, ServiceError> {
+        if !self.is_installed() {
+            return Ok(true);
+        }
+
+        // let _ = brew::uninstall_service(self.command());
         Ok(true)
     }
 }

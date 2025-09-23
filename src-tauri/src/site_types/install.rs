@@ -113,11 +113,14 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
 
             // #1 - Start
             let wp_config_var_values: &[(&str, &str)] = &[
+                // DB
                 ("{{DB_NAME}}", &db_name),
                 ("{{DB_USER}}", &settings.mysql_user),
                 ("{{DB_PASSWORD}}", &settings.mysql_password),
                 ("{{DB_HOST}}", &settings.mysql_host),
                 ("{{DB_PORT}}", &settings.mysql_port.to_string()),
+                // Object Cache
+                ("{{LEMPIFY_OBJECT_CACHE}}", "none"),
             ];
             let wp_config_path = site_dir.join("wp-config.php");
             println!("Creating wp-config.php at: {}", wp_config_path.display());

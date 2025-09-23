@@ -17,7 +17,7 @@ Is a LEMP stack generation & local development tool.
 
 - [ ] Port "_... in use_" recovery.
 - [ ] Add DNS Server https://github.com/hickory-dns/hickory-dns *
-- [ ] Services:
+- [x] Services:
     * Test Redis & Memcached connectivity.
     * Fix header pending state.
 - [ ] Add composer, wp-cli steps
@@ -41,6 +41,7 @@ Is a LEMP stack generation & local development tool.
 - [ ] Brew install prompt
 - [ ] MariaDB or MySQL *
 - [ ] Screenshot *
+- [ ] PHP Multi v8 version support *
 
 ### Screenshot:
 ![Lempify](screenshot.jpg)
