@@ -89,7 +89,7 @@ define( 'WP_DEBUG', false );
 
 /* Add any custom values between this line and the "stop editing" line. */
 
-
+define( 'LEMPIFY_OBJECT_CACHE', '{{LEMPIFY_OBJECT_CACHE}}' );
 
 /* That's all, stop editing! Happy publishing. */
 

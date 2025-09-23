@@ -7,6 +7,8 @@ use users::User;
 pub struct AppFileSystem {
     /** `/lempify/src-tauri/` */
     pub app_dir: PathBuf,
+    /** `/opt/homebrew/etc` or `/etc` */
+    pub etc_dir: PathBuf,
     /** `/opt/homebrew/var/www/` or `/var/www` */
     pub sites_dir: PathBuf,
     /** `/opt/homebrew/etc/nginx` or `/etc/nginx` */
@@ -52,26 +54,27 @@ impl AppFileSystem {
             PathBuf::from("/var/www")
         };
 
-        // Nginx directory - standard system location
-        let nginx_dir = if cfg!(target_os = "macos") {
-            PathBuf::from("/opt/homebrew/etc/nginx")
+        // etc directory - standard system location
+        let etc_dir = if cfg!(target_os = "macos") {
+            PathBuf::from("/opt/homebrew/etc")
         } else {
-            PathBuf::from("/etc/nginx")
+            PathBuf::from("/etc")
         };
 
+        // Nginx directory - standard system location
+        let nginx_dir = etc_dir.join("nginx");
+
+        // Nginx sites enabled directory - standard system location
         let nginx_sites_enabled_dir = nginx_dir.join("sites-enabled");
 
         // Certs directory - standard system location
-        let certs_dir = if cfg!(target_os = "macos") {
-            PathBuf::from("/opt/homebrew/etc/nginx/ssl")
-        } else {
-            PathBuf::from("/etc/nginx/ssl")
-        };
+        let certs_dir = nginx_dir.join("ssl");
 
         let cache_dir = config_dir.join("cache");
 
         Ok(Self {
             app_dir,
+            etc_dir,
             sites_dir,
             nginx_dir,
             nginx_sites_enabled_dir,

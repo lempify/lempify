@@ -176,6 +176,9 @@ pub fn stop_service(service: &str) -> Result<(), String> {
     }
 }
 
+/**
+ * Repair a service
+ */
 pub fn repair_service(service: &str) -> Result<(), String> {
     //println!("Repairing service: {}", service);
 
