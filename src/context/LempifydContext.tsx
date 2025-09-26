@@ -230,34 +230,6 @@ function lempifydReducer(
         };
       }
       return state;
-    /* case 'SET_PENDING_ACTION':
-      const isService = action.payload.name in state.services;
-      const isTool = action.payload.name in state.tools;
-
-      if (isService) {
-        return {
-          ...state,
-          services: {
-            ...state.services,
-            [action.payload.name as ServiceTypes]: {
-              ...state.services[action.payload.name as ServiceTypes],
-              pendingAction: action.payload.pending,
-            },
-          },
-        };
-      } else if (isTool) {
-        return {
-          ...state,
-          tools: {
-            ...state.tools,
-            [action.payload.name as ToolTypes]: {
-              ...state.tools[action.payload.name as ToolTypes],
-              pendingAction: action.payload.pending,
-            },
-          },
-        };
-      }
-      return state; */
     default:
       return state;
   }
@@ -307,14 +279,6 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
             const payload = JSON.parse(event.payload);
             let name = payload.name as ServiceTypes;
 
-            // Remove pending action first
-            // dispatch({
-            //   type: 'SET_PENDING_ACTION',
-            //   payload: {
-            //     name,
-            //     pending: false,
-            //   },
-            // });
             dispatch({
               type: 'UPDATE_DEPENDENCY_KEYS',
               payload: {

@@ -47,6 +47,7 @@ pub async fn create_site(
     }
 
     // Check if site already exists in config
+    // @TODO: add more robust checking. E.g. a site fs can exist and not be in config.
     let site_config = config_manager.get_site(&domain).await;
     if let Some(_) = site_config {
         return Err("Site already exists in configuration.".to_string());
@@ -117,7 +118,7 @@ pub async fn create_site(
         return Err(format!("Invalid site type: {}", site_type));
     }
     // Install WordPress dependencies.
-    install::site(&site_type, &domain_name, &domain_tld).await?;
+    install::site(&site_type, &domain_name, &domain_tld, payload.ssl).await?;
 
     let site_config = SiteConfig {
         ssl: payload.ssl,

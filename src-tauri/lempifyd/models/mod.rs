@@ -36,6 +36,13 @@ pub trait Service {
             brew::is_formulae_installed(self.name())
         }
     }
+    fn uninstall(&self) -> Result<bool, ServiceError> {
+        if !self.is_installed() {
+            return Ok(true);
+        }
+
+        Ok(true)
+    }
     fn is_running(&self) -> bool {
         brew::is_service_running(self.command())
     }
@@ -59,7 +66,9 @@ pub trait Service {
         }
 
         if !self.is_running() {
-            return Err(ServiceError::NotRunning(format!("{}", self.name())));
+            //return Err(ServiceError::NotRunning(format!("{}", self.name())));
+            println!("{} is NOT running.", self.name());
+            return Ok(true);
         }
 
         let _ = brew::stop_service(self.command());
@@ -77,7 +86,7 @@ pub trait Service {
             return Err(ServiceError::AlreadyInstalled(format!("{}", self.name())));
         }
 
-        for dependency in [self.dependencies(), vec![self.command()]].concat() {
+        for dependency in self.dependencies() {
             if brew::is_service_installed(dependency) {
                 continue;
             }
@@ -89,17 +98,9 @@ pub trait Service {
             println!("Installed dependency: {}", dependency);
         }
 
-        let _ = brew::install_service(self.command());
+        let installer = brew::install_service(self.command());
+        println!("Installed service: {:?}", installer);
         self.post_install()?;
-        Ok(true)
-    }
-
-    fn uninstall(&self) -> Result<bool, ServiceError> {
-        if !self.is_installed() {
-            return Ok(true);
-        }
-
-        // let _ = brew::uninstall_service(self.command());
         Ok(true)
     }
 }

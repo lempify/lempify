@@ -1,6 +1,7 @@
 use mysql::prelude::*;
 use mysql::*;
 use reqwest;
+use shared::brew;
 use std::fs;
 use std::fs::File;
 use zip;
@@ -10,6 +11,7 @@ use shared::file_system::AppFileSystem;
 use crate::constants;
 use crate::helpers::config::get_settings;
 use crate::helpers::utils::copy_zip_entry_to_path;
+use crate::site_types::wordpress;
 
 /**
  * Download WordPress zip and extract to `~/Library/Application Support/Lempify/site-types/wordpress/{version}`.
@@ -87,7 +89,6 @@ pub async fn wordpress(version: &str) -> Result<(), String> {
     // Clean up temp directory
     fs::remove_dir_all(&temp_extract_dir)
         .map_err(|e| format!("Failed to cleanup temp directory: {}", e))?;
-
     // delete the zip file
     fs::remove_file(wordpress_zip_path)
         .map_err(|e| format!("Failed to delete WordPress zip: {}", e))?;
@@ -95,23 +96,23 @@ pub async fn wordpress(version: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<(), String> {
+pub async fn site(
+    site_type: &str,
+    site_name: &str,
+    site_tld: &str,
+    ssl: bool,
+) -> Result<(), String> {
     let db_name = format!("{}-{}", site_name, site_tld);
     let domain = format!("{}.{}", site_name, site_tld);
     match site_type {
         "wordpress" => {
-            // 1. In wp-config.php, replace placeholders with actual values stored in the settings.
-            // - DB: {{DB_NAME}}, {{DB_USER}}, {{DB_PASSWORD}}, {{DB_HOST}}
-            // - @TODO: SALT: {{AUTH_KEY}}, {{SECURE_AUTH_KEY}}, {{LOGGED_IN_KEY}}, {{NONCE_KEY}}, {{AUTH_SALT}}, {{SECURE_AUTH_SALT}}, {{LOGGED_IN_SALT}}, {{NONCE_SALT}}
-            // 2. Create MySQL DB.
-            // - Update admin user with password.
-
             let app_fs = AppFileSystem::new()?;
-            let site_dir = app_fs.sites_dir.join(domain);
+            let site_dir = app_fs.sites_dir.join(&domain);
 
             let settings = get_settings().await;
 
-            // #1 - Start
+            // wp-config.php - start
+
             let wp_config_var_values: &[(&str, &str)] = &[
                 // DB
                 ("{{DB_NAME}}", &db_name),
@@ -150,10 +151,13 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
                 "wp-config.php created successfully with contents:\n{}",
                 wp_config_contents
             );
-            // #1 - End
+            // wp-config.php - end
 
-            // #2 - Start
-            let settings = get_settings().await;
+            if !brew::is_service_running("mysql") {
+                return Err("MySQL is not running.".to_string());
+            }
+            // MySQL DB - start
+
             let mysql_db_name = format!("{}-{}", site_name, site_tld);
             let mysql_db_create_query =
                 format!("CREATE DATABASE IF NOT EXISTS `{}`", mysql_db_name);
@@ -209,7 +213,7 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
                 .map_err(|e| format!("Failed to create MySQL DB: {}", e))?;
             println!("Database created successfully");
 
-            // #2 - End
+            // MySQL DB - end
 
             // Add correct ownership and permissions to `wp-content` directory.
             let wp_content_dir = site_dir.join("wp-content");
@@ -229,6 +233,12 @@ pub async fn site(site_type: &str, site_name: &str, site_tld: &str) -> Result<()
             fs::set_permissions(&wp_content_dir, perms)
                 .map_err(|e| format!("Failed to set wp-content directory permissions: {}", e))?;
             println!("wp-content directory permissions set successfully");
+
+            if brew::is_formulae_installed("wp-cli") {
+                let site_url = format!("{}://{}", if ssl { "https" } else { "http" }, domain);
+                let site_title = format!("{} Site", site_name);
+                let _ = wordpress::cli_install_site(&site_dir, &site_url, &site_title);
+            }
 
             Ok(())
         }

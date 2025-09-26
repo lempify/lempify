@@ -1,6 +1,8 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::fs::{self, File};
+use std::{
+    fs::{self, File}, path::PathBuf, process::Command
+};
 
 use shared::file_system::AppFileSystem;
 
@@ -85,4 +87,21 @@ pub async fn versions() -> Result<WordPressVersionResponse, String> {
     serde_json::to_writer_pretty(cache_file, &cache_data).map_err(|e| e.to_string())?;
 
     Ok(cache_data.data)
+}
+
+pub fn cli_install_site(file_system: &PathBuf, url: &str, title: &str) -> Result<(), String> {
+    let output = Command::new("wp")
+        .current_dir(file_system)
+        .arg("core")
+        .arg("install")
+        .arg(format!("--url={}", url))
+        .arg(format!("--title={}", title))
+        .arg("--admin_user=admin")
+        .arg("--admin_password=password")
+        .arg("--admin_email=admin@example.com")
+        .output()
+        .map_err(|e| e.to_string())?;
+
+    println!("WP-CLI install site output: {:?}", output);
+    Ok(())
 }

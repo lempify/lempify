@@ -1,3 +1,5 @@
+use std::process::{Command, Stdio};
+
 use shared::brew;
 use shared::file_system::AppFileSystem;
 
@@ -75,6 +77,28 @@ pm.max_spare_servers = 3
 
         Ok(())
     }
+
+    fn php_fpm_binary(&self) -> Result<String, ServiceError> {
+        let version_specific = format!("/opt/homebrew/bin/php-fpm{}", self.version);
+        if std::path::Path::new(&version_specific).exists() {
+            return Ok(version_specific);
+        } else if std::path::Path::new("/opt/homebrew/bin/php-fpm").exists() {
+            return Ok("/opt/homebrew/bin/php-fpm".to_string());
+        } else if std::path::Path::new("/opt/homebrew/sbin/php-fpm").exists() {
+            return Ok("/opt/homebrew/sbin/php-fpm".to_string());
+        } else {
+            match std::process::Command::new("which").arg("php-fpm").output() {
+                Ok(output) if output.status.success() => {
+                    return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
+                }
+                _ => {
+                    return Err(ServiceError::ServiceError(
+                        "Could not find php-fpm binary".to_string(),
+                    ));
+                }
+            }
+        }
+    }
 }
 
 impl BaseService for Service {
@@ -145,8 +169,20 @@ impl BaseService for Service {
             .run()
             .map_err(|e| ServiceError::BrewError(e.to_string()))?;
 
+        println!("PHP isolation");
+
         // Set up initial configuration after install
         self.setup_config()?;
+
+        println!("PHP Config setup complete.");
+
+        self.post_install()?;
+
+        println!("PHP post install complete.");
+        // Can be replaced with start()?;
+        self.restart()?;
+
+        println!("PHP restart complete.");
 
         Ok(true)
     }
@@ -189,27 +225,7 @@ impl BaseService for Service {
         let config_path = self.isolation.get_service_config_dir().join("php-fpm.conf");
 
         // Find the php-fpm binary
-        let php_fpm_binary = {
-            let version_specific = format!("/opt/homebrew/bin/php-fpm{}", self.version);
-            if std::path::Path::new(&version_specific).exists() {
-                version_specific
-            } else if std::path::Path::new("/opt/homebrew/bin/php-fpm").exists() {
-                "/opt/homebrew/bin/php-fpm".to_string()
-            } else if std::path::Path::new("/opt/homebrew/sbin/php-fpm").exists() {
-                "/opt/homebrew/sbin/php-fpm".to_string()
-            } else {
-                match std::process::Command::new("which").arg("php-fpm").output() {
-                    Ok(output) if output.status.success() => {
-                        String::from_utf8_lossy(&output.stdout).trim().to_string()
-                    }
-                    _ => {
-                        return Err(ServiceError::ServiceError(
-                            "Could not find php-fpm binary".to_string(),
-                        ));
-                    }
-                }
-            }
-        };
+        let php_fpm_binary = self.php_fpm_binary().unwrap();
 
         // Start PHP-FPM with our isolated config
         std::process::Command::new(&php_fpm_binary)
@@ -233,7 +249,8 @@ impl BaseService for Service {
 
     fn stop(&self) -> Result<bool, ServiceError> {
         if !self.is_running() {
-            return Err(ServiceError::NotRunning(format!("PHP {}", self.version)));
+            println!("PHP is NOT running. Skipping stop().");
+            return Ok(true);
         }
 
         // Kill the process using our PID file
@@ -273,5 +290,89 @@ impl BaseService for Service {
 
         // Start with new config
         self.start()
+    }
+
+    fn post_install(&self) -> Result<(), ServiceError> {
+        // Exit early if xdebug is already installed with pecl.
+        let output = Command::new("pecl")
+            .arg("list")
+            .stderr(Stdio::piped())
+            .stdout(Stdio::piped())
+            .output()
+            .unwrap();
+
+        if output.status.success() {
+            let output_str = String::from_utf8_lossy(&output.stdout);
+            if output_str.contains("xdebug") {
+                println!("xdebug is ALREADY installed with pecl.");
+                return Ok(());
+            }
+        }
+
+        println!("Installing xdebug with pecl.");
+
+        // Install xdebug
+        let output = Command::new("pecl")
+            .arg("install")
+            .arg("xdebug")
+            .stderr(Stdio::piped())
+            .stdout(Stdio::piped())
+            .output()
+            .unwrap();
+
+        if !output.status.success() {
+            return Err(ServiceError::ServiceError(format!(
+                "Failed to install xdebug: {}",
+                String::from_utf8_lossy(&output.stderr)
+            )));
+        }
+
+        println!("{:?}", output);
+
+        let app_fs =
+            AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+
+        let php_ini_path = app_fs.etc_dir.join("php").join("8.4").join("php.ini");
+        if let Ok(contents) = std::fs::read_to_string(&php_ini_path) {
+            let filtered_contents = contents
+                .lines()
+                .filter(|line| !line.contains("zend_extension=\"xdebug.so\""))
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(php_ini_path, filtered_contents).unwrap();
+        }
+
+        // Add ext-xdebug.ini to conf.d directory.
+        let ext_debug_content = "
+        zend_extension=\"xdebug.so\"\n
+        xdebug.mode=debug\n
+        xdebug.start_with_request=yes\n
+        ";
+
+        let conf_d_path = app_fs
+            .etc_dir
+            .join("php")
+            .join("8.4")
+            .join("conf.d")
+            .join("ext-xdebug.ini");
+        self.config.write_file(&conf_d_path, &ext_debug_content)?;
+
+        println!("conf_d_path: {}", conf_d_path.display());
+        println!("ext_debug_content: {:#?}", ext_debug_content);
+
+        Ok(())
+    }
+
+    fn uninstall(&self) -> Result<bool, ServiceError> {
+        if !self.is_installed() {
+            return Ok(true);
+        }
+
+        self.isolation
+            .brew_command(&["uninstall", &format!("php@{}", self.version)])
+            .run()
+            .map_err(|e| ServiceError::BrewError(e.to_string()))?;
+
+        Ok(true)
     }
 }

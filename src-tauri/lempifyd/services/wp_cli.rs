@@ -42,10 +42,6 @@ impl BaseService for Service {
         self.is_installed()
     }
 
-    fn command(&self) -> &str {
-        "wp"
-    }
-
     fn get_type(&self) -> &str {
         "tool"
     }
