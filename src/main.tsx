@@ -1,5 +1,5 @@
 // @TODO: Look into Suspense & `use` for better handling of async operations
-import React, { Suspense } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import './css/global.css';
@@ -14,7 +14,7 @@ const rootElement = document.getElementById('root') as HTMLElement;
 trackMousePosition(rootElement);
 
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
+ <React.StrictMode> 
     <DarkModeProvider>
       <A11yProvider>
         <App />

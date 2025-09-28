@@ -270,7 +270,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
 
         // Listen for responses
         unlistenResponse = await listen<string>('lempifyd:response', event => {
-          // Log to file in release builds
+          //Log to file in release builds
           invoke('log', {
             message: `[lempifyd] Response received: ${event.payload}`,
           });

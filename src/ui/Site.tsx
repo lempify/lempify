@@ -14,10 +14,10 @@ import Anchor from './Anchor';
 import Button from './Button';
 import Loader from './Loader';
 
-const LAST_PING_INTERVAL = 6000000; // 10 minutes
+const LAST_PING_INTERVAL = /* 600000 */ 60000; // 10 minutes
 
 function formatTimestamp(timestamp: number) {
-  return new Date(timestamp * 1000).toLocaleString();
+  return new Date(timestamp).toLocaleString();
 }
 
 export default function Site() {
@@ -56,10 +56,15 @@ export default function Site() {
       }
     }
 
-    if (
-      lastPing &&
+    console.log(
+      'lastPing',
+      formatTimestamp(lastPing?.timestamp),
+      formatTimestamp(timeNow),
+      timeNow - (lastPing?.timestamp ?? 0),
       timeNow - (lastPing?.timestamp ?? 0) > LAST_PING_INTERVAL
-    ) {
+    );
+
+    if (lastPing && timeNow - (lastPing?.timestamp ?? 0) > LAST_PING_INTERVAL) {
       pingSite(lastPing).finally(() => {
         setInvokedAction(null);
       });
@@ -112,11 +117,7 @@ export default function Site() {
       description={() => (
         <span className='text-sm hover:underline'>
           {onlineIndicator}
-          <Anchor
-            href={siteUrl}
-            isExternal
-            variant='arrow'
-          > 
+          <Anchor href={siteUrl} isExternal variant='arrow'>
             {site.domain}
           </Anchor>{' '}
           <Button onClick={handleDeleteSite}>Delete site</Button>
