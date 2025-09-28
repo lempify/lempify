@@ -56,14 +56,6 @@ export default function Site() {
       }
     }
 
-    console.log(
-      'lastPing',
-      formatTimestamp(lastPing?.timestamp),
-      formatTimestamp(timeNow),
-      timeNow - (lastPing?.timestamp ?? 0),
-      timeNow - (lastPing?.timestamp ?? 0) > LAST_PING_INTERVAL
-    );
-
     if (lastPing && timeNow - (lastPing?.timestamp ?? 0) > LAST_PING_INTERVAL) {
       pingSite(lastPing).finally(() => {
         setInvokedAction(null);
