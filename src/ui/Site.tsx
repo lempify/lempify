@@ -72,7 +72,7 @@ export default function Site() {
 
   const onlineIndicator = (
     <span
-      className={`size-2 inline-flex rounded-full ${invokeStatus === 'pending' ? 'bg-yellow-500 animate-pulse' : pingData?.online ? 'bg-green-500' : 'bg-red-500'}`}
+      className={`size-2 inline-flex rounded-full ${invokedAction === 'ping_site' ? 'bg-yellow-500 animate-pulse' : pingData?.online ? 'bg-green-500' : 'bg-red-500'}`}
     />
   );
 
@@ -94,9 +94,7 @@ export default function Site() {
       if (data) {
         dispatch({ type: 'set_sites', sites: data });
       }
-      // success();
     } catch (err) {
-      // error(err);
     } finally {
       setInvokedAction(null);
       navigate('/sites', { replace: true });
@@ -107,15 +105,16 @@ export default function Site() {
     <Page
       title={site.name || site.domain}
       description={() => (
-        <span className='text-sm hover:underline'>
+        <>
           {onlineIndicator}
           <Anchor href={siteUrl} isExternal variant='arrow'>
             {site.domain}
           </Anchor>{' '}
           <Button onClick={handleDeleteSite}>Delete site</Button>
-        </span>
+        </>
       )}
-    >
+      >
+      <pre>{JSON.stringify({invokeStatus, invokedAction}, null, 2)}</pre>
       <ul className='grid grid-cols-2'>
         {siteFields.map(([key, value]) => (
           <li key={key} className='flex flex-col gap-2'>
@@ -124,9 +123,11 @@ export default function Site() {
                 <span className='text-sm text-neutral-500 dark:text-neutral-400'>
                   {key}:
                 </span>{' '}
-                <pre className='overflow-x-auto'>
-                  {JSON.stringify(value, null, 2)}
-                </pre>
+                <code>
+                  <pre className='overflow-x-auto'>
+                    {JSON.stringify(value, null, 2)}
+                  </pre>
+                </code>
               </>
             ) : (
               <>
