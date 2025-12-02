@@ -57,7 +57,10 @@ function DependenciesHeader({
       <span>{humanName}</span>
       {url && (
         <a href={url} target='_blank' rel='noopener noreferrer'>
-          <SvgLink className='hover:text-black dark:hover:text-white' size={16} />
+          <SvgLink
+            className='hover:text-black dark:hover:text-white'
+            size={16}
+          />
         </a>
       )}
       <span className='ml-auto size-6 flex items-center justify-center'>

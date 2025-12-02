@@ -49,8 +49,8 @@ export default function Details({
             height: icon.size ? `${icon.size}px` : '20px',
           }}
         >
-          <span className="absolute inset-x-0 h-[2px] w-full bg-neutral-400 dark:bg-neutral-300"></span>
-          <span className="absolute inset-x-0 h-[2px] w-full bg-neutral-400 dark:bg-neutral-300 group-not-open:rotate-270 motion-safe:transition-transform motion-safe:duration-200 ease-in-out"></span>
+          <span className='absolute inset-x-0 h-[2px] w-full bg-neutral-400 dark:bg-neutral-300'></span>
+          <span className='absolute inset-x-0 h-[2px] w-full bg-neutral-400 dark:bg-neutral-300 group-not-open:rotate-270 motion-safe:transition-transform motion-safe:duration-200 ease-in-out'></span>
         </div>
       </summary>
       {/* Necessary to avoid children being too close to the summary */}

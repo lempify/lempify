@@ -1,17 +1,12 @@
-import { useEffect } from 'react';
-import { buttonPrimary, glowLine, monoGradientToLeft } from './css';
+import { buttonPrimary, glowLine } from './css';
 import Details from './Details';
 import Heading from './Heading';
-import { SvgShield, SvgTool } from './Svg';
+import { SvgShield } from './Svg';
 import Button from './Button';
 import { useAppConfig } from '../context/AppConfigContext';
 import { useInvoke } from '../hooks/useInvoke';
-import Brand from './Brand';
-import SvgTriangle from './Svg/SvgTriangle';
 
 const BORDER_CSS_COLORS = 'border-white dark:border-black';
-const BORDER_DASHED_CSS_COLORS =
-  'border-dashed border-neutral-300 dark:border-neutral-700';
 
 export default function InstallTrust() {
   const { invoke } = useInvoke();

@@ -1,4 +1,4 @@
-import { parsIntCssVar, getCssVar, parsePercentages } from './parse';
+import { parsIntCssVar, getCssVar } from './parse';
 import * as ResizableTypes from '../types/resizer';
 
 const mandatory = (param: string) => {
@@ -89,7 +89,7 @@ export class Resizable {
         expanding: false,
         hasInteracted: false,
         minDimension: this.minDimension,
-        maxDimension: /* this.el.container[clientDimension] */1000,
+        maxDimension: /* this.el.container[clientDimension] */ 1000,
         offset,
         prevDimension: 0,
         originalCoordinate: 0,
@@ -126,7 +126,7 @@ export class Resizable {
   }
 
   initialiseResize(e: PointerEvent) {
-    if(e.button !== 0) return;
+    if (e.button !== 0) return;
     e.stopPropagation();
     this.data.hasInteracted ||= this.hasInteracted();
 
@@ -146,8 +146,9 @@ export class Resizable {
         .replace('px', '')
     );
     this.data.currentDimension = this.data.prevDimension;
-    this.data.originalCoordinate =
-      (this.el.container as HTMLElement).getBoundingClientRect()[coordinate];
+    this.data.originalCoordinate = (
+      this.el.container as HTMLElement
+    ).getBoundingClientRect()[coordinate];
     this.data.originalPointerCoordinate = e[pointerCoordinate];
 
     window.addEventListener('pointermove', this.resize);
@@ -202,10 +203,12 @@ export class Resizable {
 
     // Apply dimension immediately to the container (not the resizer)
     if (dimension - this.data.minDimension <= this.data.snapThreshold) {
-      (this.el.container as HTMLElement).style[cssDimension] = `${this.data.minDimension}px`;
+      (this.el.container as HTMLElement).style[cssDimension] =
+        `${this.data.minDimension}px`;
       this.onResize?.(this.data.minDimension);
     } else if (this.data.maxDimension - dimension <= this.data.snapThreshold) {
-      (this.el.container as HTMLElement).style[cssDimension] = `${this.data.maxDimension}px`;
+      (this.el.container as HTMLElement).style[cssDimension] =
+        `${this.data.maxDimension}px`;
       this.onResize?.(this.data.maxDimension);
     } else {
       (this.el.container as HTMLElement).style[cssDimension] = `${dimension}px`;

@@ -7,7 +7,10 @@ export default function Anchor({
   isExternal = false,
   variant = 'default',
   ...props
-}: React.AnchorHTMLAttributes<HTMLAnchorElement> & { isExternal?: boolean, variant?: 'default' | 'arrow' | 'link' }) {
+}: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  isExternal?: boolean;
+  variant?: 'default' | 'arrow' | 'link';
+}) {
   return (
     <a
       className={`${className} ${variant === 'arrow' ? buttonWithArrow : ''} cursor-pointer w-fit`}

@@ -16,10 +16,6 @@ import Loader from './Loader';
 
 const LAST_PING_INTERVAL = /* 600000 */ 60000; // 10 minutes
 
-function formatTimestamp(timestamp: number) {
-  return new Date(timestamp).toLocaleString();
-}
-
 export default function Site() {
   const { invoke, invokeStatus } = useInvoke();
   const { dispatch } = useAppConfig();
@@ -113,8 +109,8 @@ export default function Site() {
           <Button onClick={handleDeleteSite}>Delete site</Button>
         </>
       )}
-      >
-      <pre>{JSON.stringify({invokeStatus, invokedAction}, null, 2)}</pre>
+    >
+      <pre>{JSON.stringify({ invokeStatus, invokedAction }, null, 2)}</pre>
       <ul className='grid grid-cols-2'>
         {siteFields.map(([key, value]) => (
           <li key={key} className='flex flex-col gap-2'>

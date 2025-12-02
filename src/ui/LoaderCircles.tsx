@@ -20,11 +20,21 @@ const tailwindColors = [
   'bg-neutral-900 dark:bg-neutral-100',
 ];
 
-
-export default function LoaderCircles({ isVisible = false, size = 100, count = 5 }: { isVisible?: boolean, size?: number, count?: number }) {
+export default function LoaderCircles({
+  isVisible = false,
+  size = 100,
+  count = 5,
+}: {
+  isVisible?: boolean;
+  size?: number;
+  count?: number;
+}) {
   return isVisible ? (
     <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center bg-neutral-200/50 dark:bg-neutral-800/50'>
-      <div className={`relative`} style={{ width: `${size}px`, height: `${size}px` }}>
+      <div
+        className={`relative`}
+        style={{ width: `${size}px`, height: `${size}px` }}
+      >
         {Array.from({ length: count }).map((_, index) => {
           return (
             <div

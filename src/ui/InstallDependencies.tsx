@@ -1,12 +1,10 @@
-import { useNavigate } from 'react-router-dom';
 import { Status, useLempifyd } from '../context/LempifydContext';
 import Button from './Button';
-import { buttonPrimary, monoGradientToLeft } from './css';
+import { buttonPrimary } from './css';
 import Loader from './Loader';
 import { SvgError, SvgSpinner, SvgSuccess, SvgWarning } from './Svg';
 import SvgLink from './Svg/SvgLink';
 import Heading from './Heading';
-import Tooltip from './Tooltip';
 
 const ICON_MAP = {
   success: <SvgSuccess className='text-green-500 dimension-4' size={16} />,
@@ -64,22 +62,22 @@ function Card({ formulae }: { formulae: Status }) {
         (statusType === 'not-installed' || statusType === 'not-running') && (
           <div className='text-xs text-gray-500 absolute inset-0 flex items-center justify-center group-hover:opacity-100 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-900/50 opacity-0 motion-safe:transition-opacity motion-safe:duration-300'>
             {statusType === 'not-installed' && (
-                <Button
-                  size='sm'
-                  className={`${buttonPrimary}`}
-                  onClick={() => emit(formulae.name, 'install')}
-                >
-                  Install
-                </Button>
+              <Button
+                size='sm'
+                className={`${buttonPrimary}`}
+                onClick={() => emit(formulae.name, 'install')}
+              >
+                Install
+              </Button>
             )}
             {statusType === 'not-running' && (
-                <Button
-                  size='sm'
-                  className={`${buttonPrimary}`}
-                  onClick={() => emit(formulae.name, 'start')}
-                >
-                  Start
-                </Button>
+              <Button
+                size='sm'
+                className={`${buttonPrimary}`}
+                onClick={() => emit(formulae.name, 'start')}
+              >
+                Start
+              </Button>
             )}
             <a
               className={`${buttonPrimary} rounded-full ml-2`}

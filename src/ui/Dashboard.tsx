@@ -2,9 +2,7 @@ import { useLempifyd } from '../context/LempifydContext';
 
 export default function Dashboard() {
   const {
-    emit,
     state: {
-      events,
       requiredServices,
       tools,
       runningServicesCount,
@@ -12,7 +10,6 @@ export default function Dashboard() {
       isServicesValid,
       isToolsValid,
     },
-    isActionPending,
   } = useLempifyd();
   return (
     <pre>

@@ -80,7 +80,9 @@ const HeaderServices = () => {
         className={`overflow-hidden absolute top-[calc(100%+1px)] right-0${isOpen ? '' : ' pointer-events-none'}`}
         ref={servicesRef}
       >
-        <div className={`bg-neutral-100 dark:bg-neutral-900 border-b border-l border-neutral-300 dark:border-neutral-700 text-right motion-safe:transition-transform motion-safe:duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-[calc(100%+1px)]'}`}>
+        <div
+          className={`bg-neutral-100 dark:bg-neutral-900 border-b border-l border-neutral-300 dark:border-neutral-700 text-right motion-safe:transition-transform motion-safe:duration-300 ease-in-out ${isOpen ? 'translate-y-0' : '-translate-y-[calc(100%+1px)]'}`}
+        >
           <ul
             className={`grid grid-cols-1 md:grid-cols-3 bg-neutral-100 dark:bg-neutral-900 divide-y-1 md:divide-y-0 divide-x-0 md:divide-x-1 divide-neutral-300 dark:divide-neutral-700`}
           >

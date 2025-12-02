@@ -6,7 +6,6 @@ import { SERVICES, TOOLS } from '../constants';
 import {
   NavLink,
   Route,
-  BrowserRouter as Router,
   Routes,
   useLocation,
   useNavigate,
@@ -83,7 +82,6 @@ export default function Install({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
-  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     async function emitServices() {
@@ -122,7 +120,7 @@ export default function Install({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (config.installed || isInstalled) {
+  if (config.installed) {
     return children;
   }
 

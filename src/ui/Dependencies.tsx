@@ -8,20 +8,26 @@ import DependenciesItem from './DependenciesItem';
 export default function Dashboard() {
   const {
     emit,
-    state: {
-      services,
-      tools,
-    },
+    state: { services, tools },
   } = useLempifyd();
 
   const servicesArray = Object.entries(services);
   const toolsArray = Object.entries(tools);
 
   return (
-    <Page title={'Dependencies'} description={'Dependencies are services and tools required for your web applications to function properly.'}>
+    <Page
+      title={'Dependencies'}
+      description={
+        'Dependencies are services and tools required for your web applications to function properly.'
+      }
+    >
       <div className={`${pageSection} ${cornerTopRight}`}>
         <header className='mb-8'>
-          <Heading size='h2' title='Services' subheading='Services are the backbone of your web applications.' />
+          <Heading
+            size='h2'
+            title='Services'
+            subheading='Services are the backbone of your web applications.'
+          />
         </header>
         <Grid childrenLength={servicesArray.length}>
           {servicesArray.map(([name, service]) => {

@@ -96,7 +96,13 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
 
   return (
     <DarkModeContext.Provider
-      value={{ theme, valueByTheme, isDark, setTheme: setThemeHandler, toggleTheme }}
+      value={{
+        theme,
+        valueByTheme,
+        isDark,
+        setTheme: setThemeHandler,
+        toggleTheme,
+      }}
     >
       {children}
     </DarkModeContext.Provider>

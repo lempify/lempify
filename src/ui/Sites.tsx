@@ -32,9 +32,7 @@ const Sites = () => {
         {config.sites.length ? (
           <Grid childrenLength={config.sites.length}>
             {[...config.sites].reverse().map(site => (
-              <GridItem
-                key={site.name || site.domain}
-              >
+              <GridItem key={site.name || site.domain}>
                 <SiteCard refresh={refresh} site={site} />
               </GridItem>
             ))}

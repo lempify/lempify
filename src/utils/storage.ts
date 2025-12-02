@@ -37,7 +37,10 @@ export class Storage<T> {
       }
       return this.deserialize(item);
     } catch (error) {
-      console.warn(`Failed to get item from localStorage for key "${this.key}":`, error);
+      console.warn(
+        `Failed to get item from localStorage for key "${this.key}":`,
+        error
+      );
       return this.defaultValue;
     }
   }
@@ -54,7 +57,10 @@ export class Storage<T> {
       const serialized = this.serialize(value);
       localStorage.setItem(this.key, serialized);
     } catch (error) {
-      console.error(`Failed to set item in localStorage for key "${this.key}":`, error);
+      console.error(
+        `Failed to set item in localStorage for key "${this.key}":`,
+        error
+      );
     }
   }
 
@@ -69,7 +75,10 @@ export class Storage<T> {
     try {
       localStorage.removeItem(this.key);
     } catch (error) {
-      console.error(`Failed to remove item from localStorage for key "${this.key}":`, error);
+      console.error(
+        `Failed to remove item from localStorage for key "${this.key}":`,
+        error
+      );
     }
   }
 

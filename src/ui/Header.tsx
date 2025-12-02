@@ -76,7 +76,8 @@ export default function Header() {
           onClick={goBack}
         >
           <SvgChevron direction='left' size={12} />
-        </Button>{'  '}
+        </Button>
+        {'  '}
         <Button
           disabled={!canGoForward}
           size='sm'

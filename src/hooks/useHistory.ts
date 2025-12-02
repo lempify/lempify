@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export function useHistory() {
-
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState(
     window.history.state.idx
   );

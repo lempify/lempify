@@ -86,10 +86,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            <button
-              type='submit'
-              className={buttonPrimary}
-            >
+            <button type='submit' className={buttonPrimary}>
               Save
             </button>
           </form>

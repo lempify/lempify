@@ -17,16 +17,8 @@ export default function SvgChevron({
 }) {
   const d = directions[direction];
   return (
-    <Svg
-      viewBox='0 0 16 16'
-      xmlSpace='preserve'
-      size={size}
-      {...props}
-    >
-      <path
-        d={d}
-        fill='currentColor'
-      />
+    <Svg viewBox='0 0 16 16' xmlSpace='preserve' size={size} {...props}>
+      <path d={d} fill='currentColor' />
     </Svg>
   );
 }
