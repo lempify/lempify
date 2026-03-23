@@ -19,15 +19,12 @@ import Site404 from './ui/Site404';
 import Page404 from './ui/Page404';
 import Settings from './ui/Settings';
 import Dashboard from './ui/Dashboard';
-import Background from './ui/Background';
 
 import { AppConfigProvider } from './context/AppConfigContext';
 import { LempifydProvider } from './context/LempifydContext';
-import { useA11y } from './context/A11yContext';
 import Dependencies from './ui/Dependencies';
 
 const App = () => {
-  const { prefersReducedMotion } = useA11y();
 
   return (
     <AppConfigProvider>
@@ -41,7 +38,6 @@ const App = () => {
               <Sidebar />
               {/* Main content */}
               <main className='bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)]'>
-                {!prefersReducedMotion && <Background />}
                 <div className='p-10 relative'>
                   <Routes>
                     <Route path='/' element={<Dashboard />} />

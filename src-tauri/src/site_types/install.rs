@@ -51,12 +51,13 @@ pub async fn wordpress(version: &str) -> Result<(), String> {
 
     let wordpress_zip_data = reqwest::get(wordpress_zip_url)
         .await
-        .unwrap()
+        .map_err(|e| format!("Failed to download WordPress: {}", e))?
         .bytes()
         .await
-        .unwrap();
+        .map_err(|e| format!("Failed to read WordPress download: {}", e))?;
 
-    let _ = fs::write(&wordpress_zip_path, wordpress_zip_data);
+    fs::write(&wordpress_zip_path, &wordpress_zip_data)
+        .map_err(|e| format!("Failed to write WordPress zip: {}", e))?;
 
     let mut wordpress_zip = zip::ZipArchive::new(
         File::open(&wordpress_zip_path)
@@ -124,7 +125,6 @@ pub async fn site(
                 ("{{LEMPIFY_OBJECT_CACHE}}", "none"),
             ];
             let wp_config_path = site_dir.join("wp-config.php");
-            println!("Creating wp-config.php at: {}", wp_config_path.display());
 
             let mut wp_config_contents = fs::read_to_string(&wp_config_path).map_err(|e| {
                 format!(
@@ -146,41 +146,16 @@ pub async fn site(
             perms.set_readonly(false);
             fs::set_permissions(&wp_config_path, perms)
                 .map_err(|e| format!("Failed to set wp-config.php permissions: {}", e))?;
-
-            println!(
-                "wp-config.php created successfully with contents:\n{}",
-                wp_config_contents
-            );
             // wp-config.php - end
 
             if !brew::is_service_running("mysql") {
                 return Err("MySQL is not running.".to_string());
             }
             // MySQL DB - start
-
-            let mysql_db_name = format!("{}-{}", site_name, site_tld);
-            let mysql_db_create_query =
-                format!("CREATE DATABASE IF NOT EXISTS `{}`", mysql_db_name);
-
             // @TODO: Add user creation and password update.
-            let mysql_db_user = "lempify";
-            let mysql_db_password = "lempify";
-            let mysql_db_host = "localhost";
-            let _mysql_db_user_create_query = format!(
-                "CREATE USER IF NOT EXISTS `{}`@`{}`",
-                mysql_db_user, mysql_db_host
-            );
-            let _mysql_db_user_password_query = format!(
-                "SET PASSWORD FOR `{}`@`{}` = PASSWORD('{}')",
-                mysql_db_user, mysql_db_host, mysql_db_password
-            );
-            let _mysql_db_grant_query = format!(
-                "GRANT ALL PRIVILEGES ON `{}`.* TO `{}`@`{}`",
-                mysql_db_name, mysql_db_user, mysql_db_host
-            );
-            let _mysql_db_flush_query = "FLUSH PRIVILEGES";
+            let mysql_db_create_query =
+                format!("CREATE DATABASE IF NOT EXISTS `{}`", db_name);
 
-            // Connect to MySQL (installed via brew).
             let conn_str = format!(
                 "mysql://{}:{}@{}:{}/",
                 settings.mysql_user,
@@ -188,51 +163,21 @@ pub async fn site(
                 settings.mysql_host,
                 settings.mysql_port
             );
-            println!("Attempting to connect to MySQL with conn_str: {}", conn_str);
 
             let pool = Pool::new(conn_str.as_str())
                 .map_err(|e| format!("Failed to connect to MySQL: {}", e))?;
 
-            println!("Pool created successfully");
-
             let mut conn = pool
                 .get_conn()
                 .map_err(|e| format!("Failed to get MySQL connection: {}", e))?;
-            println!("Connection established successfully");
 
-            // Test connection with a simple query
-            let test_query = "SELECT VERSION()";
-            let version: Option<String> = conn
-                .query_first(test_query)
-                .map_err(|e| format!("Failed to execute test query: {}", e))?;
-            println!("MySQL Version: {:?}", version);
-
-            // Execute queries.
-            println!("Creating database: {}", mysql_db_name);
             conn.query_drop(mysql_db_create_query)
                 .map_err(|e| format!("Failed to create MySQL DB: {}", e))?;
-            println!("Database created successfully");
 
             // MySQL DB - end
 
-            // Add correct ownership and permissions to `wp-content` directory.
-            let wp_content_dir = site_dir.join("wp-content");
-            let mut perms = fs::metadata(&wp_content_dir)
-                .map_err(|e| format!("Failed to get wp-content directory metadata: {}", e))?
-                .permissions();
-
-            // Set permissions to 755 (rwxr-xr-x) for wp-content directory
-            // This allows the web server to read and write to the directory
-            perms.set_readonly(false);
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                perms.set_mode(0o755);
-            }
-
-            fs::set_permissions(&wp_content_dir, perms)
-                .map_err(|e| format!("Failed to set wp-content directory permissions: {}", e))?;
-            println!("wp-content directory permissions set successfully");
+            // Fix WordPress file permissions and ownership
+            wordpress::fix_permissions(&site_dir)?;
 
             if brew::is_formulae_installed("wp-cli") {
                 let site_url = format!("{}://{}", if ssl { "https" } else { "http" }, domain);

@@ -58,6 +58,10 @@ pm.max_children = 5
 pm.start_servers = 2
 pm.min_spare_servers = 1
 pm.max_spare_servers = 3
+php_admin_value[upload_max_filesize] = 64M
+php_admin_value[post_max_size] = 64M
+php_admin_value[memory_limit] = 256M
+php_admin_value[max_execution_time] = 120
 "#,
             pid_path,
             log_path.display(),
@@ -332,11 +336,15 @@ impl BaseService for Service {
         let app_fs =
             AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
 
-        let php_ini_path = app_fs.etc_dir.join("php").join("8.4").join("php.ini");
+        let php_ini_path = app_fs.etc_dir.join("php").join(&self.version).join("php.ini");
         if let Ok(contents) = std::fs::read_to_string(&php_ini_path) {
             let filtered_contents = contents
                 .lines()
-                .filter(|line| !line.contains("zend_extension=\"xdebug.so\""))
+                .filter(|line| {
+                    !line.contains("zend_extension=\"xdebug.so\"")
+                        && !line.contains("zend_extension=\"memcached.so\"")
+                        && !line.contains("extension=\"memcached.so\"")
+                })
                 .collect::<Vec<_>>()
                 .join("\n");
             std::fs::write(php_ini_path, filtered_contents).unwrap();
@@ -346,13 +354,13 @@ impl BaseService for Service {
         let ext_debug_content = "
         zend_extension=\"xdebug.so\"\n
         xdebug.mode=debug\n
-        xdebug.start_with_request=yes\n
+        xdebug.start_with_request=trigger\n
         ";
 
         let conf_d_path = app_fs
             .etc_dir
             .join("php")
-            .join("8.4")
+            .join(&self.version)
             .join("conf.d")
             .join("ext-xdebug.ini");
         self.config.write_file(&conf_d_path, &ext_debug_content)?;

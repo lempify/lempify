@@ -31,8 +31,6 @@ pub async fn create_site(
 ) -> Result<Site, String> {
     let app_fs = AppFileSystem::new()?;
 
-    println!("Creating site: {:?}", payload);
-
     let domain = &payload.domain.to_lowercase();
     let (domain_name, domain_tld) = 
         domain.split_once('.')
@@ -48,8 +46,7 @@ pub async fn create_site(
 
     // Check if site already exists in config
     // @TODO: add more robust checking. E.g. a site fs can exist and not be in config.
-    let site_config = config_manager.get_site(&domain).await;
-    if let Some(_) = site_config {
+    if config_manager.get_site(&domain).await.is_some() {
         return Err("Site already exists in configuration.".to_string());
     }
 
@@ -156,12 +153,12 @@ pub async fn delete_site(
     config_manager: State<'_, ConfigManager>,
     domain: String,
 ) -> Result<Vec<Site>, String> {
-    let sites_dir = AppFileSystem::new()?.sites_dir;
-    let nginx_sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
-    let site_conf_path = nginx_sites_enabled_dir.join(format!("{}.conf", domain));
+    let app_fs = AppFileSystem::new()?;
+    let site_conf_path = app_fs.nginx_sites_enabled_dir.join(format!("{}.conf", domain));
 
-    let domain_name = domain.split('.').next().unwrap();
-    let domain_tld = domain.split('.').nth(1).unwrap();
+    let (domain_name, domain_tld) = domain
+        .split_once('.')
+        .ok_or_else(|| "Invalid domain format".to_string())?;
 
     remove_file_with_sudo(&site_conf_path)?;
 
@@ -172,7 +169,7 @@ pub async fn delete_site(
 
     let site_type: &str = &site_config.site_type;
 
-    let site_path = sites_dir.join(&domain);
+    let site_path = app_fs.sites_dir.join(&domain);
 
     if site_path.exists() {
         fs::remove_dir_all(&site_path)
@@ -199,29 +196,20 @@ pub async fn delete_site(
 
 #[command]
 pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String) -> Result<PingData, String> {
-    // Ping the site using curl
+    let mut site = config_manager.get_site(&domain).await.ok_or("Site not found")?;
+    let scheme = if site.ssl { "https" } else { "http" };
+
     let output = Command::new("curl")
-        .arg("-sf")
-        .arg(format!("https://{}", domain))
+        .arg("-sfk")
+        .arg(format!("{}://{}", scheme, domain))
         .output()
         .map_err(|e| format!("Failed to ping site: {}", e))?;
 
-    // Create ping data with timestamp
     let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis();
     let online = output.status.success();
-    let ping_data = PingData {
-        online,
-        timestamp,
-    };
+    site.ping = Some(PingData { online, timestamp });
 
-    // Update site ping data
-    let mut site = config_manager.get_site(&domain).await.ok_or("Site not found")?;
-    site.ping = Some(PingData {
-        online,
-        timestamp,
-    });
-    
     config_manager.update_site(&domain, site).await?;
 
-    Ok(ping_data)
+    Ok(PingData { online, timestamp })
 }

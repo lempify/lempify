@@ -11,12 +11,10 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import InstallDependencies from './InstallDependencies';
-import Background from './Background';
 import Brand from './Brand';
 import InstallWelcome from './InstallWelcome';
 import { buttonPrimary, cornerTopRight } from './css';
 import InstallTrust from './InstallTrust';
-import { useA11y } from '../context/A11yContext';
 import Button from './Button';
 import { useInvoke } from '../hooks/useInvoke';
 import LoaderCircles from './LoaderCircles';
@@ -78,7 +76,6 @@ export default function Install({ children }: { children: React.ReactNode }) {
   const { config, dispatch } = useAppConfig();
   const { invoke, invokeStatus } = useInvoke();
   const { emit, state } = useLempifyd();
-  const { prefersReducedMotion } = useA11y();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
@@ -126,7 +123,6 @@ export default function Install({ children }: { children: React.ReactNode }) {
 
   return (
     <div className='bg-neutral-100 dark:bg-neutral-900 w-screen h-screen flex items-center justify-center flex-col bg-neutral-100 overflow-y-auto'>
-      {!prefersReducedMotion && <Background />}
       <div
         className={`relative w-[calc(100vw-4rem)] h-[calc(100vh-4rem)] lg:w-2/3 lg:h-[60vh] lg:min-h-[60vh] ${cornerTopRight} grid grid-cols-[200px_1fr] border border-neutral-300 dark:border-neutral-700`}
       >

@@ -46,6 +46,7 @@ impl BaseService for Service {
             )));
         }
 
+        // @TODO: Add memcached.ini to conf.d directory.
         // restart php service
         let _ = php::Service::new("8.4").unwrap().restart();
 

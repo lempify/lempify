@@ -10,7 +10,9 @@ fn main() {
     println!("[lempifyd:pid]: {}", std::process::id());
 
     // Start IPC server
-    let _ = ipc::start_server();
+    if let Err(e) = ipc::start_server() {
+        eprintln!("[lempifyd]: Failed to start IPC server: {}", e);
+    }
 
     if !brew::is_installed() {
         brew::install().unwrap();
