@@ -31,7 +31,7 @@ pub fn list_entries() -> Result<Vec<String>, String> {
  * ```
  */
 pub fn add_entry(domain: &str) -> Result<(), String> {
-    let entry = format!("127.0.0.1 {}", domain);
+    let entry = format!("127.0.0.1 {}\n::1 {}", domain, domain);
     let contents =
         fs::read_to_string(HOSTS_PATH).map_err(|e| format!("Failed to read hosts file: {}", e))?;
 

@@ -60,3 +60,13 @@ button {
     cursor: not-allowed;
   }
 }
+
+::selection {
+  background-color: var(--lempify-primary);
+  color: #fff;
+}
+
+::-moz-selection {
+  background-color: var(--lempify-primary);
+  color: #fff;
+}

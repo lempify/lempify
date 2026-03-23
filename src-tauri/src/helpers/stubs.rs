@@ -105,6 +105,24 @@ pub fn create_site_type_stub(site_type: &str, domain: &str, version: &str) -> Re
                     }
                 }
             }
+
+            // Copy bundled themes from the WordPress download into the site's wp-content/themes.
+            // wp-content itself is skipped above to preserve the stub's mu-plugins and object-cache,
+            // so themes must be copied explicitly.
+            let src_themes_dir = dest_stub_dir.join("wp-content").join("themes");
+            let dest_themes_dir = dest_site_dir.join("wp-content").join("themes");
+            if src_themes_dir.exists() {
+                for theme_entry in fs::read_dir(&src_themes_dir).map_err(|e| {
+                    format!("Failed to read bundled themes directory: {}", e)
+                })? {
+                    let theme_entry = theme_entry
+                        .map_err(|e| format!("Failed to read theme entry: {}", e))?;
+                    if theme_entry.path().is_dir() {
+                        let dest_theme = dest_themes_dir.join(theme_entry.file_name());
+                        copy_dir_recursive(&theme_entry.path(), &dest_theme)?;
+                    }
+                }
+            }
         }
         "vanilla" => {
             // Copy all files from `src-tauri/stubs/vanilla` to the site directory.

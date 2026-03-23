@@ -14,6 +14,7 @@ import Loader from './Loader';
 import Heading from './Heading';
 import { cornerBottomLeft, cornerTopRight, pageSection } from './css';
 import { SvgLock, SvgMysql, SvgNginx, SvgPhp } from './Svg';
+import { openInBrowser } from '../utils/tauri';
 
 const LAST_PING_INTERVAL = 60000;
 const PING_REFRESH_INTERVAL = 30000;
@@ -79,6 +80,10 @@ export default function Site() {
 
   useEffect(() => {
     if (!site) return;
+
+    setPingData(null);
+    setPingHistory([]);
+
     const { domain, ping: lastPing } = site;
     const timeNow = Date.now();
 
@@ -184,7 +189,7 @@ export default function Site() {
             <Button
               size='sm'
               className='border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800'
-              onClick={() => window.open(siteUrl, '_blank')}
+              onClick={() => openInBrowser(site.domain, site.ssl)}
             >
               Open
             </Button>
