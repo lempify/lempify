@@ -2,7 +2,7 @@ use crate::services::error::ServiceError;
 use shared::brew::BrewCommand;
 use shared::file_system::AppFileSystem;
 use std::path::PathBuf;
-use users::{get_current_uid, get_user_by_uid};
+use uzers::{get_current_uid, get_user_by_uid};
 
 pub struct ServiceIsolation {
     file_system: AppFileSystem,

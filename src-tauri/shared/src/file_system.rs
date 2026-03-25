@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use users::User;
+use uzers::User;
 
 #[derive(Debug, Clone)]
 pub struct AppFileSystem {

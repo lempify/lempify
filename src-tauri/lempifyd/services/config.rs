@@ -1,13 +1,15 @@
 use shared::file_system::AppFileSystem;
 use std::path::PathBuf;
-use users::{get_current_uid, get_user_by_uid};
+use uzers::{get_current_uid, get_user_by_uid};
 
 use super::error::ServiceError;
 
 pub struct ServiceConfig {
     pub file_system: AppFileSystem,
     service_name: String,
+    #[allow(dead_code)]
     version: String,
+    #[allow(dead_code)]
     config_path: PathBuf,
 }
 

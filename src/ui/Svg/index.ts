@@ -33,3 +33,5 @@ export { default as SvgError } from './SvgError';
 
 export { default as SvgHelp } from './SvgHelp';
 export { default as SvgTool } from './SvgTool';
+export { default as SvgLogo } from './SvgLogo';
+export { default as SvgLogo2 } from './SvgLogo2';

@@ -1,6 +1,6 @@
 use std::process::{Command, Stdio};
 
-use shared::{brew, file_system::AppFileSystem};
+use shared::constants::DEFAULT_PHP_VERSION;
 
 use crate::{
     models::Service as BaseService,
@@ -47,7 +47,7 @@ impl BaseService for Service {
         }
 
         // restart php service
-        let _ = php::Service::new("8.4").unwrap().restart();
+        let _ = php::Service::new(DEFAULT_PHP_VERSION).unwrap().restart();
 
         Ok(())
     }

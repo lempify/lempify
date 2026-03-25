@@ -209,7 +209,7 @@ pub fn repair_service(service: &str) -> Result<(), String> {
  */
 fn stop_service_fallback(service: &str) -> Result<(), String> {
     let plist_path = get_launch_agent_path(service)?;
-    let uid = users::get_current_uid();
+    let uid = uzers::get_current_uid();
     let target = format!("gui/{}", uid);
 
     Command::new("launchctl")

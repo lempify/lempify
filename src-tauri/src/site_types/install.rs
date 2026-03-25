@@ -4,6 +4,7 @@ use reqwest;
 use shared::brew;
 use std::fs;
 use std::fs::File;
+use tauri::{AppHandle, Emitter};
 use zip;
 
 use shared::file_system::AppFileSystem;
@@ -16,7 +17,9 @@ use crate::site_types::wordpress;
 /**
  * Download WordPress zip and extract to `~/Library/Application Support/Lempify/site-types/wordpress/{version}`.
  */
-pub async fn wordpress(version: &str) -> Result<(), String> {
+pub async fn wordpress<R: tauri::Runtime>(version: &str, app: &AppHandle<R>) -> Result<(), String> {
+    app.emit("site:progress", "Preparing WordPress files").ok();
+
     // If downloaded version exists, exit early.
     let config_dir = AppFileSystem::new()?.config_dir;
     // ~/Library/Application Support/Lempify/site-types/wordpress/wordpress-{version}.zip
@@ -28,6 +31,8 @@ pub async fn wordpress(version: &str) -> Result<(), String> {
     if wordpress_zip_path.exists() {
         return Ok(());
     }
+
+    app.emit("site:progress", "Downloading WordPress").ok();
 
     let site_type_dir = config_dir.join("site-types").join("wordpress");
     if !site_type_dir.exists() {
@@ -94,14 +99,18 @@ pub async fn wordpress(version: &str) -> Result<(), String> {
     fs::remove_file(wordpress_zip_path)
         .map_err(|e| format!("Failed to delete WordPress zip: {}", e))?;
 
+    app.emit("site:progress", "WordPress ready").ok();
+
     Ok(())
 }
 
-pub async fn site(
+pub async fn site<R: tauri::Runtime>(
     site_type: &str,
     site_name: &str,
     site_tld: &str,
     ssl: bool,
+    version: &str,
+    app: &AppHandle<R>,
 ) -> Result<(), String> {
     let db_name = format!("{}-{}", site_name, site_tld);
     let domain = format!("{}.{}", site_name, site_tld);
@@ -111,6 +120,8 @@ pub async fn site(
             let site_dir = app_fs.sites_dir.join(&domain);
 
             let settings = get_settings().await;
+
+            app.emit("site:progress", "Writing configuration").ok();
 
             // wp-config.php - start
 
@@ -148,6 +159,8 @@ pub async fn site(
                 .map_err(|e| format!("Failed to set wp-config.php permissions: {}", e))?;
             // wp-config.php - end
 
+            app.emit("site:progress", "Creating database").ok();
+
             if !brew::is_service_running("mysql") {
                 return Err("MySQL is not running.".to_string());
             }
@@ -179,11 +192,15 @@ pub async fn site(
             // Fix WordPress file permissions and ownership
             wordpress::fix_permissions(&site_dir)?;
 
-            if brew::is_formulae_installed("wp-cli") {
-                let site_url = format!("{}://{}", if ssl { "https" } else { "http" }, domain);
-                let site_title = format!("{} Site", site_name);
-                let _ = wordpress::cli_install_site(&site_dir, &site_url, &site_title);
-            }
+            app.emit("site:progress", "Setting up WordPress").ok();
+
+            let site_url = format!("{}://{}", if ssl { "https" } else { "http" }, domain);
+            let site_title = format!("{} Site", site_name);
+            let wp_version_dir = app_fs
+                .site_types_dir
+                .join("wordpress")
+                .join(version);
+            wordpress::setup_database(&wp_version_dir, &site_url, &site_title, &db_name, &settings)?;
 
             Ok(())
         }

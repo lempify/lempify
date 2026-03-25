@@ -1,4 +1,6 @@
-use std::process::{Command, Stdio};
+use std::{fs, process::{Command, Stdio}};
+
+use shared::{constants::DEFAULT_PHP_VERSION, file_system::AppFileSystem};
 
 use crate::{models::Service as BaseService, services::{error::ServiceError, php}};
 
@@ -46,9 +48,24 @@ impl BaseService for Service {
             )));
         }
 
-        // @TODO: Add memcached.ini to conf.d directory.
-        // restart php service
-        let _ = php::Service::new("8.4").unwrap().restart();
+        // Write ext-memcached.ini to PHP conf.d so the extension is loaded.
+        let app_fs = AppFileSystem::new()
+            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+        let conf_d_path = app_fs
+            .etc_dir
+            .join("php")
+            .join(DEFAULT_PHP_VERSION)
+            .join("conf.d")
+            .join("ext-memcached.ini");
+        if let Some(parent) = conf_d_path.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+        }
+        fs::write(&conf_d_path, "extension=\"memcached.so\"\n")
+            .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
+
+        // Restart PHP so the new extension is picked up.
+        let _ = php::Service::new(DEFAULT_PHP_VERSION).unwrap().restart();
 
         Ok(())
     }

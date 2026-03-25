@@ -92,10 +92,7 @@ export default function Site() {
       const { data } = await invoke<PingData>('ping_site', { domain });
       if (data) {
         setPingData(data);
-        setPingHistory(prev => [
-          ...prev.slice(-(MAX_PING_HISTORY - 1)),
-          data,
-        ]);
+        setPingHistory(prev => [...prev.slice(-(MAX_PING_HISTORY - 1)), data]);
         dispatch({ type: 'update_site', site: { ...site, ping: data } });
       }
       setInvokedAction(null);
@@ -132,8 +129,8 @@ export default function Site() {
         domain: site?.domain ?? '',
       });
       if (data) dispatch({ type: 'set_sites', sites: data });
-    } catch {}
-    finally {
+    } catch {
+    } finally {
       setInvokedAction(null);
       navigate('/sites', { replace: true });
     }
@@ -188,10 +185,17 @@ export default function Site() {
           <div className='flex gap-2 flex-shrink-0'>
             <Button
               size='sm'
-              className='border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              className='border border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded hover:bg-blue-50 dark:hover:bg-blue-950/40'
               onClick={() => openInBrowser(site.domain, site.ssl)}
             >
-              Open
+              View Site
+            </Button>
+            <Button 
+              size='sm'
+              className='border border-green-300 dark:border-green-800 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/60 rounded hover:bg-green-50 dark:hover:bg-green-950/40'
+              onClick={() => openInBrowser(`${site.domain}/wp-admin`, site.ssl)}
+            >
+              View Admin
             </Button>
             <Button
               size='sm'
@@ -230,7 +234,7 @@ export default function Site() {
             {Array.from({ length: emptySlots }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className='flex-1 rounded-sm bg-neutral-100 dark:bg-neutral-800'
+                className='flex-1 rounded-sm bg-neutral-200 dark:bg-neutral-800'
               />
             ))}
             {/* Actual history */}
@@ -286,7 +290,10 @@ export default function Site() {
           <PathRow label='Root' value={site.site_config.root} />
           <PathRow label='Logs' value={site.site_config.logs} />
           {site.site_config.ssl_cert && (
-            <PathRow label='SSL Certificate' value={site.site_config.ssl_cert} />
+            <PathRow
+              label='SSL Certificate'
+              value={site.site_config.ssl_cert}
+            />
           )}
           {site.site_config.ssl_key && (
             <PathRow label='SSL Key' value={site.site_config.ssl_key} />

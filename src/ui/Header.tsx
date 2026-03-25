@@ -15,7 +15,8 @@ import { useHistory } from '../hooks/useHistory';
 import Button from './Button';
 import HeaderServices from './HeaderServices';
 import DarkModeToggle from './DarkModeToggle';
-import { SvgChevron, SvgShield } from './Svg';
+import { SvgChevron, SvgShield, SvgLogo2 as Logo } from './Svg';
+
 import { buttonPrimaryXs } from './css';
 
 export default function Header() {
@@ -33,11 +34,8 @@ export default function Header() {
   return (
     <header className='grid grid-cols-[auto_1fr_auto_auto] items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 col-span-2 sticky top-0 z-2'>
       <div className='flex items-center'>
-        <div className='p-4 text-xl font-bold'>
-          <span className='text-[var(--lempify-primary)]'>LEMP</span>
-          <span className="text-black dark:text-white after:content-['.'] after:text-neutral-300 dark:after:text-neutral-700">
-            ify
-          </span>
+        <div className='px-4 pt-4 text-xl text-[var(--lempify-primary)]'>
+          <Logo size={[120, 'auto']} />
         </div>
         <button
           onClick={handleTrust}
@@ -58,7 +56,7 @@ export default function Header() {
           <span className='text-xs'>
             {trusted ? 'Click to untrust' : 'Click to trust'}
           </span>
-          <span className='overflow-hidden pointer-events-none absolute left-[16px] right-0 h-full bg-neutral-100 dark:bg-neutral-900 group-hover:translate-x-full motion-safe:transition-transform motion-safe:duration-300 ease-out'></span>
+          <span className='top-0 pointer-events-none absolute left-[16px] right-0 h-full bg-neutral-100 dark:bg-neutral-900 group-hover:left-[100%] motion-safe:transition-[left] motion-safe:duration-300 ease-out'></span>
         </button>
       </div>
 

@@ -1,6 +1,7 @@
 /**
  * External imports
  */
+import { listen } from '@tauri-apps/api/event';
 import { FormEvent, useRef, useState } from 'react';
 
 /**
@@ -45,6 +46,8 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
   const [formValues, setFormValues] = useState<Record<string, any>>({
     ...defaultPayload,
   });
+  const [steps, setSteps] = useState<string[]>([]);
+  const [createError, setCreateError] = useState<string | null>(null);
   const { config, dispatch } = useAppConfig();
   const inputRef = useRef<HTMLInputElement>(null);
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -70,20 +73,24 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       }
     }
 
+    setSteps([]);
+    setCreateError(null);
+    const unlisten = await listen<string>('site:progress', e => setSteps(prev => [...prev, e.payload]));
+
     try {
       const { data, error } = await invoke<Site>('create_site', {
         payload,
       });
       if (error) {
-        console.error('Failed to create site:', error);
-      }
-      if (data?.domain === formValues.domain) {
+        setCreateError(error);
+      } else if (data?.domain.toLowerCase() === formValues.domain.toLowerCase()) {
         setFormValues({ ...defaultPayload });
         dispatch({ type: 'set_sites', sites: [...config.sites, data] });
       }
     } catch (err) {
       console.error('Failed to create site:', err);
     } finally {
+      unlisten();
       onRefresh();
     }
   }
@@ -136,6 +143,19 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
         </button>
       </form>
       <Loader isVisible={invokeStatus === 'pending'} />
+      {createError && (
+        <p className='mt-4 text-sm text-red-500'>{createError}</p>
+      )}
+      {steps.length > 0 && (
+        <ul className="mt-4 flex flex-col gap-1">
+          {steps.map((step, i) => (
+            <li key={i} className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+              <span className="size-1.5 rounded-full bg-green-500 flex-shrink-0" />
+              {step}
+            </li>
+          ))}
+        </ul>
+      )}
     </Details>
   );
 }

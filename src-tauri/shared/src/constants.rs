@@ -1,3 +1,5 @@
+pub const DEFAULT_PHP_VERSION: &str = "8.4";
+
 pub const HOSTS_PATH: &str = "/etc/hosts";
 
 pub const LEMPIFYD_SOCKET_PATH: &str = "/tmp/lempifyd.sock";

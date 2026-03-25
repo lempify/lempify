@@ -12,7 +12,7 @@ shared = { path = "../shared" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 which = "7.0.3"
-users = "0.11.0"
+uzers = "0.12"
 dirs = "6.0.0"
 whoami = "1.6.0"
 thiserror = "1.0"

@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
-use shared::constants::LEMPIFY_SUDOERS_PATH;
+use shared::constants::{DEFAULT_PHP_VERSION, LEMPIFY_SUDOERS_PATH};
 use shared::file_system::AppFileSystem;
 use std::fs;
 use std::path::Path;
 use tauri::State;
 use tokio::sync::RwLock;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct PingData {
     pub online: bool,
     pub timestamp: u128,
@@ -194,7 +194,7 @@ impl SiteBuilder {
             .clone();
 
         let services = self.services.unwrap_or_else(|| SiteServices {
-            php: "8.4".to_string(),
+            php: DEFAULT_PHP_VERSION.to_string(),
             mysql: "8.0".to_string(),
             nginx: "1.25".to_string(),
         });
@@ -203,16 +203,8 @@ impl SiteBuilder {
             ssl: self.ssl,
             root: path.to_string(),
             logs: format!("{}/logs", path),
-            ssl_key: if self.ssl {
-                Some(format!("/opt/homebrew/etc/nginx/ssl/{}-key.pem", domain))
-            } else {
-                None
-            },
-            ssl_cert: if self.ssl {
-                Some(format!("/opt/homebrew/etc/nginx/ssl/{}.pem", domain))
-            } else {
-                None
-            },
+            ssl_key: None,
+            ssl_cert: None,
         });
 
         Ok(Site {

@@ -19,7 +19,8 @@ export function useInvoke() {
       } catch (error: any) {
         console.error(`❌ invoke(${command}) failed`, error);
         setInvokeStatus('error');
-        return { error: error?.message || 'Unknown error' };
+        const message = typeof error === 'string' ? error : (error?.message || String(error) || 'Unknown error');
+        return { error: message };
       }
     },
     []

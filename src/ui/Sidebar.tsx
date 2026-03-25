@@ -104,7 +104,7 @@ export default function Sidebar() {
           tag='aside'
           className='@container/sidebar bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-white'
         >
-          <div className='grid grid-rows-[1fr_auto] h-full'>
+          <div className='mt-2 grid grid-rows-[1fr_auto] h-full'>
             <nav className='flex flex-col p-2 text-sm overflow-x-hidden'>
               <ul>
                 {LINKS.map(link => (

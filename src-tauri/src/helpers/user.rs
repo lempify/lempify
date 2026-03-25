@@ -1,4 +1,4 @@
-use users::{get_effective_username, get_user_by_name, User};
+use uzers::{get_effective_username, get_user_by_name, User};
 
 // @TODO: Unused
 pub fn _get_current() -> Result<User, String> {

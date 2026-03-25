@@ -1,5 +1,5 @@
 use std::{fs, process::Command, time::SystemTime};
-use tauri::{command, State};
+use tauri::{command, AppHandle, Emitter, State};
 
 use crate::{
     helpers::{
@@ -14,7 +14,7 @@ use crate::{
     site_types::{install, uninstall, wordpress},
 };
 
-use shared::{brew, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand};
+use shared::{constants::DEFAULT_PHP_VERSION, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand};
 
 /// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
@@ -25,14 +25,15 @@ fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
 // @TODO: wire up site_type_config, either.
 //  - https://github.com/ronaldbradford/schema/blob/master/wordpress.sql
 //  - WP CLI
-pub async fn create_site(
+pub async fn create_site<R: tauri::Runtime>(
+    app: AppHandle<R>,
     config_manager: State<'_, ConfigManager>,
     payload: SiteCreatePayload,
 ) -> Result<Site, String> {
     let app_fs = AppFileSystem::new()?;
 
     let domain = &payload.domain.to_lowercase();
-    let (domain_name, domain_tld) = 
+    let (domain_name, domain_tld) =
         domain.split_once('.')
             .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
 
@@ -57,7 +58,7 @@ pub async fn create_site(
 
     // Create site object and store in config.json
     let site_services = SiteServices {
-        php: "8.4".to_string(),
+        php: DEFAULT_PHP_VERSION.to_string(),
         mysql: "8.0".to_string(),
         nginx: "1.25".to_string(),
     };
@@ -91,6 +92,8 @@ pub async fn create_site(
 
     // Install Site Type
     if site_type == "wordpress" {
+        app.emit("site:progress", "Resolving WordPress version").ok();
+
         // Install WordPress if it doesn't exist.
         let latest_version = match wordpress::versions().await {
             Ok(versions) => {
@@ -105,17 +108,24 @@ pub async fn create_site(
                 "latest".to_string()
             }
         };
-        install::wordpress(&latest_version).await?;
+
+        app.emit("site:progress", "Preparing WordPress").ok();
+        install::wordpress(&latest_version, &app).await?;
+
+        app.emit("site:progress", "Installing WordPress files").ok();
         // Add site type stub.
         create_site_type_stub(&site_type, &domain, &latest_version)?;
+
+        app.emit("site:progress", "Configuring site").ok();
+        // Install WordPress dependencies.
+        install::site(&site_type, &domain_name, &domain_tld, payload.ssl, &latest_version, &app).await?;
     } else if site_type == "vanilla" {
         // Install Vanilla dependencies.
         create_site_type_stub(&site_type, &domain, "")?;
+        install::site(&site_type, &domain_name, &domain_tld, payload.ssl, "", &app).await?;
     } else {
         return Err(format!("Invalid site type: {}", site_type));
     }
-    // Install WordPress dependencies.
-    install::site(&site_type, &domain_name, &domain_tld, payload.ssl).await?;
 
     let site_config = SiteConfig {
         ssl: payload.ssl,
@@ -143,7 +153,13 @@ pub async fn create_site(
     // Store in config.json
     config_manager.create_site(&site).await?;
 
-    brew::restart_service("nginx")?;
+    app.emit("site:progress", "Reloading NGINX").ok();
+
+    Command::new("nginx").arg("-s").arg("reload")
+        .status()
+        .map_err(|e| format!("Failed to reload nginx: {}", e))?;
+
+    app.emit("site:progress", "Done").ok();
 
     Ok(site)
 }
@@ -186,8 +202,10 @@ pub async fn delete_site(
 
     let _ = config_manager.delete_site(&domain).await; // Don't fail if not in config
 
-    // Restart NGINX
-    brew::restart_service("nginx")?;
+    // Reload NGINX
+    Command::new("nginx").arg("-s").arg("reload")
+        .status()
+        .map_err(|e| format!("Failed to reload nginx: {}", e))?;
 
     let sites = config_manager.get_all_sites().await;
 
@@ -205,11 +223,13 @@ pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String)
         .output()
         .map_err(|e| format!("Failed to ping site: {}", e))?;
 
-    let timestamp = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis();
-    let online = output.status.success();
-    site.ping = Some(PingData { online, timestamp });
+    let ping = PingData {
+        online: output.status.success(),
+        timestamp: SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis(),
+    };
+    site.ping = Some(ping);
 
     config_manager.update_site(&domain, site).await?;
 
-    Ok(PingData { online, timestamp })
+    Ok(ping)
 }

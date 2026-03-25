@@ -12,12 +12,13 @@ pub mod redis;
 pub mod wp_cli;
 
 use crate::models::Service;
+use shared::constants::DEFAULT_PHP_VERSION;
 
 /// Returns all available services
 pub fn get_all_services() -> Vec<Box<dyn Service>> {
     vec![
         // Services
-        Box::new(php::Service::new("8.4").expect("Failed to create PHP service")),
+        Box::new(php::Service::new(DEFAULT_PHP_VERSION).expect("Failed to create PHP service")),
         Box::new(nginx::Service::new("1.27").expect("Failed to create NGINX service")),
         Box::new(mysql::Service::new("9.2").expect("Failed to create MySQL service")),
         Box::new(redis::Service::new("8.2").expect("Failed to create Redis service")),
