@@ -70,6 +70,8 @@ fn main() -> Result<()> {
             commands::site::create_site,
             commands::site::delete_site,
             commands::site::ping_site,
+            commands::site::get_stable_php_version,
+        commands::site::get_installed_php_versions,
             commands::nginx::generate_nginx_config,
             commands::ssl::add_ssl,
             commands::lempifyd::lempifyd,
@@ -78,6 +80,7 @@ fn main() -> Result<()> {
             commands::debug::log,
             commands::window::open_site_window,
             commands::install::set_installed,
+            commands::open_code::open_code,
             // Config CRUD commands
             models::config::create_site_config,
             models::config::get_site_config,

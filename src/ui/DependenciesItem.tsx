@@ -16,6 +16,7 @@ import {
 import { Status, useLempifyd } from '../context/LempifydContext';
 import SvgLink from './Svg/SvgLink';
 import { buttonWithArrow } from './css';
+import Dot from './Dot';
 
 const icons = {
   nginx: SvgNginx,
@@ -35,25 +36,24 @@ const BUTTON_CLASSNAME = `mr-4 ${buttonWithArrow}`;
 function DependenciesHeader({
   name,
   url,
-  running,
+  status,
   humanName,
   type,
 }: {
   name: string;
   url?: string;
-  running: boolean;
+  status: 'running' | 'stopped' | 'pending';
   installed: boolean;
   humanName: string;
   type?: string;
 }) {
+  const iconKey = name.split('@')[0];
   const Icon =
-    icons[name as keyof typeof icons] ??
+    icons[iconKey as keyof typeof icons] ??
     (type === 'tool' ? icons.defaultTool : icons.defaultService);
   return (
     <p className='flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300'>
-      <span
-        className={`size-2 rounded-full ${running ? 'bg-green-500' : 'bg-red-500'}`}
-      />
+      <Dot status={status} size={2} />
       <span>{humanName}</span>
       {url && (
         <a href={url} target='_blank' rel='noopener noreferrer'>
@@ -130,10 +130,16 @@ export default function DependenciesItem({
       <DependenciesHeader
         name={dependency.name}
         url={dependency.url}
-        running={dependency.isRunning ?? false}
         installed={dependency.isInstalled ?? false}
         humanName={dependency.humanName}
         type={dependency.dependencyType}
+        status={
+          dependency.pendingAction
+            ? 'pending'
+            : (dependency.isRunning ?? false)
+              ? 'running'
+              : 'stopped'
+        }
       />
 
       <ul className='flex flex-cols text-neutral-600 dark:text-neutral-400 text-xs mt-2 empty:mt-0'>
@@ -145,50 +151,56 @@ export default function DependenciesItem({
             Install
           </Button>
         ) : (
-          isService && (
-            <>
-              {dependency.isInstalled && !dependency.isRunning && (
+          <>
+            {isService && (
+              <>
+                {!dependency.isRunning && (
+                  <li>
+                    <Button
+                      className={BUTTON_CLASSNAME}
+                      onClick={() => emit(dependency.name, 'start')}
+                    >
+                      Start
+                    </Button>
+                  </li>
+                )}
+                {dependency.isRunning && (
+                  <li>
+                    <Button
+                      className={BUTTON_CLASSNAME}
+                      onClick={() => emit(dependency.name, 'stop')}
+                    >
+                      Stop
+                    </Button>
+                  </li>
+                )}
                 <li>
                   <Button
                     className={BUTTON_CLASSNAME}
-                    onClick={() => emit(dependency.name, 'start')}
+                    onClick={() => emit(dependency.name, 'restart')}
                   >
-                    Start
+                    Restart
                   </Button>
                 </li>
-              )}
-              {dependency.isRunning && (
                 <li>
                   <Button
                     className={BUTTON_CLASSNAME}
-                    onClick={() => emit(dependency.name, 'stop')}
+                    onClick={() => emit(dependency.name, 'install')}
                   >
-                    Stop
+                    Reinstall
                   </Button>
                 </li>
-              )}
-              {/* <li>
-                <Button
-                  className={BUTTON_CLASSNAME}
-                  onClick={handleRepair}
-                  disabled={repairStatus === 'pending'}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${repairStatus === 'pending' ? 'bg-yellow-500' : repairStatus === 'fixed' ? 'bg-green-500' : 'bg-red-500'}`}
-                  />
-                  {renderRepairLabel()}
-                </Button>
-              </li> */}
-              <li>
-                <Button
-                  className={BUTTON_CLASSNAME}
-                  onClick={() => emit(dependency.name, 'restart')}
-                >
-                  Restart
-                </Button>
-              </li>
-            </>
-          )
+              </>
+            )}
+            <li>
+              <Button
+                className={BUTTON_CLASSNAME}
+                onClick={() => emit(dependency.name, 'uninstall')}
+              >
+                Uninstall
+              </Button>
+            </li>
+          </>
         )}
       </ul>
       <Loader isVisible={dependency.pendingAction} size={20} />

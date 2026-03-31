@@ -13,7 +13,11 @@
 
 :root {
   --lempify-primary: rgb(248, 148, 55);
+  --lempify-primary-dark: rgb(201, 112, 27);
+
   --lempify-secondary: rgb(56, 182, 255);
+  --lempify-secondary-dark: rgb(27, 135, 201);
+  
   --lempify-red: rgb(255, 0, 0);
   --lempify-green: rgb(17, 179, 17);
 

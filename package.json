@@ -15,6 +15,8 @@
     "lempifyd:watch": "cd src-tauri/ && cargo watch -w lempifyd -x 'build --release --target aarch64-apple-darwin -p lempifyd --manifest-path lempifyd/Cargo.toml' -s 'pnpm lempifyd:rename'",
     "lempify:dev": "pnpm lempifyd:build && pnpm lempifyd:rename && pnpm tauri dev",
     "lempify:dev:backend": "cd src-tauri && cargo watch -x 'run'",
+    "test": "vitest",
+    "test:run": "vitest run",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -22,7 +24,7 @@
     "@tailwindcss/forms": "^0.5.11",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-dialog": "~2.6.0",
-    "@tauri-apps/plugin-opener": "^2.5.3",
+    "@tauri-apps/plugin-opener": "~2",
     "@tauri-apps/plugin-shell": "^2.3.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -31,14 +33,18 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "@tauri-apps/cli": "^2.10.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
-    "vite": "^8.0.2"
+    "vite": "^8.0.2",
+    "vitest": "^4.1.2"
   },
   "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
 }

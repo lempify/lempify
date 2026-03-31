@@ -19,4 +19,7 @@ export type Field = {
   inputAttributes: Record<string, any>;
   inputRef: React.RefObject<HTMLInputElement | null> | null;
   fieldPrefix: string;
+  labelClassName: string;
+  optionsContainerClassName: string;
+  validationMessage: string;
 }>;

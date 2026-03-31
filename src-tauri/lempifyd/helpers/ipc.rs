@@ -42,6 +42,7 @@ enum ServiceAction {
     IsRunning,
     IsInstalled,
     Install,
+    Uninstall,
 }
 
 impl ServiceAction {
@@ -53,6 +54,7 @@ impl ServiceAction {
             "is_running" => Some(ServiceAction::IsRunning),
             "is_installed" => Some(ServiceAction::IsInstalled),
             "install" => Some(ServiceAction::Install),
+            "uninstall" => Some(ServiceAction::Uninstall),
             _ => None,
         }
     }
@@ -74,6 +76,9 @@ impl ServiceAction {
             }
             ServiceAction::Install => {
                 service.install()?;
+            }
+            ServiceAction::Uninstall => {
+                service.uninstall()?;
             }
             ServiceAction::IsRunning | ServiceAction::IsInstalled => {
                 // No action needed for status checks

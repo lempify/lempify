@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ask } from '@tauri-apps/plugin-dialog';
+import { openPath } from '@tauri-apps/plugin-opener';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAppConfig } from '../context/AppConfigContext';
@@ -55,13 +56,23 @@ function Badge({
 
 function PathRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className='flex items-start gap-4 py-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0'>
-      <dt className='text-xs text-neutral-500 dark:text-neutral-400 w-32 flex-shrink-0 pt-0.5'>
+    <div className='flex min-w-0 flex-col gap-2 py-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0 md:flex-row md:items-start md:gap-4'>
+      <div className='text-xs text-neutral-500 dark:text-neutral-400 flex-shrink-0 md:w-32 md:pt-0.5'>
         {label}
-      </dt>
-      <dd className='text-sm font-mono text-neutral-700 dark:text-neutral-300 break-all leading-relaxed'>
+      </div>
+      <div className='min-w-0 w-full flex-1 truncate text-sm font-mono text-neutral-700 dark:text-neutral-300'>
         {value}
-      </dd>
+      </div>
+      <div className='flex-shrink-0'>
+        <Button
+          size='xs'
+          isRounded
+          variant='secondary'
+          onClick={() => openPath(value)}
+        >
+          Open
+        </Button>
+      </div>
     </div>
   );
 }
@@ -136,6 +147,17 @@ export default function Site() {
     }
   }
 
+  async function handleOpenCode() {
+    try {
+      setInvokedAction('open_code');
+      await invoke<void>('open_code', { path: site?.site_config.root ?? '' });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setInvokedAction(null);
+    }
+  }
+
   const stackItems = [
     { label: 'PHP', value: site.services.php, Icon: SvgPhp },
     { label: 'MySQL', value: site.services.mysql, Icon: SvgMysql },
@@ -147,8 +169,9 @@ export default function Site() {
   return (
     <Page title={site.name || site.domain}>
       {/* Status */}
-      <div className={`${pageSection} ${cornerTopRight}`}>
-        <div className='flex items-start justify-between gap-6'>
+      <div className={`${pageSection} ${cornerTopRight} @container`}>
+        <div className='flex flex-col flex-col-reverse @md:flex-row @md:items-start justify-between gap-6'>
+          {/* Site information */}
           <div className='flex flex-col gap-3'>
             <div className='flex items-center gap-3'>
               <span
@@ -181,21 +204,21 @@ export default function Site() {
               )}
             </div>
           </div>
-
-          <div className='flex gap-2 flex-shrink-0'>
+          {/* Site actions */}
+          <div className='flex gap-2 flex-shrink-0 flex-wrap @md:flex-nowrap'>
             <Button
               size='sm'
               className='border border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded hover:bg-blue-50 dark:hover:bg-blue-950/40'
               onClick={() => openInBrowser(site.domain, site.ssl)}
             >
-              View Site
+              Site
             </Button>
-            <Button 
+            <Button
               size='sm'
               className='border border-green-300 dark:border-green-800 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/60 rounded hover:bg-green-50 dark:hover:bg-green-950/40'
               onClick={() => openInBrowser(`${site.domain}/wp-admin`, site.ssl)}
             >
-              View Admin
+              Admin
             </Button>
             <Button
               size='sm'
@@ -204,10 +227,17 @@ export default function Site() {
             >
               Delete
             </Button>
+            <Button
+              size='sm'
+              className='border border-black dark:border-white/60 text-black dark:text-white rounded hover:bg-black/10 dark:hover:bg-white/10'
+              onClick={handleOpenCode}
+            >
+              IDE
+            </Button>
           </div>
         </div>
 
-        {/* Ping history bar */}
+        {/* Status history */}
         <div className='mt-8'>
           <div className='flex items-center justify-between mb-2'>
             <p className='text-xs text-neutral-500 dark:text-neutral-400'>
@@ -229,12 +259,12 @@ export default function Site() {
               </p>
             )}
           </div>
-          <div className='flex gap-0.5 h-8'>
+          <div className='flex gap-1 h-8'>
             {/* Empty placeholder slots */}
             {Array.from({ length: emptySlots }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className='flex-1 rounded-sm bg-neutral-200 dark:bg-neutral-800'
+                className='flex-1 rounded-sm bg-neutral-200 dark:bg-neutral-700'
               />
             ))}
             {/* Actual history */}
@@ -254,15 +284,15 @@ export default function Site() {
       </div>
 
       {/* Stack */}
-      <div className={`${pageSection}`}>
+      <div className={`${pageSection} @container`}>
         <header className='mb-6'>
           <Heading size='h2' title='Stack' split />
         </header>
-        <div className='grid grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 @sm:grid-cols-2 @md:grid-cols-3 gap-4'>
           {stackItems.map(({ label, value, Icon }) => (
             <div
               key={label}
-              className='flex items-center gap-4 border border-neutral-200 dark:border-neutral-700 rounded p-4 bg-white dark:bg-neutral-900/40'
+              className='flex items-center justify-center gap-4 border border-neutral-200 dark:border-neutral-700 rounded p-4 bg-white dark:bg-neutral-900/40'
             >
               <Icon
                 size={32}
@@ -286,7 +316,7 @@ export default function Site() {
         <header className='mb-4'>
           <Heading size='h2' title='Configuration' split />
         </header>
-        <dl>
+        <div>
           <PathRow label='Root' value={site.site_config.root} />
           <PathRow label='Logs' value={site.site_config.logs} />
           {site.site_config.ssl_cert && (
@@ -298,7 +328,7 @@ export default function Site() {
           {site.site_config.ssl_key && (
             <PathRow label='SSL Key' value={site.site_config.ssl_key} />
           )}
-        </dl>
+        </div>
       </div>
 
       <Loader isVisible={invokedAction === 'delete_site'} />

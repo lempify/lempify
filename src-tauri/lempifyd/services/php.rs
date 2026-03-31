@@ -1,6 +1,7 @@
 use std::process::{Command, Stdio};
 
 use shared::brew;
+use shared::constants::DEFAULT_PHP_VERSION;
 use shared::file_system::AppFileSystem;
 
 use crate::models::Service as BaseService;
@@ -10,6 +11,8 @@ use crate::services::isolation::ServiceIsolation;
 
 pub struct Service {
     version: String,
+    full_name: String,
+    display_name: String,
     isolation: ServiceIsolation,
     config: ServiceConfig,
     #[allow(dead_code)]
@@ -25,6 +28,8 @@ impl Service {
 
         let service = Self {
             version: version.to_string(),
+            full_name: format!("php@{}", version),
+            display_name: format!("PHP {}", version),
             isolation,
             config,
             supported_versions: vec!["8.4", "8.3", "8.2", "8.1", "8.0"],
@@ -34,6 +39,10 @@ impl Service {
         service.setup_config()?;
 
         Ok(service)
+    }
+
+    fn fpm_config_filename(&self) -> String {
+        format!("php-{}-fpm.conf", self.version)
     }
 
     fn generate_fpm_config(&self) -> String {
@@ -73,45 +82,379 @@ php_admin_value[max_execution_time] = 120
         // Ensure all required paths exist
         self.isolation.ensure_paths()?;
 
-        // Generate and write FPM config
+        // Generate and write version-isolated FPM config
         let config_content = self.generate_fpm_config();
-        let config_path = self.isolation.get_service_config_dir().join("php-fpm.conf");
+        let config_path = self
+            .isolation
+            .get_service_config_dir()
+            .join(self.fpm_config_filename());
 
         self.config.write_file(&config_path, &config_content)?;
+
+        // Patch any existing xdebug ini that still uses trigger mode
+        self.patch_xdebug_start_mode();
 
         Ok(())
     }
 
-    fn php_fpm_binary(&self) -> Result<String, ServiceError> {
-        let version_specific = format!("/opt/homebrew/bin/php-fpm{}", self.version);
-        if std::path::Path::new(&version_specific).exists() {
-            return Ok(version_specific);
-        } else if std::path::Path::new("/opt/homebrew/bin/php-fpm").exists() {
-            return Ok("/opt/homebrew/bin/php-fpm".to_string());
-        } else if std::path::Path::new("/opt/homebrew/sbin/php-fpm").exists() {
-            return Ok("/opt/homebrew/sbin/php-fpm".to_string());
-        } else {
-            match std::process::Command::new("which").arg("php-fpm").output() {
-                Ok(output) if output.status.success() => {
-                    return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
-                }
-                _ => {
-                    return Err(ServiceError::ServiceError(
-                        "Could not find php-fpm binary".to_string(),
-                    ));
-                }
+    /// Rewrites `start_with_request=trigger` → `start_with_request=yes` in the
+    /// Homebrew conf.d xdebug ini if it exists. Safe to call repeatedly.
+    fn patch_xdebug_start_mode(&self) {
+        let xdebug_ini = std::path::PathBuf::from(format!(
+            "/opt/homebrew/etc/php/{}/conf.d/ext-xdebug.ini",
+            self.version
+        ));
+        if let Ok(contents) = std::fs::read_to_string(&xdebug_ini) {
+            if contents.contains("start_with_request=trigger") {
+                let patched = contents.replace("start_with_request=trigger", "start_with_request=yes");
+                let _ = std::fs::write(&xdebug_ini, patched);
             }
         }
     }
+
+    /// Returns the version reported by the unversioned Homebrew PHP binary, if it exists.
+    /// Uses `-n` so no ini files are loaded and stdout is clean.
+    fn default_php_version() -> Option<String> {
+        let output = std::process::Command::new("/opt/homebrew/opt/php/bin/php")
+            .args(["-n", "-r", "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;"])
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::null())
+            .output()
+            .ok()?;
+        let v = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if v.contains('.') { Some(v) } else { None }
+    }
+
+    fn php_fpm_binary(&self) -> Result<String, ServiceError> {
+        let opt_versioned = format!("/opt/homebrew/opt/php@{}/sbin/php-fpm", self.version);
+        if std::path::Path::new(&opt_versioned).exists() {
+            return Ok(opt_versioned);
+        }
+        // Only use the unversioned path if it actually belongs to this version
+        let opt_plain = "/opt/homebrew/opt/php/sbin/php-fpm";
+        if std::path::Path::new(opt_plain).exists()
+            && Self::default_php_version().as_deref() == Some(self.version.as_str())
+        {
+            return Ok(opt_plain.to_string());
+        }
+        Err(ServiceError::ServiceError(format!(
+            "Could not find php-fpm binary for PHP {}",
+            self.version
+        )))
+    }
+
+    fn pecl_binary(&self) -> Result<String, ServiceError> {
+        let opt_versioned = format!("/opt/homebrew/opt/php@{}/bin/pecl", self.version);
+        if std::path::Path::new(&opt_versioned).exists() {
+            return Ok(opt_versioned);
+        }
+        let opt_plain = "/opt/homebrew/opt/php/bin/pecl";
+        if std::path::Path::new(opt_plain).exists()
+            && Self::default_php_version().as_deref() == Some(self.version.as_str())
+        {
+            return Ok(opt_plain.to_string());
+        }
+        Err(ServiceError::ServiceError(format!(
+            "Could not find pecl binary for PHP {}",
+            self.version
+        )))
+    }
+
+    fn php_binary(&self) -> Result<String, ServiceError> {
+        let opt_versioned = format!("/opt/homebrew/opt/php@{}/bin/php", self.version);
+        if std::path::Path::new(&opt_versioned).exists() {
+            return Ok(opt_versioned);
+        }
+        let opt_plain = "/opt/homebrew/opt/php/bin/php";
+        if std::path::Path::new(opt_plain).exists()
+            && Self::default_php_version().as_deref() == Some(self.version.as_str())
+        {
+            return Ok(opt_plain.to_string());
+        }
+        Err(ServiceError::ServiceError(format!(
+            "Could not find php binary for PHP {}",
+            self.version
+        )))
+    }
+
+    /// Returns the directory PHP scans for additional .ini files.
+    /// Uses `-n` so no ini is loaded — stdout contains only the constant, no warnings.
+    fn php_conf_d_dir(&self) -> Result<std::path::PathBuf, ServiceError> {
+        let php_bin = self.php_binary()?;
+        let output = Command::new(&php_bin)
+            .args(["-n", "-r", "echo PHP_CONFIG_FILE_SCAN_DIR;"])
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .output()
+            .map_err(|e| ServiceError::ServiceError(format!("Failed to run php binary: {}", e)))?;
+        let dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if dir.is_empty() {
+            return Err(ServiceError::ServiceError(format!(
+                "PHP {} returned empty PHP_CONFIG_FILE_SCAN_DIR",
+                self.version
+            )));
+        }
+        Ok(std::path::PathBuf::from(dir))
+    }
+
+    /// Returns the path to the php.ini for this PHP version, derived from the conf.d parent.
+    /// Avoids running php with ini loaded (which would pollute stdout with extension warnings).
+    fn php_ini_path(&self) -> Result<std::path::PathBuf, ServiceError> {
+        let conf_d = self.php_conf_d_dir()?;
+        let ini = conf_d
+            .parent()
+            .ok_or_else(|| ServiceError::ServiceError(format!(
+                "Could not determine php.ini path for PHP {}",
+                self.version
+            )))?
+            .join("php.ini");
+        if !ini.exists() {
+            return Err(ServiceError::ServiceError(format!(
+                "php.ini not found at {} for PHP {}",
+                ini.display(),
+                self.version
+            )));
+        }
+        Ok(ini)
+    }
+
+    /// Returns the directory where pecl installs extensions for this PHP version.
+    ///
+    /// Homebrew places pecl extensions at `/opt/homebrew/lib/php/pecl/{PHP_EXTENSION_API}/`,
+    /// which differs from `PHP_EXTENSION_DIR` (the Cellar path) and is more reliably
+    /// obtained from `PHP_EXTENSION_API` than from `pecl config-get ext_dir` (which
+    /// requires PEAR to be initialised and may return empty).
+    fn pecl_ext_dir(&self) -> Result<String, ServiceError> {
+        let php_bin = self.php_binary()?;
+        let output = Command::new(&php_bin)
+            .args(["-n", "-r", "echo basename(PHP_EXTENSION_DIR);"])
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .output()
+            .map_err(|e| ServiceError::ServiceError(format!("Failed to run php binary: {}", e)))?;
+        let api = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if api.is_empty() {
+            return Err(ServiceError::ServiceError(format!(
+                "PHP {} returned empty basename(PHP_EXTENSION_DIR)",
+                self.version
+            )));
+        }
+        let dir = format!("/opt/homebrew/lib/php/pecl/{}", api);
+        if !std::path::Path::new(&dir).exists() {
+            return Err(ServiceError::ServiceError(format!(
+                "pecl ext_dir does not exist at expected path: {}",
+                dir
+            )));
+        }
+        Ok(dir)
+    }
+
+    /// Builds and installs the memcached PHP extension from source using phpize.
+    ///
+    /// PECL's `install --configureoptions` fails on PHP 8.5 due to a PEAR/Builder.php
+    /// type incompatibility. Building directly with phpize → configure → make bypasses
+    /// PEAR entirely and works consistently across all PHP versions.
+    fn install_memcached_from_source(&self, ext_dir: &str) -> Result<(), ServiceError> {
+        let phpize = {
+            let opt_versioned = format!("/opt/homebrew/opt/php@{}/bin/phpize", self.version);
+            if std::path::Path::new(&opt_versioned).exists() {
+                opt_versioned
+            } else {
+                "/opt/homebrew/opt/php/bin/phpize".to_string()
+            }
+        };
+        let php_config = {
+            let opt_versioned = format!("/opt/homebrew/opt/php@{}/bin/php-config", self.version);
+            if std::path::Path::new(&opt_versioned).exists() {
+                opt_versioned
+            } else {
+                "/opt/homebrew/opt/php/bin/php-config".to_string()
+            }
+        };
+
+        // Ensure required Homebrew libraries are present before building.
+        for pkg in &["zlib", "libmemcached"] {
+            if !std::path::Path::new(&format!("/opt/homebrew/opt/{}", pkg)).exists() {
+                let output = Command::new("brew")
+                    .args(["install", "--quiet", pkg])
+                    .stdin(Stdio::null())
+                    .stdout(Stdio::piped())
+                    .stderr(Stdio::piped())
+                    .output()
+                    .map_err(|e| ServiceError::ServiceError(format!("brew install {} failed: {}", pkg, e)))?;
+                if !output.status.success() {
+                    return Err(ServiceError::ServiceError(format!(
+                        "Failed to install {}: {}",
+                        pkg,
+                        String::from_utf8_lossy(&output.stderr).trim()
+                    )));
+                }
+            }
+        }
+
+        let src_version = "3.4.0";
+        let tarball_name = format!("memcached-{}.tgz", src_version);
+        // Use a PHP-version-specific build dir to avoid cross-contamination between
+        // builds (a stale dir from another PHP version would produce a .so compiled
+        // for the wrong API and make would skip recompilation silently).
+        let tarball_path = std::path::PathBuf::from(format!("/tmp/{}", tarball_name));
+        let src_dir = std::path::PathBuf::from(format!("/tmp/memcached-{}-php{}", src_version, self.version));
+
+        if !tarball_path.exists() {
+            let url = format!("https://pecl.php.net/get/{}", tarball_name);
+            let output = Command::new("curl")
+                .args(["-fsSL", "-o", tarball_path.to_str().unwrap(), &url])
+                .stdin(Stdio::null())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .output()
+                .map_err(|e| ServiceError::ServiceError(format!("curl failed: {}", e)))?;
+            if !output.status.success() {
+                return Err(ServiceError::ServiceError(format!(
+                    "Failed to download memcached source: {}",
+                    String::from_utf8_lossy(&output.stderr).trim()
+                )));
+            }
+        }
+
+        if src_dir.exists() {
+            std::fs::remove_dir_all(&src_dir)
+                .map_err(|e| ServiceError::ServiceError(format!("Failed to clean build dir: {}", e)))?;
+        }
+        // tar extracts as memcached-{version}/; rename to the version-specific dir after.
+        let extracted_dir = std::path::PathBuf::from(format!("/tmp/memcached-{}", src_version));
+        if extracted_dir.exists() {
+            std::fs::remove_dir_all(&extracted_dir)
+                .map_err(|e| ServiceError::ServiceError(format!("Failed to remove stale extract dir: {}", e)))?;
+        }
+        let output = Command::new("tar")
+            .args(["-xzf", tarball_path.to_str().unwrap(), "-C", "/tmp"])
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| ServiceError::ServiceError(format!("tar failed: {}", e)))?;
+        if !output.status.success() {
+            return Err(ServiceError::ServiceError(format!(
+                "Failed to extract memcached source: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            )));
+        }
+        std::fs::rename(&extracted_dir, &src_dir)
+            .map_err(|e| ServiceError::ServiceError(format!("Failed to rename build dir: {}", e)))?;
+
+        let output = Command::new(&phpize)
+            .current_dir(&src_dir)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| ServiceError::ServiceError(format!("phpize failed: {}", e)))?;
+        if !output.status.success() {
+            return Err(ServiceError::ServiceError(format!(
+                "phpize failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            )));
+        }
+
+        let output = Command::new("./configure")
+            .current_dir(&src_dir)
+            .args([
+                &format!("--with-php-config={}", php_config),
+                "--with-zlib-dir=/opt/homebrew/opt/zlib",
+                "--with-libmemcached-dir=/opt/homebrew/opt/libmemcached",
+            ])
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| ServiceError::ServiceError(format!("configure failed: {}", e)))?;
+        if !output.status.success() {
+            return Err(ServiceError::ServiceError(format!(
+                "memcached configure failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            )));
+        }
+
+        let ncpu = std::thread::available_parallelism()
+            .map(|n| n.get().to_string())
+            .unwrap_or_else(|_| "2".to_string());
+        let output = Command::new("make")
+            .current_dir(&src_dir)
+            .arg(format!("-j{}", ncpu))
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| ServiceError::ServiceError(format!("make failed: {}", e)))?;
+        if !output.status.success() {
+            return Err(ServiceError::ServiceError(format!(
+                "memcached make failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            )));
+        }
+
+        let output = Command::new("make")
+            .current_dir(&src_dir)
+            .arg("install")
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .map_err(|e| ServiceError::ServiceError(format!("make install failed: {}", e)))?;
+        if !output.status.success() {
+            return Err(ServiceError::ServiceError(format!(
+                "memcached make install failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            )));
+        }
+
+        // make install targets the Cellar path; Homebrew symlinks it to ext_dir.
+        // If the symlink isn't set up yet, copy the .so directly.
+        let so_path = std::path::PathBuf::from(format!("{}/memcached.so", ext_dir));
+        if !so_path.exists() {
+            let api = std::path::Path::new(ext_dir)
+                .file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_default();
+            // Walk Cellar to find any installed PHP version dir
+            let cellar_base = std::path::Path::new("/opt/homebrew/Cellar/php");
+            if let Ok(entries) = std::fs::read_dir(cellar_base) {
+                for entry in entries.flatten() {
+                    let candidate = entry.path().join("pecl").join(&api).join("memcached.so");
+                    if candidate.exists() {
+                        std::fs::copy(&candidate, &so_path)
+                            .map_err(|e| ServiceError::ServiceError(format!("Failed to copy memcached.so: {}", e)))?;
+                        break;
+                    }
+                }
+            }
+        }
+
+        let _ = std::fs::remove_dir_all(&src_dir);
+
+        if !so_path.exists() {
+            return Err(ServiceError::ServiceError(format!(
+                "memcached.so not found at {} after build",
+                so_path.display()
+            )));
+        }
+
+        Ok(())
+    }
+
 }
 
 impl BaseService for Service {
     fn name(&self) -> &str {
-        "php"
+        &self.full_name
     }
 
     fn human_name(&self) -> &str {
-        "PHP"
+        &self.display_name
     }
 
     fn url(&self) -> &str {
@@ -142,17 +485,22 @@ impl BaseService for Service {
     }
 
     fn is_installed(&self) -> bool {
-        brew::is_service_installed("php")
+        // Check for the versioned opt path first (works for any tap source)
+        let versioned = format!("/opt/homebrew/opt/php@{}/sbin/php-fpm", self.version);
+        if std::path::Path::new(&versioned).exists() {
+            return true;
+        }
+        // Only treat the unversioned path as this version if the binary reports the same version
+        std::path::Path::new("/opt/homebrew/opt/php/sbin/php-fpm").exists()
+            && Self::default_php_version().as_deref() == Some(self.version.as_str())
     }
 
     fn is_running(&self) -> bool {
-        // Check if our isolated PHP-FPM process is running
         let socket_path = self
             .isolation
             .get_service_socket_dir_no_spaces()
             .join(format!("php-{}.sock", self.version));
 
-        // Check if socket exists and is accessible
         if !socket_path.exists() {
             return false;
         }
@@ -165,6 +513,10 @@ impl BaseService for Service {
 
     fn install(&self) -> Result<bool, ServiceError> {
         if self.is_installed() {
+            // Ensure PECL extensions are present even for pre-installed versions
+            self.post_install()?;
+            // Restart so PHP-FPM loads any newly written ini files
+            self.restart()?;
             return Ok(true);
         }
 
@@ -197,10 +549,7 @@ impl BaseService for Service {
         }
 
         if self.is_running() {
-            return Err(ServiceError::AlreadyRunning(format!(
-                "PHP {}",
-                self.version
-            )));
+            return Ok(true);
         }
 
         // Ensure configuration is up to date before starting
@@ -225,8 +574,11 @@ impl BaseService for Service {
             let _ = std::fs::remove_file(&socket_path);
         }
 
-        // Start PHP-FPM using our isolated config directly
-        let config_path = self.isolation.get_service_config_dir().join("php-fpm.conf");
+        // Start PHP-FPM using our version-isolated config
+        let config_path = self
+            .isolation
+            .get_service_config_dir()
+            .join(self.fpm_config_filename());
 
         // Find the php-fpm binary
         let php_fpm_binary = self.php_fpm_binary().unwrap();
@@ -297,76 +649,125 @@ impl BaseService for Service {
     }
 
     fn post_install(&self) -> Result<(), ServiceError> {
-        // Exit early if xdebug is already installed with pecl.
-        let output = Command::new("pecl")
-            .arg("list")
-            .stderr(Stdio::piped())
-            .stdout(Stdio::piped())
-            .output()
-            .unwrap();
+        let conf_d = self.php_conf_d_dir()?;
+        let ext_dir = self.pecl_ext_dir()?;
 
-        if output.status.success() {
-            let output_str = String::from_utf8_lossy(&output.stdout);
-            if output_str.contains("xdebug") {
-                println!("xdebug is ALREADY installed with pecl.");
-                return Ok(());
+        let xdebug_so   = std::path::PathBuf::from(format!("{}/xdebug.so", ext_dir));
+        let redis_so     = std::path::PathBuf::from(format!("{}/redis.so", ext_dir));
+        let memcached_so = std::path::PathBuf::from(format!("{}/memcached.so", ext_dir));
+        let xdebug_ini   = conf_d.join("ext-xdebug.ini");
+        let redis_ini    = conf_d.join("ext-redis.ini");
+        let memcached_ini = conf_d.join("ext-memcached.ini");
+
+        // --- Step 1: Fix/clean ini files immediately ---
+        // This clears any previously broken state (e.g. extension_dir override) so that
+        // FPM can restart cleanly regardless of what happens during extension install below.
+        if xdebug_so.exists() {
+            self.config.write_file(
+                &xdebug_ini,
+                &format!(
+                    "zend_extension=\"{}/xdebug.so\"\nxdebug.mode=debug\nxdebug.start_with_request=yes\n",
+                    ext_dir
+                ),
+            )?;
+        } else {
+            let _ = std::fs::remove_file(&xdebug_ini);
+        }
+
+        if redis_so.exists() {
+            self.config.write_file(
+                &redis_ini,
+                &format!("extension=\"{}/redis.so\"\n", ext_dir),
+            )?;
+        } else {
+            let _ = std::fs::remove_file(&redis_ini);
+        }
+
+        if memcached_so.exists() {
+            self.config.write_file(
+                &memcached_ini,
+                &format!("extension=\"{}/memcached.so\"\n", ext_dir),
+            )?;
+        } else {
+            let _ = std::fs::remove_file(&memcached_ini);
+        }
+
+        // Strip any pecl-appended bare extension lines from php.ini to avoid duplicates
+        if let Ok(php_ini_path) = self.php_ini_path() {
+            if let Ok(contents) = std::fs::read_to_string(&php_ini_path) {
+                let filtered = contents
+                    .lines()
+                    .filter(|line| {
+                        !line.contains("xdebug.so")
+                            && !line.contains("redis.so")
+                            && !line.contains("memcached.so")
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                let _ = std::fs::write(&php_ini_path, filtered);
             }
         }
 
-        println!("Installing xdebug with pecl.");
+        // --- Step 2: Install missing extensions (check by .so presence, not pecl list) ---
+        let pecl = self.pecl_binary()?;
 
-        // Install xdebug
-        let output = Command::new("pecl")
-            .arg("install")
-            .arg("xdebug")
-            .stderr(Stdio::piped())
-            .stdout(Stdio::piped())
-            .output()
-            .unwrap();
-
-        if !output.status.success() {
-            return Err(ServiceError::ServiceError(format!(
-                "Failed to install xdebug: {}",
-                String::from_utf8_lossy(&output.stderr)
-            )));
+        if !xdebug_so.exists() {
+            println!("Installing xdebug with pecl.");
+            let output = Command::new(&pecl)
+                .arg("install")
+                .arg("xdebug")
+                .stdin(Stdio::null())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .output()
+                .map_err(|e| ServiceError::ServiceError(format!("Failed to run pecl install xdebug: {}", e)))?;
+            if !output.status.success() {
+                return Err(ServiceError::ServiceError(format!(
+                    "Failed to install xdebug: stdout={} stderr={}",
+                    String::from_utf8_lossy(&output.stdout).trim(),
+                    String::from_utf8_lossy(&output.stderr).trim(),
+                )));
+            }
+            self.config.write_file(
+                &xdebug_ini,
+                &format!(
+                    "zend_extension=\"{}/xdebug.so\"\nxdebug.mode=debug\nxdebug.start_with_request=yes\n",
+                    ext_dir
+                ),
+            )?;
         }
 
-        println!("{:?}", output);
-
-        let app_fs =
-            AppFileSystem::new().map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
-
-        let php_ini_path = app_fs.etc_dir.join("php").join(&self.version).join("php.ini");
-        if let Ok(contents) = std::fs::read_to_string(&php_ini_path) {
-            let filtered_contents = contents
-                .lines()
-                .filter(|line| {
-                    !line.contains("zend_extension=\"xdebug.so\"")
-                        && !line.contains("zend_extension=\"memcached.so\"")
-                        && !line.contains("extension=\"memcached.so\"")
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
-            std::fs::write(php_ini_path, filtered_contents).unwrap();
+        if !redis_so.exists() {
+            println!("Installing redis extension with pecl.");
+            let output = Command::new(&pecl)
+                .arg("install")
+                .arg("redis")
+                .stdin(Stdio::null())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .output()
+                .map_err(|e| ServiceError::ServiceError(format!("Failed to run pecl install redis: {}", e)))?;
+            if !output.status.success() {
+                return Err(ServiceError::ServiceError(format!(
+                    "Failed to install redis extension: stdout={} stderr={}",
+                    String::from_utf8_lossy(&output.stdout).trim(),
+                    String::from_utf8_lossy(&output.stderr).trim(),
+                )));
+            }
+            self.config.write_file(
+                &redis_ini,
+                &format!("extension=\"{}/redis.so\"\n", ext_dir),
+            )?;
         }
 
-        // Add ext-xdebug.ini to conf.d directory.
-        let ext_debug_content = "
-        zend_extension=\"xdebug.so\"\n
-        xdebug.mode=debug\n
-        xdebug.start_with_request=trigger\n
-        ";
-
-        let conf_d_path = app_fs
-            .etc_dir
-            .join("php")
-            .join(&self.version)
-            .join("conf.d")
-            .join("ext-xdebug.ini");
-        self.config.write_file(&conf_d_path, &ext_debug_content)?;
-
-        println!("conf_d_path: {}", conf_d_path.display());
-        println!("ext_debug_content: {:#?}", ext_debug_content);
+        if !memcached_so.exists() {
+            println!("Installing memcached extension from source (phpize).");
+            self.install_memcached_from_source(&ext_dir)?;
+            self.config.write_file(
+                &memcached_ini,
+                &format!("extension=\"{}/memcached.so\"\n", ext_dir),
+            )?;
+        }
 
         Ok(())
     }
@@ -375,12 +776,12 @@ impl BaseService for Service {
         if !self.is_installed() {
             return Ok(true);
         }
-
+        // Stop FPM (kills process via PID + removes socket) before uninstalling
+        let _ = self.stop();
         self.isolation
             .brew_command(&["uninstall", &format!("php@{}", self.version)])
             .run()
             .map_err(|e| ServiceError::BrewError(e.to_string()))?;
-
         Ok(true)
     }
 }

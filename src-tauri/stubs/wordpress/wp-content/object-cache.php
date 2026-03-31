@@ -120,7 +120,15 @@ if (!$loaded) {
  * ----------------------------------------------------------------- */
 
 function wp_cache_init() {
-    // $wp_object_cache is constructed above. Nothing to do.
+    global $_wp_using_ext_object_cache;
+    // For the noop (in-memory) backend there is no persistent external store,
+    // so transients must go to the database just like a vanilla WordPress install.
+    // Resetting this flag here (after wp-settings.php forces it to true) ensures
+    // set_transient / get_transient use wp_options rather than the request-scoped
+    // cache array, which would silently drop transients between requests.
+    if ( defined( 'LEMPIFY_OBJECT_CACHE' ) && strtolower( (string) LEMPIFY_OBJECT_CACHE ) === 'none' ) {
+        $_wp_using_ext_object_cache = false;
+    }
     return true;
 }
 

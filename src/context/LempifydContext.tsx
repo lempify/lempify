@@ -13,8 +13,8 @@ import {
 } from 'react';
 
 import { useInvoke } from '../hooks/useInvoke';
-import { InvokeStatus, ServiceTypes, ToolTypes } from '../types/service';
 import { SERVICES, TOOLS } from '../constants';
+import { InvokeStatus, ToolTypes } from '../types/service';
 
 type LempifydEvent = {
   name: string;
@@ -27,7 +27,8 @@ type LempifydResponse = {
   result: any;
 };
 
-type LempifydServices = Record<ServiceTypes, Status>;
+// PHP services (e.g. "php@8.4") are added at runtime, so services is open-ended.
+type LempifydServices = Record<string, Status>;
 type LempifydTools = Record<ToolTypes, Status>;
 
 type LempifydState = {
@@ -121,11 +122,22 @@ function lempifydReducer(
     case 'UPDATE_DEPENDENCY_KEYS':
       let updatedState = state;
 
-      if (isService) {
+      // For unknown PHP services, seed a loading stub so the UI shows
+      // a pending indicator immediately before the daemon responds.
+      const isNewPhpService = !isService && !isTool && name.startsWith('php@');
+
+      if (isService || isNewPhpService) {
         const newServices = {
           ...state.services,
           [name]: {
-            ...state.services[name as ServiceTypes],
+            ...(isNewPhpService ? {
+              name,
+              humanName: `PHP ${name.replace('php@', '')}`,
+              isRequired: true,
+              lastError: '',
+              dependencyType: 'service',
+            } : {}),
+            ...state.services[name],
             ...update,
           },
         };
@@ -162,8 +174,9 @@ function lempifydReducer(
         updatedServices = {
           ...state.services,
           [action.payload.name]: {
-            ...state.services[action.payload.name as ServiceTypes],
+            ...state.services[action.payload.name],
             ...action.payload.result,
+            lastError: '',
           },
         };
       } else if (action.payload.result.dependencyType === 'tool') {
@@ -223,7 +236,7 @@ function lempifydReducer(
           services: {
             ...state.services,
             [action.payload.name]: {
-              ...state.services[action.payload.name as ServiceTypes],
+              ...state.services[action.payload.name as string],
               lastError: action.payload.lastError,
             },
           },
@@ -277,7 +290,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
 
           try {
             const payload = JSON.parse(event.payload);
-            let name = payload.name as ServiceTypes;
+            let name = payload.name as string;
 
             dispatch({
               type: 'UPDATE_DEPENDENCY_KEYS',
@@ -341,7 +354,7 @@ export function LempifydProvider({ children }: { children: ReactNode }) {
  * @example
  * ```tsx
  * const { emit, state } = useLempifyd();
- * emit("php", "isInstalled");
+ * emit("php@8.4", "isInstalled");
  * ```
  */
 export function useLempifyd(): {

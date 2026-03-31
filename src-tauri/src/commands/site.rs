@@ -14,7 +14,7 @@ use crate::{
     site_types::{install, uninstall, wordpress},
 };
 
-use shared::{constants::DEFAULT_PHP_VERSION, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand};
+use shared::{brew, constants::{DEFAULT_PHP_VERSION, PHP_SUPPORTED_VERSIONS}, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand};
 
 /// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
@@ -56,9 +56,48 @@ pub async fn create_site<R: tauri::Runtime>(
         .create_dir_all(&site_path)
         .map_err(|e| format!("Failed to create site directory: {}", e))?;
 
+    // Create logs directory
+    app_fs
+        .create_dir_all(&site_path.join("logs"))
+        .map_err(|e| format!("Failed to create logs directory: {}", e))?;
+
+    // Validate and resolve the requested PHP version
+    let php_version = if PHP_SUPPORTED_VERSIONS.contains(&payload.php_version.as_str()) {
+        payload.php_version
+    } else {
+        DEFAULT_PHP_VERSION.to_string()
+    };
+
+    // Install PHP version if not already present
+    let php_installed = brew::is_formulae_installed(&format!("php@{}", php_version))
+        || (php_version == DEFAULT_PHP_VERSION && brew::is_formulae_installed("php"));
+
+    if !php_installed {
+        app.emit("site:progress", format!("Installing PHP {} — this may take a few minutes…", php_version)).ok();
+        let formula = format!("php@{}", php_version);
+        tokio::task::spawn_blocking(move || brew::BrewCommand::new(&["install", &formula]).run())
+            .await
+            .map_err(|e| format!("Task join error: {}", e))?
+            .map_err(|e| format!("Failed to install PHP {}: {}", php_version, e))?;
+        app.emit("site:progress", format!("PHP {} installed", php_version)).ok();
+    }
+
+    // Ensure PHP extensions (xdebug, redis, memcached) are installed and FPM config is current.
+    // This runs whether PHP was just installed or was already present.
+    app.emit("site:progress", format!("Setting up PHP {} extensions…", php_version)).ok();
+    let php_service_name = format!("php@{}", php_version);
+    let cmd = crate::helpers::lempifyd::DaemonCommand {
+        name: php_service_name,
+        action: "install".to_string(),
+    };
+    tokio::task::spawn_blocking(move || crate::helpers::lempifyd::send(&cmd))
+        .await
+        .map_err(|e| format!("Task join error: {}", e))?
+        .map_err(|e| format!("Failed to set up PHP extensions: {}", e))?;
+
     // Create site object and store in config.json
     let site_services = SiteServices {
-        php: DEFAULT_PHP_VERSION.to_string(),
+        php: php_version,
         mysql: "8.0".to_string(),
         nginx: "1.25".to_string(),
     };
@@ -232,4 +271,50 @@ pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String)
     config_manager.update_site(&domain, site).await?;
 
     Ok(ping)
+}
+
+/// Returns the major.minor PHP version that Homebrew's unversioned `php` formula provides.
+/// Falls back to the compiled-in DEFAULT_PHP_VERSION if the binary can't be found.
+#[command]
+pub fn get_stable_php_version() -> String {
+    let output = Command::new("/opt/homebrew/opt/php/bin/php")
+        .args(["-r", "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;"])
+        .output();
+
+    if let Ok(out) = output {
+        let version = String::from_utf8_lossy(&out.stdout).trim().to_string();
+        if version.contains('.') {
+            return version;
+        }
+    }
+    DEFAULT_PHP_VERSION.to_string()
+}
+
+/// Returns all PHP versions currently installed via Homebrew on this machine.
+/// Checks both versioned formulas (php@8.x) and the unversioned `php` formula.
+#[command]
+pub fn get_installed_php_versions() -> Vec<String> {
+    let default_bin_version = {
+        let result = Command::new("/opt/homebrew/opt/php/bin/php")
+            .args(["-r", "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;"])
+            .output();
+        if let Ok(out) = result {
+            let v = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if v.contains('.') { Some(v) } else { None }
+        } else {
+            None
+        }
+    };
+
+    PHP_SUPPORTED_VERSIONS
+        .iter()
+        .filter(|&&version| {
+            let versioned = format!("/opt/homebrew/opt/php@{}/sbin/php-fpm", version);
+            let is_versioned = std::path::Path::new(&versioned).exists();
+            let is_unversioned_default = default_bin_version.as_deref() == Some(version)
+                && std::path::Path::new("/opt/homebrew/opt/php/sbin/php-fpm").exists();
+            is_versioned || is_unversioned_default
+        })
+        .map(|v| v.to_string())
+        .collect()
 }

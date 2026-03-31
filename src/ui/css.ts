@@ -11,7 +11,7 @@ export const cornerBottomLeft =
   'after:bg-gradient-to-l after:from-neutral-300 after:to-neutral-100/0 dark:after:from-neutral-600 dark:after:to-neutral-900/0';
 
 export const pageSection =
-  'p-10 w-full ' +
+  'p-10 w-full min-w-0 ' +
   'border-t border-r border-l border-neutral-300 dark:border-neutral-600 last:border-b ' +
   'bg-neutral-50/80 dark:bg-neutral-900/60 ' +
   'backdrop-blur-[1px] ' +

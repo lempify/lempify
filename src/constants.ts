@@ -1,5 +1,9 @@
 export const DEFAULT_SITE_TYPE = 'wordpress';
 
+export const DEFAULT_PHP_VERSION = '8.4';
+
+export const PHP_SUPPORTED_VERSIONS = ['8.5', '8.4', '8.3', '8.2', '8.1', '8.0'] as const;
+
 const DEFAULT_DEPENDENCY = {
   name: '',
   isRequired: false,
@@ -7,13 +11,10 @@ const DEFAULT_DEPENDENCY = {
   lastError: '',
 };
 
+// PHP services are intentionally absent here — they are registered dynamically
+// in LempifydContext as the daemon reports which versions are in use (one entry
+// per "php@{version}" key received from the daemon).
 export const SERVICES = {
-  php: {
-    ...DEFAULT_DEPENDENCY,
-    name: 'php',
-    isRequired: true,
-    humanName: 'PHP',
-  },
   nginx: {
     ...DEFAULT_DEPENDENCY,
     name: 'nginx',

@@ -13,7 +13,6 @@ export default function DialogSiteCreate({
       <Heading
         title='Create&nbsp;a&nbsp;new Site'
         size='h1'
-        align='right'
         split
       />
       <FormSiteCreate

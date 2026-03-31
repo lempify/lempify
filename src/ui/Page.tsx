@@ -13,7 +13,7 @@ export default function Page({
   return (
     <Fragment>
       <RouteHeader title={title} description={description} />
-      <div className='flex flex-col'>{children}</div>
+      <div className='flex min-w-0 flex-col'>{children}</div>
     </Fragment>
   );
 }

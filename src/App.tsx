@@ -31,14 +31,13 @@ const App = () => {
       <LempifydProvider>
         <Router>
           <Install>
-            <div className='grid grid-cols-[auto_1fr] grid-rows-[var(--lempify-header-height)_1fr]'>
+            <div className='grid grid-cols-[auto_minmax(0,1fr)] grid-rows-[var(--lempify-header-height)_1fr]'>
               {/* Header - sticky */}
               <Header />
               {/* Sidebar - sticky, spans both rows */}
               <Sidebar />
-              {/* Main content */}
-              <main className='bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)]'>
-                <div className='p-10 relative'>
+              <main className='min-w-0 bg-neutral-100 dark:bg-neutral-900 text-[var(--lempify-text)]'>
+                <div className='relative min-w-0 p-10'>
                   <Routes>
                     <Route path='/' element={<Dashboard />} />
                     <Route path='/sites' element={<Sites />} />

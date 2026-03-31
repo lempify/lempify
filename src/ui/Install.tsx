@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useAppConfig } from '../context/AppConfigContext';
 import { useLempifyd } from '../context/LempifydContext';
-import { SERVICES, TOOLS } from '../constants';
+import { DEFAULT_PHP_VERSION, SERVICES, TOOLS } from '../constants';
 import {
   NavLink,
   Route,
@@ -83,7 +83,7 @@ export default function Install({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function emitServices() {
       // Services
-      emit('php', 'is_running');
+      emit(`php@${DEFAULT_PHP_VERSION}`, 'is_running');
       emit('nginx', 'is_running');
       emit('mysql', 'is_running');
       // Optional services

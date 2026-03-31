@@ -149,6 +149,7 @@ impl SiteBuilder {
         self
     }
 
+    #[allow(dead_code)]
     pub fn ping(mut self, ping: Option<PingData>) -> Self {
         self.ping = ping;
         self

@@ -2,7 +2,8 @@
  * External imports
  */
 import { listen } from '@tauri-apps/api/event';
-import { FormEvent, useRef, useState } from 'react';
+import { invoke as tauriInvoke } from '@tauri-apps/api/core';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
 /**
  * Internal imports
@@ -18,7 +19,8 @@ import Loader from './Loader';
 import { buttonPrimary } from './css';
 import { useAppConfig } from '../context/AppConfigContext';
 import { Site } from '../types';
-import { DEFAULT_SITE_TYPE } from '../constants';
+import { DEFAULT_PHP_VERSION, DEFAULT_SITE_TYPE } from '../constants';
+import { useLempifyd } from '../context/LempifydContext';
 import Heading from './Heading';
 import Details from './Details';
 
@@ -31,6 +33,7 @@ const defaultPayload = {
   ssl: true,
   site_type: DEFAULT_SITE_TYPE,
   site_type_config: {},
+  php_version: DEFAULT_PHP_VERSION,
 };
 
 type Payload = {
@@ -39,14 +42,23 @@ type Payload = {
   ssl: boolean;
   site_type: string;
   site_type_config: Record<string, any>;
+  php_version: string;
 };
 
 export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
   const { invoke, invokeStatus } = useInvoke();
+  const { emit } = useLempifyd();
   const [formValues, setFormValues] = useState<Record<string, any>>({
     ...defaultPayload,
   });
-  const [steps, setSteps] = useState<string[]>([]);
+  const [currentStep, setCurrentStep] = useState('');
+
+  useEffect(() => {
+    // Use raw invoke to avoid affecting the create-site loader state
+    tauriInvoke<string>('get_stable_php_version')
+      .then(version => setFormValues(prev => ({ ...prev, php_version: version })))
+      .catch(() => {});
+  }, []);
   const [createError, setCreateError] = useState<string | null>(null);
   const { config, dispatch } = useAppConfig();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,7 +71,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       ssl: formValues.ssl,
       site_type: formValues.site_type,
       site_type_config: {},
-      // tld: formValues.tld,
+      php_version: formValues.php_version,
     };
 
     for (const [key, value] of Object.entries(formValues)) {
@@ -73,9 +85,9 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       }
     }
 
-    setSteps([]);
+    setCurrentStep('');
     setCreateError(null);
-    const unlisten = await listen<string>('site:progress', e => setSteps(prev => [...prev, e.payload]));
+    const unlisten = await listen<string>('site:progress', e => setCurrentStep(e.payload));
 
     try {
       const { data, error } = await invoke<Site>('create_site', {
@@ -84,6 +96,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       if (error) {
         setCreateError(error);
       } else if (data?.domain.toLowerCase() === formValues.domain.toLowerCase()) {
+        emit(`php@${formValues.php_version || DEFAULT_PHP_VERSION}`, 'start');
         setFormValues({ ...defaultPayload });
         dispatch({ type: 'set_sites', sites: [...config.sites, data] });
       }
@@ -116,7 +129,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
       )}
     >
       <form onSubmit={handleSubmit}>
-        <div className='grid grid-cols-1 gap-10 mb-10'>
+        <div className='grid grid-cols-1 gap-6 mb-8'>
           {siteCreateFields.map((field, index) => (
             <div className={field.wrapperClassName ?? ''} key={field.name}>
               <FormFields
@@ -126,7 +139,7 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
                 key={field.name}
                 value={formValues[field.name]}
                 onChange={(value, fieldName = field.name) =>
-                  setFormValues({ ...formValues, [fieldName]: value })
+                  setFormValues(prev => ({ ...prev, [fieldName]: value }))
                 }
               />
             </div>
@@ -139,22 +152,18 @@ export default function SiteCreate({ onRefresh }: { onRefresh: () => void }) {
           }
           className={buttonPrimary}
         >
-          Submit form
+          Create Site
         </button>
       </form>
-      <Loader isVisible={invokeStatus === 'pending'} />
+      <Loader isVisible={invokeStatus === 'pending'}>
+        {currentStep && (
+          <p className='text-xs text-neutral-600 dark:text-neutral-400 text-center max-w-xs'>
+            {currentStep}
+          </p>
+        )}
+      </Loader>
       {createError && (
         <p className='mt-4 text-sm text-red-500'>{createError}</p>
-      )}
-      {steps.length > 0 && (
-        <ul className="mt-4 flex flex-col gap-1">
-          {steps.map((step, i) => (
-            <li key={i} className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
-              <span className="size-1.5 rounded-full bg-green-500 flex-shrink-0" />
-              {step}
-            </li>
-          ))}
-        </ul>
       )}
     </Details>
   );

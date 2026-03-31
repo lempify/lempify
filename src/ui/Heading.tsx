@@ -28,7 +28,7 @@ export default function Heading({
 }) {
   let firstWordClassName = '';
   const HeadingElement = size;
-  let headingClassName = `${tailwindCssMap[align]} `;
+  let headingClassName = `${tailwindCssMap[align]} truncate `;
   if (size === 'h1') {
     headingClassName += `
     md:text-8xl text-6xl leading-[1.2] text-transparent font-semibold  

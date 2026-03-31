@@ -55,7 +55,7 @@ export default function Dialog({
       className={`lempify-dialog ${className}`}
     >
       <div
-        className='flex flex-col gap-2 p-4 absolute bg-neutral-100 dark:bg-neutral-900 lg:w-2/3 lg:h-2/3 lg:left-1/2 lg:-translate-x-1/2 lg:top-1/2 lg:-translate-y-1/2 inset-4 lg:inset-0'
+        className='flex flex-col gap-2 p-4 absolute bg-neutral-100 dark:bg-neutral-900 w-full md:w-2/3 lg:w-1/2 lg:h-2/3 md:left-1/2 md:-translate-x-1/2 lg:top-1/2 lg:-translate-y-1/2 inset-4 lg:inset-0'
         onClick={e => e.stopPropagation()}
       >
         {children}

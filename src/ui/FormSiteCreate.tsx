@@ -8,7 +8,7 @@ import Loader from './Loader';
 
 import { useInvoke } from '../hooks/useInvoke';
 import { useAppConfig } from '../context/AppConfigContext';
-import { DEFAULT_SITE_TYPE } from '../constants';
+import { DEFAULT_PHP_VERSION, DEFAULT_SITE_TYPE } from '../constants';
 import siteCreateFields from '../utils/site-create-fields';
 
 /**
@@ -20,6 +20,7 @@ const defaultPayload = {
   ssl: true,
   site_type: DEFAULT_SITE_TYPE,
   site_type_config: {},
+  php_version: DEFAULT_PHP_VERSION,
 };
 
 type Payload = {
@@ -28,6 +29,7 @@ type Payload = {
   ssl: boolean;
   site_type: string;
   site_type_config: Record<string, any>;
+  php_version: string;
 };
 export function FormSiteCreate({
   fieldPrefix = '',
@@ -57,6 +59,7 @@ export function FormSiteCreate({
       ssl: formValues.ssl,
       site_type: formValues.site_type,
       site_type_config: {},
+      php_version: formValues.php_version,
     };
 
     for (const [key, value] of Object.entries(formValues)) {
@@ -104,7 +107,7 @@ export function FormSiteCreate({
                 key={field.name}
                 value={formValues[field.name]}
                 onChange={(value, fieldName = field.name) =>
-                  setFormValues({ ...formValues, [fieldName]: value })
+                  setFormValues(prev => ({ ...prev, [fieldName]: value }))
                 }
               />
             </div>

@@ -27,7 +27,13 @@ const FormFields = (props: Field) => {
     descriptionPosition = 'bottom',
     inputAttributes = {},
     required = false,
+    fieldPrefix = '',
+    labelClassName = '',
+    optionsContainerClassName = '',
+    validationMessage = '',
   } = props;
+
+  const fieldId = fieldPrefix ? `${fieldPrefix}-${name}` : name;
 
   useEffect(() => {
     if (inputRef?.current) {
@@ -44,12 +50,60 @@ const FormFields = (props: Field) => {
     onChange(newValue, fieldName);
   }
 
+  const radioOptions =
+    type === 'radio' && options
+      ? options.map(option => {
+          const optionId = fieldPrefix
+            ? `${fieldPrefix}-${option.name}`
+            : option.name;
+          return (
+            <div className={`${option.wrapperClassName ?? ''}`} key={option.name}>
+              <input
+                type='radio'
+                id={optionId}
+                name={name}
+                className={`${option.className ?? ''}`}
+                value={option.name}
+                checked={option.name === value}
+                onChange={handleChange}
+              />
+              <label htmlFor={optionId} className={option.labelClassName ?? ''}>
+                {option.label}
+              </label>
+              {value === option?.dependency?.[1] &&
+                option?.fields?.map(childField => {
+                  const _name = `${name}|${option.name}|${childField.name}`;
+                  return (
+                    <div
+                      className={`${childField.wrapperClassName ?? ''}`}
+                      key={childField.name}
+                    >
+                      <FormFields
+                        key={childField.name}
+                        {...childField}
+                        name={_name}
+                        fieldPrefix={fieldPrefix}
+                        className={`${childField.className ?? ''}`}
+                        onChange={change => onChange(change, _name)}
+                        {...(childField.inputAttributes ?? {})}
+                      />
+                    </div>
+                  );
+                })}
+            </div>
+          );
+        })
+      : null;
+
   return (
     <Fragment>
       {label && labelPosition === 'top' && (
         <label
-          htmlFor={name}
-          className='text-xl text-neutral-700 dark:text-neutral-300 block mb-2 cursor-pointer'
+          htmlFor={fieldId}
+          className={
+            labelClassName ||
+            'text-xl text-neutral-700 dark:text-neutral-300 block mb-2 cursor-pointer'
+          }
         >
           {label}
           {required && <span className='text-red-500'> *</span>}
@@ -63,62 +117,41 @@ const FormFields = (props: Field) => {
       {type === 'checkbox' ? (
         <input
           type='checkbox'
-          id={name}
+          id={fieldId}
           name={name}
           className={`${className}`}
           checked={value}
           onChange={e => onChange(e.target.checked, name)}
           {...inputAttributes}
         />
-      ) : type === 'radio' && options ? (
-        options.map(option => (
-          <div className={`${option.wrapperClassName ?? ''}`} key={option.name}>
-            <input
-              type='radio'
-              id={option.name}
-              name={name}
-              className={`${option.className ?? ''}`}
-              value={option.name}
-              checked={option.name === value}
-              onChange={handleChange}
-            />
-            <label htmlFor={option.name}>{option.label}</label>
-            {value === option?.dependency?.[1] &&
-              option?.fields?.map(childField => {
-                const _name = `${name}|${option.name}|${childField.name}`;
-                return (
-                  <div
-                    className={`${childField.wrapperClassName ?? ''}`}
-                    key={childField.name}
-                  >
-                    <FormFields
-                      key={childField.name}
-                      {...childField}
-                      name={_name}
-                      className={`${childField.className ?? ''}`}
-                      onChange={change => onChange(change, _name)}
-                      {...(childField.inputAttributes ?? {})}
-                    />
-                  </div>
-                );
-              })}
-          </div>
-        ))
+      ) : radioOptions ? (
+        optionsContainerClassName ? (
+          <div className={optionsContainerClassName}>{radioOptions}</div>
+        ) : (
+          <>{radioOptions}</>
+        )
       ) : ['text', 'password', 'number'].includes(type) ? (
-        <input
-          type={type}
-          id={name}
-          name={name}
-          value={value}
-          placeholder={placeholder ?? ''}
-          className={`${className} placeholder:text-neutral-500 placeholder:italic`}
-          onChange={handleChange}
-          ref={inputRef}
-          {...inputAttributes}
-        />
+        <>
+          <input
+            type={type}
+            id={fieldId}
+            name={name}
+            value={value}
+            placeholder={placeholder ?? ''}
+            className={`${validationMessage ? 'peer ' : ''}${className} placeholder:text-neutral-500 placeholder:italic`}
+            onChange={handleChange}
+            ref={inputRef}
+            {...inputAttributes}
+          />
+          {validationMessage && (
+            <span className='hidden peer-[:user-invalid]:block text-xs text-red-500 mt-1'>
+              {validationMessage}
+            </span>
+          )}
+        </>
       ) : null}
       {label && labelPosition === 'bottom' && (
-        <label htmlFor={name} className='block cursor-pointer'>
+        <label htmlFor={fieldId} className='block cursor-pointer'>
           {label}
         </label>
       )}

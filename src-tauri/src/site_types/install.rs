@@ -196,11 +196,24 @@ pub async fn site<R: tauri::Runtime>(
 
             let site_url = format!("{}://{}", if ssl { "https" } else { "http" }, domain);
             let site_title = format!("{} Site", site_name);
-            let wp_version_dir = app_fs
-                .site_types_dir
-                .join("wordpress")
-                .join(version);
-            wordpress::setup_database(&wp_version_dir, &site_url, &site_title, &db_name, &settings)?;
+
+            if brew::is_formulae_installed("wp-cli") {
+                // Preferred: wp core install runs populate_options(), wp_install_defaults(),
+                // switch_theme(), flush_rewrite_rules(), and fires the wp_install action —
+                // producing a fully-initialised site that mirrors what plugins expect.
+                app.emit("site:progress", "Running wp core install").ok();
+                wordpress::cli_install_site(&site_dir, &site_url, &site_title)?;
+            } else {
+                // Fallback: direct SQL seeding when wp-cli is not available.
+                // NOTE: this skips several WordPress initialisation steps (populate_options,
+                // wp_install_defaults, switch_theme, flush_rewrite_rules) which can cause
+                // subtle plugin compatibility issues.
+                let wp_version_dir = app_fs
+                    .site_types_dir
+                    .join("wordpress")
+                    .join(version);
+                wordpress::setup_database(&wp_version_dir, &site_url, &site_title, &db_name, &settings)?;
+            }
 
             Ok(())
         }

@@ -1,8 +1,6 @@
-use std::fs::OpenOptions;
-use std::io::Write;
 use tauri::{App, Manager};
 
-pub fn log_to_file(message: &str) {
+pub fn log_to_file(_message: &str) {
     // if let Ok(mut file) = OpenOptions::new()
     //     .create(true)
     //     .append(true)

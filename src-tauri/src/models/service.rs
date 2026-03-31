@@ -1,9 +1,11 @@
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
+use shared;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[allow(dead_code)]
 pub enum ServiceTypes {
     Php,
     Mysql,
@@ -16,12 +18,8 @@ impl fmt::Display for ServiceTypes {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct ServiceStatus {
-    pub name: String,
-    pub installed: bool,
-    pub version: Option<String>,
-    pub running: bool,
+fn default_php_version() -> String {
+    shared::constants::DEFAULT_PHP_VERSION.to_string()
 }
 
 #[derive(Debug, Deserialize)]
@@ -31,6 +29,8 @@ pub struct SiteCreatePayload {
     pub site_type: String,
     pub site_name: String,
     pub ssl: bool,
+    #[serde(default = "default_php_version")]
+    pub php_version: String,
 }
 
 #[derive(Debug, Serialize)]

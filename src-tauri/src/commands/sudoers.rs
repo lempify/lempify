@@ -67,14 +67,6 @@ pub async fn untrust_lempify(config_manager: State<'_, ConfigManager>) -> Result
             .map_err(|e| format!("Failed to execute osascript: {}", e))?
     };
 
-    #[cfg(target_os = "linux")]
-    let output = {
-        Command::new("pkexec")
-            .args(["sh", "-c", &format!("rm {sudoers_path}")])
-            .output()
-            .map_err(|e| format!("Failed to execute pkexec: {}", e))?
-    };
-
     if !output.status.success() {
         return Err(format!(
             "Failed to remove sudoers file: {}",

@@ -40,7 +40,9 @@ pub trait Service {
         if !self.is_installed() {
             return Ok(true);
         }
-
+        let _ = self.stop();
+        brew::uninstall_formulae(self.command())
+            .map_err(|e| ServiceError::BrewError(e))?;
         Ok(true)
     }
     fn is_running(&self) -> bool {

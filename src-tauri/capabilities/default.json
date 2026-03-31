@@ -2,11 +2,20 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
-    "opener:default",
     "shell:allow-open",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "**/*"
+        }
+      ]
+    },
     {
       "identifier": "shell:allow-execute",
       "allow": [
@@ -29,6 +38,7 @@
     "core:window:allow-set-size",
     "core:window:allow-set-position",
     "dialog:allow-ask",
-    "dialog:allow-message"
+    "dialog:allow-message",
+    "opener:default"
   ]
 }

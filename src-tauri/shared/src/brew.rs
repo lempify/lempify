@@ -108,6 +108,14 @@ fn check_service_status(service: &str, status: &str) -> bool {
 }
 
 /**
+ * Uninstall a formula
+ */
+pub fn uninstall_formulae(formula: &str) -> Result<(), String> {
+    BrewCommand::new(&["uninstall", formula]).run()?;
+    Ok(())
+}
+
+/**
  * Install a service
  */
 pub fn install_service(service: &str) -> Result<(), String> {
