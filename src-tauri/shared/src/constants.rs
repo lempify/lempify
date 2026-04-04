@@ -1,4 +1,4 @@
-pub const DEFAULT_PHP_VERSION: &str = "8.4";
+pub const DEFAULT_PHP_VERSION: &str = "8.5";
 
 pub const PHP_SUPPORTED_VERSIONS: &[&str] = &["8.5", "8.4", "8.3", "8.2", "8.1", "8.0"];
 

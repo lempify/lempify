@@ -97,8 +97,8 @@ php_admin_value[max_execution_time] = 120
         Ok(())
     }
 
-    /// Rewrites `start_with_request=trigger` → `start_with_request=yes` in the
-    /// Homebrew conf.d xdebug ini if it exists. Safe to call repeatedly.
+    // Rewrites `start_with_request=trigger` → `start_with_request=yes` in the
+    // Homebrew conf.d xdebug ini if it exists. Safe to call repeatedly.
     fn patch_xdebug_start_mode(&self) {
         let xdebug_ini = std::path::PathBuf::from(format!(
             "/opt/homebrew/etc/php/{}/conf.d/ext-xdebug.ini",
@@ -112,8 +112,8 @@ php_admin_value[max_execution_time] = 120
         }
     }
 
-    /// Returns the version reported by the unversioned Homebrew PHP binary, if it exists.
-    /// Uses `-n` so no ini files are loaded and stdout is clean.
+    // Returns the version reported by the unversioned Homebrew PHP binary, if it exists.
+    // Uses `-n` so no ini files are loaded and stdout is clean.
     fn default_php_version() -> Option<String> {
         let output = std::process::Command::new("/opt/homebrew/opt/php/bin/php")
             .args(["-n", "-r", "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;"])
@@ -178,8 +178,8 @@ php_admin_value[max_execution_time] = 120
         )))
     }
 
-    /// Returns the directory PHP scans for additional .ini files.
-    /// Uses `-n` so no ini is loaded — stdout contains only the constant, no warnings.
+    // Returns the directory PHP scans for additional .ini files.
+    // Uses `-n` so no ini is loaded — stdout contains only the constant, no warnings.
     fn php_conf_d_dir(&self) -> Result<std::path::PathBuf, ServiceError> {
         let php_bin = self.php_binary()?;
         let output = Command::new(&php_bin)
@@ -199,8 +199,8 @@ php_admin_value[max_execution_time] = 120
         Ok(std::path::PathBuf::from(dir))
     }
 
-    /// Returns the path to the php.ini for this PHP version, derived from the conf.d parent.
-    /// Avoids running php with ini loaded (which would pollute stdout with extension warnings).
+    // Returns the path to the php.ini for this PHP version, derived from the conf.d parent.
+    // Avoids running php with ini loaded (which would pollute stdout with extension warnings).
     fn php_ini_path(&self) -> Result<std::path::PathBuf, ServiceError> {
         let conf_d = self.php_conf_d_dir()?;
         let ini = conf_d
@@ -220,12 +220,12 @@ php_admin_value[max_execution_time] = 120
         Ok(ini)
     }
 
-    /// Returns the directory where pecl installs extensions for this PHP version.
-    ///
-    /// Homebrew places pecl extensions at `/opt/homebrew/lib/php/pecl/{PHP_EXTENSION_API}/`,
-    /// which differs from `PHP_EXTENSION_DIR` (the Cellar path) and is more reliably
-    /// obtained from `PHP_EXTENSION_API` than from `pecl config-get ext_dir` (which
-    /// requires PEAR to be initialised and may return empty).
+    // Returns the directory where pecl installs extensions for this PHP version.
+    //
+    // Homebrew places pecl extensions at `/opt/homebrew/lib/php/pecl/{PHP_EXTENSION_API}/`,
+    // which differs from `PHP_EXTENSION_DIR` (the Cellar path) and is more reliably
+    // obtained from `PHP_EXTENSION_API` than from `pecl config-get ext_dir` (which
+    // requires PEAR to be initialised and may return empty).
     fn pecl_ext_dir(&self) -> Result<String, ServiceError> {
         let php_bin = self.php_binary()?;
         let output = Command::new(&php_bin)
@@ -252,11 +252,11 @@ php_admin_value[max_execution_time] = 120
         Ok(dir)
     }
 
-    /// Builds and installs the memcached PHP extension from source using phpize.
-    ///
-    /// PECL's `install --configureoptions` fails on PHP 8.5 due to a PEAR/Builder.php
-    /// type incompatibility. Building directly with phpize → configure → make bypasses
-    /// PEAR entirely and works consistently across all PHP versions.
+    // Builds and installs the memcached PHP extension from source using phpize.
+    //
+    // PECL's `install --configureoptions` fails on PHP 8.5 due to a PEAR/Builder.php
+    // type incompatibility. Building directly with phpize → configure → make bypasses
+    // PEAR entirely and works consistently across all PHP versions.
     fn install_memcached_from_source(&self, ext_dir: &str) -> Result<(), ServiceError> {
         let phpize = {
             let opt_versioned = format!("/opt/homebrew/opt/php@{}/bin/phpize", self.version);

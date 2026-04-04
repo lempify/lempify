@@ -1,5 +1,5 @@
-/// Parses a versioned service name like `"php@8.4"` into `("php", Some("8.4"))`.
-/// For unversioned names like `"nginx"`, returns `("nginx", None)`.
+// Parses a versioned service name like `"php@8.4"` into `("php", Some("8.4"))`.
+// For unversioned names like `"nginx"`, returns `("nginx", None)`.
 pub fn parse_service_name(name: &str) -> (&str, Option<&str>) {
     match name.split_once('@') {
         Some((service, version)) => (service, Some(version)),

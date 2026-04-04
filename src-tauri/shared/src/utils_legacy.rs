@@ -1,5 +1,7 @@
 use std::process::Command;
 
+// @TODO: Confirm this module and fns is not being used
+
 use crate::{constants::LEMPIFY_SUDOERS_PATH, osascript};
 
 pub fn is_bin_installed(bin: &str) -> Result<bool, String> {
@@ -75,7 +77,7 @@ impl<'a> SudoCommand<'a> {
     }
 }
 
-/// Specialized command for file operations that require elevated permissions
+// Specialized command for file operations that require elevated permissions
 pub struct FileSudoCommand {
     operation: FileOperation,
     target_path: std::path::PathBuf,

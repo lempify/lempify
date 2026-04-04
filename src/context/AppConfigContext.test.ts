@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { appConfigReducer } from './AppConfigContext';
 import type { Site } from '../types';
 
-// ── Fixture ─────────────────────────────────────────────────────────────────
-
 const makeSite = (overrides: Partial<Site> = {}): Site => ({
   name: 'Test Site',
   domain: 'test.local',
@@ -29,8 +27,6 @@ const defaultState = {
     mysql_port: 3306,
   },
 };
-
-// ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('appConfigReducer', () => {
   describe('set_trusted', () => {

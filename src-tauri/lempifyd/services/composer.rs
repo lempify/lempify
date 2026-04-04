@@ -24,14 +24,7 @@ impl BaseService for Service {
     }
 
     fn url(&self) -> &str {
-        #[cfg(target_os = "macos")]
-        {
-            "https://formulae.brew.sh/formula/composer"
-        }
-        #[cfg(target_os = "linux")]
-        {
-            "https://getcomposer.org/"
-        }
+        "https://formulae.brew.sh/formula/composer"
     }
 
     fn is_installed(&self) -> bool {

@@ -29,6 +29,8 @@ Is a LEMP stack generation & local development tool.
     - Php versions
   - SQL Import \*
   - Site export \*
+  - Site deploy, create extension system to allow pushing to different hosts
+  - GitHub connect?
 - [ ] Site Create Form:
   - Dialog: Fix UI, especially on Dark Mode.
   - Fix duplicate form ids/names.
@@ -41,7 +43,8 @@ Is a LEMP stack generation & local development tool.
 - [ ] Brew install prompt
 - [ ] MariaDB or MySQL \*
 - [ ] Screenshot \*
-- [ ] PHP Multi v8 version support \*
+- [ ] PHP Multi v8.* version support (In-progress) \*
+
 
 ### Screenshot:
 

@@ -12,11 +12,19 @@ defined('ABSPATH') || exit;
  */
 function lempify_cache_default_global_groups() {
     $defaults = array(
-        'users', 'userlogins', 'usermeta',
-        'site-transient', 'site-options',
-        'blog-details', 'blog-id-cache',
-        'networks', 'sites', 'site-details', 'blog-lookup',
-        'global-posts', 'blog_meta',
+        'users', 
+        'userlogins', 
+        'usermeta',
+        'site-transient', 
+        'site-options',
+        'blog-details', 
+        'blog-id-cache',
+        'networks', 
+        'sites', 
+        'site-details', 
+        'blog-lookup',
+        'global-posts', 
+        'blog_meta',
     );
     // Allow user to add extras via constant.
     if (defined('LEMPIFY_GLOBAL_GROUPS')) {
@@ -42,8 +50,7 @@ function lempify_cache_default_non_persistent_groups() {
 }
 
 /**
- * Base: our override of WP_Object_Cache (required by WP drop-in contract).
- * Concrete backends (Redis/Memcached) extend this and implement the adapter methods.
+ * Drop-in override/replacement for WP Object Cache.
  */
 class WP_Object_Cache {
 

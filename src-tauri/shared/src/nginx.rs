@@ -2,7 +2,7 @@ use std::{fs, path::Path};
 
 use crate::{file_system::AppFileSystem, utils_legacy::FileSudoCommand};
 
-/// Add Lempify include to the main Nginx config
+// Add Lempify include to the main Nginx config
 pub fn add_lempify_to_conf() -> Result<(), String> {
     let nginx_conf_path = "/opt/homebrew/etc/nginx/nginx.conf";
     let sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
@@ -63,7 +63,7 @@ pub fn add_lempify_to_conf() -> Result<(), String> {
     Ok(())
 }
 
-/// Update a site's Nginx config with SSL configuration
+// Update a site's Nginx config with SSL configuration
 pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
     let sites_enabled_dir = AppFileSystem::new()?.nginx_sites_enabled_dir;
     let certs_dir = AppFileSystem::new()?.certs_dir;
@@ -99,7 +99,7 @@ pub fn update_nginx_config_with_ssl(domain: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Write a file to a system location that requires elevated permissions
+// Write a file to a system location that requires elevated permissions
 fn write_file_with_sudo(content: &str, target_path: &Path) -> Result<(), String> {
     FileSudoCommand::write(content.to_string(), target_path.to_path_buf()).run()
 }

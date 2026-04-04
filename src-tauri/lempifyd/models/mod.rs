@@ -3,6 +3,9 @@ use shared::brew;
 use crate::services::error::ServiceError;
 use crate::services::isolation::ServiceIsolation;
 
+/**
+ * Service trait inherited by all services.
+ */
 pub trait Service {
     fn name(&self) -> &str;
     fn human_name(&self) -> &str {
@@ -21,6 +24,7 @@ pub trait Service {
     fn post_install(&self) -> Result<(), ServiceError> {
         Ok(())
     }
+    // @TODO: Is this necessary outside of PHP
     #[allow(unused)]
     fn isolation(&self) -> Option<&ServiceIsolation> {
         None

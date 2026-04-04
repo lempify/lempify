@@ -16,7 +16,7 @@ use crate::{
 
 use shared::{brew, constants::{DEFAULT_PHP_VERSION, PHP_SUPPORTED_VERSIONS}, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand};
 
-/// Remove a file from a system location that requires elevated permissions
+// Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
     FileSudoCommand::remove(target_path.to_path_buf()).run()
 }
@@ -273,8 +273,8 @@ pub async fn ping_site(config_manager: State<'_, ConfigManager>, domain: String)
     Ok(ping)
 }
 
-/// Returns the major.minor PHP version that Homebrew's unversioned `php` formula provides.
-/// Falls back to the compiled-in DEFAULT_PHP_VERSION if the binary can't be found.
+// Returns the major.minor PHP version that Homebrew's unversioned `php` formula provides.
+// Falls back to the compiled-in DEFAULT_PHP_VERSION if the binary can't be found.
 #[command]
 pub fn get_stable_php_version() -> String {
     let output = Command::new("/opt/homebrew/opt/php/bin/php")
@@ -290,8 +290,8 @@ pub fn get_stable_php_version() -> String {
     DEFAULT_PHP_VERSION.to_string()
 }
 
-/// Returns all PHP versions currently installed via Homebrew on this machine.
-/// Checks both versioned formulas (php@8.x) and the unversioned `php` formula.
+// Returns all PHP versions currently installed via Homebrew on this machine.
+// Checks both versioned formulas (php@8.x) and the unversioned `php` formula.
 #[command]
 pub fn get_installed_php_versions() -> Vec<String> {
     let default_bin_version = {

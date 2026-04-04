@@ -15,7 +15,6 @@ use crate::models::Service;
 use shared::constants::{DEFAULT_PHP_VERSION, PHP_SUPPORTED_VERSIONS};
 use shared::file_system::AppFileSystem;
 
-/// Reads config.json and returns the unique PHP versions used across all sites.
 fn get_php_versions_from_config() -> Vec<String> {
     let Ok(app_fs) = AppFileSystem::new() else {
         return Vec::new();
@@ -52,7 +51,7 @@ fn get_php_versions_from_config() -> Vec<String> {
     sites
 }
 
-/// Returns the actual version string reported by the unversioned Homebrew PHP binary.
+// Returns the actual version string reported by the unversioned Homebrew PHP binary.
 fn default_php_binary_version() -> Option<String> {
     let output = std::process::Command::new("/opt/homebrew/opt/php/bin/php")
         .args(["-n", "-r", "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;"])
@@ -65,10 +64,10 @@ fn default_php_binary_version() -> Option<String> {
     if v.contains('.') { Some(v) } else { None }
 }
 
-/// Returns all PHP versions that should have a registered service:
-/// - versions used by active sites (from config.json)
-/// - any supported version whose php-fpm binary is present on disk
-/// - always includes DEFAULT_PHP_VERSION as a fallback
+// Returns all PHP versions that should have a registered service:
+// - versions used by active sites (from config.json)
+// - any supported version whose php-fpm binary is present on disk
+// - always includes DEFAULT_PHP_VERSION as a fallback
 fn get_php_versions() -> Vec<String> {
     let mut versions = get_php_versions_from_config();
 
@@ -96,8 +95,8 @@ fn get_php_versions() -> Vec<String> {
     versions
 }
 
-/// Returns all available services. PHP services are registered for every
-/// version active in config.json plus every version installed on disk.
+// Returns all available services. PHP services are registered for every
+// version active in config.json plus every version installed on disk.
 pub fn get_all_services() -> Vec<Box<dyn Service>> {
     let php_versions = get_php_versions();
 

@@ -123,6 +123,9 @@ pub fn start_server() -> Result<(), String> {
     Ok(())
 }
 
+/**
+ * Handle app request from main process
+ */
 fn handle_client(mut stream: UnixStream) {
     let mut reader = BufReader::new(&stream);
     let mut line = String::new();

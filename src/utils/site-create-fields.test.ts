@@ -36,10 +36,6 @@ describe('domain field', () => {
 });
 
 describe('site_type field', () => {
-  it('does not include Laravel', () => {
-    const laravel = siteTypeField.options?.find(o => o.name === 'laravel');
-    expect(laravel).toBeUndefined();
-  });
 
   it('includes Vanilla and WordPress', () => {
     const names = siteTypeField.options?.map(o => o.name);

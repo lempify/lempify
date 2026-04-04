@@ -25,14 +25,15 @@ export interface WordPressFields {
   multi_site: SubField;
 }
 
-export interface LaravelFields {
-  laravel_version: SubField;
-}
+// @TODO: Maybe add Laravel support
+// export interface LaravelFields {
+//   laravel_version: SubField;
+// }
 
 export type SiteField = BaseField & {
   options?: Option[];
   dependencies?: [boolean, string, string];
-  fields?: WordPressFields | LaravelFields;
+  fields?: WordPressFields;
 };
 
 export interface SiteFieldRelationships {
@@ -55,10 +56,11 @@ export interface SiteFieldRelationships {
     dependencies: [boolean, string, string];
     fields: WordPressFields;
   };
-  laravel: SiteField & {
-    default: boolean;
-    field: 'checkbox';
-    dependencies: [boolean, string, string];
-    fields: LaravelFields;
-  };
+  // @TODO: Maybbe add Laravel support
+  // laravel: SiteField & {
+  //   default: boolean;
+  //   field: 'checkbox';
+  //   dependencies: [boolean, string, string];
+  //   fields: LaravelFields;
+  // };
 }
