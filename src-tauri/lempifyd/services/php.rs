@@ -666,7 +666,7 @@ impl BaseService for Service {
             self.config.write_file(
                 &xdebug_ini,
                 &format!(
-                    "zend_extension=\"{}/xdebug.so\"\nxdebug.mode=debug\nxdebug.start_with_request=yes\n",
+                    "zend_extension=\"{}/xdebug.so\"\nxdebug.mode=debug\nxdebug.start_with_request=trigger\n",
                     ext_dir
                 ),
             )?;
@@ -731,7 +731,7 @@ impl BaseService for Service {
             self.config.write_file(
                 &xdebug_ini,
                 &format!(
-                    "zend_extension=\"{}/xdebug.so\"\nxdebug.mode=debug\nxdebug.start_with_request=yes\n",
+                    "zend_extension=\"{}/xdebug.so\"\nxdebug.mode=debug\nxdebug.start_with_request=trigger\n",
                     ext_dir
                 ),
             )?;
