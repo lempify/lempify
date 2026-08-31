@@ -1,6 +1,12 @@
 use std::fs;
+use std::path::{Path, PathBuf};
 
-use crate::{constants::HOSTS_PATH, utils_legacy::SudoCommand};
+use crate::{
+    constants::{HOSTS_PATH, LEMPIFY_STAGED_HOSTS, LEMPIFY_STAGING_DIR},
+    file_system::ensure_private_dir,
+    osascript,
+    utils_legacy::SudoCommand,
+};
 
 /**
  * List all host entries from the hosts file.
@@ -57,20 +63,23 @@ pub fn add_entry(domain: &str) -> Result<(), String> {
 
     let new_contents = lines.join("\n");
 
-    let temp_file = std::env::temp_dir().join("lempify_hosts_update");
+    ensure_private_dir(Path::new(LEMPIFY_STAGING_DIR))?;
+    let temp_file = PathBuf::from(LEMPIFY_STAGED_HOSTS);
     fs::write(&temp_file, new_contents).map_err(|e| format!("Failed to write temp file: {}", e))?;
 
     let temp_file_str = temp_file.to_str().unwrap();
     let temp_file_path = temp_file_str.to_string();
-    SudoCommand::new(
-        vec!["cp", temp_file_str, HOSTS_PATH],
-        &format!("cp {} {}", temp_file_str, HOSTS_PATH),
-    )
-    .on_complete(move || {
-        let _ = fs::remove_file(&temp_file_path);
-        Ok(())
-    })
-    .run()?;
+    let osascript_command = format!(
+        "/bin/cp {} {}",
+        osascript::shell_quote(temp_file_str),
+        osascript::shell_quote(HOSTS_PATH)
+    );
+    SudoCommand::new(vec!["/bin/cp", temp_file_str, HOSTS_PATH], &osascript_command)
+        .on_complete(move || {
+            let _ = fs::remove_file(&temp_file_path);
+            Ok(())
+        })
+        .run()?;
 
     Ok(())
 }
@@ -94,21 +103,24 @@ pub fn remove_entry(domain: &str) -> Result<(), String> {
 
     let new_contents = filtered.join("\n");
 
-    let temp_file = std::env::temp_dir().join("lempify_hosts_remove");
+    ensure_private_dir(Path::new(LEMPIFY_STAGING_DIR))?;
+    let temp_file = PathBuf::from(LEMPIFY_STAGED_HOSTS);
     fs::write(&temp_file, new_contents).map_err(|e| format!("Failed to write temp file: {}", e))?;
 
     let temp_file_str = temp_file.to_str().unwrap();
     let temp_file_path = temp_file_str.to_string();
+    let osascript_command = format!(
+        "/bin/cp {} {}",
+        osascript::shell_quote(temp_file_str),
+        osascript::shell_quote(HOSTS_PATH)
+    );
 
-    SudoCommand::new(
-        vec!["cp", temp_file_str, HOSTS_PATH],
-        &format!("cp {} {}", temp_file_str, HOSTS_PATH),
-    )
-    .on_complete(move || {
-        let _ = fs::remove_file(&temp_file_path);
-        Ok(())
-    })
-    .run()?;
+    SudoCommand::new(vec!["/bin/cp", temp_file_str, HOSTS_PATH], &osascript_command)
+        .on_complete(move || {
+            let _ = fs::remove_file(&temp_file_path);
+            Ok(())
+        })
+        .run()?;
 
     Ok(())
 }

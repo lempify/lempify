@@ -14,6 +14,7 @@
     "lempifyd:rename": "node scripts/lempifyd-rename.ts",
     "lempifyd:watch": "cd src-tauri/ && cargo watch -w lempifyd -x 'build --release --target aarch64-apple-darwin -p lempifyd --manifest-path lempifyd/Cargo.toml' -s 'pnpm lempifyd:rename'",
     "lempify:dev": "pnpm lempifyd:build && pnpm lempifyd:rename && pnpm tauri dev",
+    "lempify:build": "pnpm lempifyd && pnpm tauri build",
     "lempify:dev:backend": "cd src-tauri && cargo watch -x 'run'",
     "test": "vitest",
     "test:run": "vitest run",

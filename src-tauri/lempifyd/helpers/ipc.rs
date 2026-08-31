@@ -1,11 +1,14 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::{BufRead, BufReader, Write};
+use std::os::unix::fs::PermissionsExt;
 use std::os::unix::net::{UnixListener, UnixStream};
+use std::path::Path;
 use std::thread;
 
 use crate::services::get_all_services;
-use shared::constants::LEMPIFYD_SOCKET_PATH;
+use shared::constants::{LEMPIFYD_SOCKET_DIR, LEMPIFYD_SOCKET_PATH};
+use shared::file_system::ensure_private_dir;
 
 // @TODO: Consolidate both of these with the helpers/lempifyd.rs file
 #[derive(Debug, Deserialize)]
@@ -102,6 +105,13 @@ impl ServiceAction {
 }
 
 pub fn start_server() -> Result<(), String> {
+    // The socket accepts install/uninstall/start/stop for every Homebrew
+    // service Lempify manages, so it must not be reachable by other local
+    // users. The 0700 parent directory is the reliable gate — socket file
+    // permissions are honoured inconsistently across Unixes, but a directory
+    // blocks the path lookup everywhere.
+    ensure_private_dir(Path::new(LEMPIFYD_SOCKET_DIR))?;
+
     // Clean up any existing socket file
     if let Err(e) = fs::remove_file(LEMPIFYD_SOCKET_PATH) {
         if e.kind() != std::io::ErrorKind::NotFound {
@@ -111,6 +121,10 @@ pub fn start_server() -> Result<(), String> {
 
     let listener = UnixListener::bind(LEMPIFYD_SOCKET_PATH)
         .map_err(|e| format!("Failed to bind IPC socket: {}", e))?;
+
+    // Belt and braces alongside the 0700 directory above.
+    fs::set_permissions(LEMPIFYD_SOCKET_PATH, fs::Permissions::from_mode(0o600))
+        .map_err(|e| format!("Failed to set socket permissions: {}", e))?;
 
     thread::spawn(move || {
         for stream in listener.incoming() {

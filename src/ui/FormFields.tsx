@@ -67,7 +67,7 @@ const FormFields = (props: Field) => {
                 checked={option.name === value}
                 onChange={handleChange}
               />
-              <label htmlFor={optionId} className={option.labelClassName ?? ''}>
+              <label htmlFor={optionId} className={option.labelClassName ?? 'text-neutral-500 dark:text-neutral-400'}>
                 {option.label}
               </label>
               {value === option?.dependency?.[1] &&
@@ -151,7 +151,7 @@ const FormFields = (props: Field) => {
         </>
       ) : null}
       {label && labelPosition === 'bottom' && (
-        <label htmlFor={fieldId} className='block cursor-pointer'>
+        <label htmlFor={fieldId} className='block cursor-pointer text-neutral-500 dark:text-neutral-400'>
           {label}
         </label>
       )}

@@ -15,7 +15,7 @@ import { useHistory } from '../hooks/useHistory';
 import Button from './Button';
 import HeaderServices from './HeaderServices';
 import DarkModeToggle from './DarkModeToggle';
-import { SvgChevron, SvgShield, SvgLogo2 as Logo } from './Svg';
+import { SvgChevron, SvgShield, SvgLogo3 as Logo } from './Svg';
 
 import { buttonPrimaryXs } from './css';
 import { NavLink } from 'react-router-dom';
@@ -39,7 +39,7 @@ export default function Header() {
   return (
     <header className='grid grid-cols-[auto_auto_auto_108px] items-center w-full bg-neutral-100 dark:bg-neutral-900 border-b border-neutral-300 dark:border-neutral-700 col-span-2 sticky top-0 z-2'>
       <div className='flex items-center'>
-        <div className='mx-4 -mb-[28px] text-xl text-[var(--lempify-primary)]'>
+        <div className='mx-4 text-xl text-[var(--lempify-primary)]'>
           <NavLink to='/'><Logo size={[200, 'auto']} /></NavLink>
         </div>
         <button

@@ -116,7 +116,7 @@ export default function DependenciesItem({
   const isService = dependency.dependencyType === 'service';
 
   return (
-    <div className={`min-h-full ${className}`}>
+    <div className={`${className}`}>
       <Dialog open={dependency.lastError !== ''} onClose={clearServiceError}>
         <div className='text-center w-full'>
           <div className='text-lg font-bold rounded-full bg-red-500 text-white p-2 text-center w-10 h-10 mx-auto'>
