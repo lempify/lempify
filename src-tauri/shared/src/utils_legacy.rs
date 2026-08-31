@@ -2,7 +2,10 @@ use std::process::Command;
 
 // @TODO: Confirm this module and fns is not being used
 
-use crate::{constants::LEMPIFY_SUDOERS_PATH, osascript};
+use crate::{
+    constants::{LEMPIFY_STAGING_DIR, LEMPIFY_SUDOERS_PATH},
+    osascript,
+};
 
 pub fn is_bin_installed(bin: &str) -> Result<bool, String> {
     let status = Command::new("which")
@@ -48,7 +51,11 @@ impl<'a> SudoCommand<'a> {
 
     pub fn run(self) -> Result<(), String> {
         if sudoers_exists() {
+            // `-n` keeps this non-interactive: if the command falls outside the
+            // scoped sudoers policy it fails immediately instead of blocking on
+            // a password prompt that has no terminal to read from.
             let status = Command::new("sudo")
+                .arg("-n")
                 .args(self.command)
                 .output()
                 .map_err(|e| format!("Failed to run sudo: {}", e))?
@@ -122,14 +129,16 @@ impl FileSudoCommand {
             .take()
             .ok_or("No content provided for write operation")?;
 
-        // Create temp file
-        let temp_file = std::env::temp_dir().join(format!(
-            "lempify-{}",
+        // Stage into Lempify's own 0700 directory. Not `std::env::temp_dir()`:
+        // on macOS that is the per-user `$TMPDIR` under /var/folders, whose path
+        // is unpredictable and therefore cannot be named in a sudoers rule.
+        crate::file_system::ensure_private_dir(std::path::Path::new(LEMPIFY_STAGING_DIR))?;
+        let temp_file = std::path::Path::new(LEMPIFY_STAGING_DIR).join(
             self.target_path
                 .file_name()
                 .and_then(|n| n.to_str())
-                .unwrap_or("temp")
-        ));
+                .unwrap_or("temp"),
+        );
 
         std::fs::write(&temp_file, content)
             .map_err(|e| format!("Failed to write temporary file: {}", e))?;
@@ -140,9 +149,11 @@ impl FileSudoCommand {
         let target_path_str = self.target_path.to_str().unwrap();
 
         if sudoers_exists() {
-            // Use sudo directly
+            // Use sudo directly. Absolute binary path so the sudoers allowlist
+            // matches regardless of PATH, and args are passed as a vector so no
+            // shell ever parses them.
             let output = std::process::Command::new("sudo")
-                .args(["mv", temp_path, target_path_str])
+                .args(["-n", "/bin/mv", temp_path, target_path_str])
                 .output()
                 .map_err(|e| format!("Failed to run sudo: {}", e))?;
 
@@ -157,9 +168,9 @@ impl FileSudoCommand {
             #[cfg(target_os = "macos")]
             {
                 let script = format!(
-                    "mv {temp_file} {target_path}",
-                    temp_file = temp_path,
-                    target_path = target_path_str
+                    "/bin/mv {temp_file} {target_path}",
+                    temp_file = osascript::shell_quote(temp_path),
+                    target_path = osascript::shell_quote(target_path_str)
                 );
                 osascript::run(
                     &script,
@@ -185,9 +196,11 @@ impl FileSudoCommand {
         let target_path_str = self.target_path.to_str().unwrap();
 
         if sudoers_exists() {
-            // Use sudo directly
+            // Use sudo directly. Absolute binary path so the sudoers allowlist
+            // matches regardless of PATH, and args are passed as a vector so no
+            // shell ever parses them.
             let output = std::process::Command::new("sudo")
-                .args(["rm", target_path_str])
+                .args(["-n", "/bin/rm", target_path_str])
                 .output()
                 .map_err(|e| format!("Failed to run sudo: {}", e))?;
 
@@ -201,7 +214,10 @@ impl FileSudoCommand {
             // Fall back to osascript for admin privileges
             #[cfg(target_os = "macos")]
             {
-                let script = format!("rm {target_path}", target_path = target_path_str);
+                let script = format!(
+                    "/bin/rm {target_path}",
+                    target_path = osascript::shell_quote(target_path_str)
+                );
                 osascript::run(
                     &script,
                     Some(
@@ -213,11 +229,7 @@ impl FileSudoCommand {
             #[cfg(target_os = "linux")]
             {
                 let output = std::process::Command::new("pkexec")
-                    .args([
-                        "sh",
-                        "-c",
-                        &format!("rm {target_path}", target_path = target_path_str),
-                    ])
+                    .args(["rm", target_path_str])
                     .output()
                     .map_err(|e| format!("Failed to execute pkexec: {}", e))?;
 

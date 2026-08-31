@@ -7,3 +7,4 @@ pub mod osascript;
 pub mod ssl;
 pub mod utils;
 pub mod utils_legacy;
+pub mod validate;

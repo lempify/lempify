@@ -1,11 +1,14 @@
 use tauri::command;
 
-use shared::{brew, file_system::AppFileSystem, hosts::entry_exists, ssl};
+use shared::{brew, file_system::AppFileSystem, hosts::entry_exists, ssl, validate::validate_domain};
 
 use crate::{helpers::stubs::create_nginx_config_stub, models::service::SiteInfo};
 
 #[command]
 pub async fn generate_nginx_config(domain: String) -> Result<SiteInfo, String> {
+    // Validate before the domain is interpolated into the privileged nginx write.
+    validate_domain(&domain)?;
+
     let app_fs = AppFileSystem::new()?;
 
     if !app_fs.nginx_sites_enabled_dir.exists() {

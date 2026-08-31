@@ -1,6 +1,5 @@
 use shared::file_system::AppFileSystem;
 use std::path::PathBuf;
-use uzers::{get_current_uid, get_user_by_uid};
 
 use super::error::ServiceError;
 
@@ -58,30 +57,17 @@ impl ServiceConfig {
     pub fn ensure_paths(&self) -> Result<(), ServiceError> {
         let config_path = self.get_config_path();
 
-        // Ensure parent directory exists
+        // Ensure parent directory exists. This lives under the user's own
+        // Application Support directory, so it needs no elevated privileges —
+        // the previous `sudo mkdir` was both unnecessary and outside the scoped
+        // sudoers policy.
         if let Some(parent) = config_path.parent() {
-            let uid = get_current_uid();
-            let current_user = get_user_by_uid(uid)
-                .ok_or_else(|| ServiceError::UserError("Failed to get current user".to_string()))?;
-
             self.file_system
-                .mkdir(parent, &current_user, 0o755)
+                .create_dir_all(parent)
                 .map_err(|e| ServiceError::FileSystemError(e.to_string()))?;
         }
 
         Ok(())
-    }
-
-    pub fn write_config(&self, content: &str) -> Result<(), ServiceError> {
-        self.file_system
-            .write_file(&self.config_path, content)
-            .map_err(|e| ServiceError::FileSystemError(e.to_string()))
-    }
-
-    pub fn read_config(&self) -> Result<String, ServiceError> {
-        self.file_system
-            .read_file(&self.config_path)
-            .map_err(|e| ServiceError::FileSystemError(e.to_string()))
     }
 
     pub fn create_dir(&self, path: &PathBuf) -> Result<(), ServiceError> {

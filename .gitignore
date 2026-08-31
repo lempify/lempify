@@ -1,25 +1,32 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Ignore all files in the root directory
+*
+*/**
 
-node_modules
-dist
-dist-ssr
-*.local
+# Track dirs
+!src
+!src/**
+!scripts
+!scripts/**
+!public
+!public/**
+!src-tauri
+!src-tauri/**
 
-# Editor directories and files
-.vscode/*
+# Track files
+!.gitignore
+!.prettierignore
+!.prettierrc
+!index.html
+!package.json
+!pnpm-lock.yaml
+!tsconfig.json
+!tsconfig.node.json
+!vite.config.ts
+!vitest.config.ts
+!README.md
+!screenshot.jpg
+!.vscode
 !.vscode/extensions.json
-.idea
+
+# Ignore files
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-llms.txt

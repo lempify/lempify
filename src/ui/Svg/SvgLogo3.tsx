@@ -5,11 +5,11 @@ export default function SvgLogo3({
   ...props
 }: React.SVGProps<SVGSVGElement> & { size?: number | Array<number | string> }) {
   return (
-    <div className="block overflow-hidden w-[20px] sm:w-[150px]">
+    <div className="block overflow-hidden">
       <Svg
         xmlns='http://www.w3.org/2000/svg'
         viewBox='0 0 136 10.33'
-        size={[150, 'auto']}
+        size={size}
         {...props}
       >
         <g>

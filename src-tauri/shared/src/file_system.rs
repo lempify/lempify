@@ -1,7 +1,49 @@
 use std::fs;
+use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use uzers::User;
+
+/**
+ * Create `path` if needed and guarantee it is a 0700 directory owned by the
+ * current user.
+ *
+ * Used for directories under `/tmp` that hold privileged staging files and the
+ * daemon control socket. `/tmp` is world-writable, so without this another user
+ * could pre-create the directory — or plant a symlink — and read or replace
+ * what Lempify puts there.
+ *
+ * Uses `symlink_metadata`, which does not follow links, so a planted symlink is
+ * rejected rather than followed.
+ */
+pub fn ensure_private_dir(path: &Path) -> Result<(), String> {
+    if !path.exists() {
+        fs::create_dir_all(path)
+            .map_err(|e| format!("Failed to create {}: {}", path.display(), e))?;
+    }
+
+    let metadata = fs::symlink_metadata(path)
+        .map_err(|e| format!("Failed to inspect {}: {}", path.display(), e))?;
+
+    if !metadata.is_dir() {
+        return Err(format!(
+            "{} exists but is not a directory",
+            path.display()
+        ));
+    }
+
+    if metadata.uid() != uzers::get_current_uid() {
+        return Err(format!(
+            "{} is owned by another user",
+            path.display()
+        ));
+    }
+
+    fs::set_permissions(path, fs::Permissions::from_mode(0o700))
+        .map_err(|e| format!("Failed to lock down {}: {}", path.display(), e))?;
+
+    Ok(())
+}
 
 #[derive(Debug, Clone)]
 pub struct AppFileSystem {

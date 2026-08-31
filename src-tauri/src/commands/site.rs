@@ -14,7 +14,7 @@ use crate::{
     site_types::{install, uninstall, wordpress},
 };
 
-use shared::{brew, constants::{DEFAULT_PHP_VERSION, PHP_SUPPORTED_VERSIONS}, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand};
+use shared::{brew, constants::{DEFAULT_PHP_VERSION, PHP_SUPPORTED_VERSIONS}, file_system::AppFileSystem, ssl, utils_legacy::FileSudoCommand, validate::validate_domain};
 
 // Remove a file from a system location that requires elevated permissions
 fn remove_file_with_sudo(target_path: &std::path::Path) -> Result<(), String> {
@@ -33,6 +33,12 @@ pub async fn create_site<R: tauri::Runtime>(
     let app_fs = AppFileSystem::new()?;
 
     let domain = &payload.domain.to_lowercase();
+
+    // Validate before the domain reaches the filesystem, /etc/hosts, or any
+    // privileged shell command. The form's `pattern` attribute is client-side
+    // only and this command is directly invokable, so this is the real gate.
+    validate_domain(domain)?;
+
     let (domain_name, domain_tld) =
         domain.split_once('.')
             .ok_or_else(|| "Invalid domain. Domain must contain a name and TLD separated by a period (e.g., 'lempify.local')".to_string())?;
@@ -208,6 +214,9 @@ pub async fn delete_site(
     config_manager: State<'_, ConfigManager>,
     domain: String,
 ) -> Result<Vec<Site>, String> {
+    // Validate before the domain is interpolated into privileged rm/nginx paths.
+    validate_domain(&domain)?;
+
     let app_fs = AppFileSystem::new()?;
     let site_conf_path = app_fs.nginx_sites_enabled_dir.join(format!("{}.conf", domain));
 
